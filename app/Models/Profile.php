@@ -59,6 +59,12 @@ class Profile extends Model
                 $profile->profile_code = static::generateUniqueProfileCode();
             }
         });
+
+        static::saving(function (Profile $profile) {
+            if ($profile->religion !== 'Islam') {
+                $profile->sect = null;
+            }
+        });
     }
 
     /**

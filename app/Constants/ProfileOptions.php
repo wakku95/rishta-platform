@@ -59,6 +59,40 @@ class ProfileOptions
         'Other' => 'Other',
     ];
 
+    public const EDUCATION_LEVELS = [
+        'Matric / O-Level' => 10,
+        'Intermediate / A-Level' => 20,
+        'Diploma' => 25,
+        "Bachelor's" => 30,
+        "Master's" => 40,
+        'MPhil' => 50,
+        'PhD' => 60,
+    ];
+
+    /**
+     * Get all education options that meet or exceed the specified minimum education level.
+     *
+     * @param string $minEducation
+     * @return array<string>
+     */
+    public static function getEducationsAtOrAbove(string $minEducation): array
+    {
+        if (!isset(self::EDUCATION_LEVELS[$minEducation])) {
+            return [$minEducation];
+        }
+
+        $minLevel = self::EDUCATION_LEVELS[$minEducation];
+        $qualifying = [];
+
+        foreach (self::EDUCATION_LEVELS as $education => $level) {
+            if ($level >= $minLevel) {
+                $qualifying[] = $education;
+            }
+        }
+
+        return $qualifying;
+    }
+
     public const PROFESSIONS = [
         'Student' => 'Student',
         'Software / IT' => 'Software / IT',

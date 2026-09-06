@@ -504,9 +504,11 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
                 <Users className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Religion & Sect</span>
+                  <span className="text-xs font-bold text-stone-500 block uppercase">
+                    {profile.religion === 'Islam' ? 'Religion & Sect' : 'Religion'}
+                  </span>
                   <span className="text-sm font-bold text-charcoal-900">
-                    {profile.religion} {profile.sect ? `(${profile.sect})` : ''}
+                    {profile.religion}{profile.religion === 'Islam' && profile.sect ? ` (${profile.sect})` : ''}
                   </span>
                 </div>
               </div>
@@ -637,7 +639,7 @@ export default function ProfilePage() {
                   </div>
                 )}
 
-                {preferences.preferred_sect && (
+                {preferences.preferred_religion === 'Islam' && preferences.preferred_sect && (
                   <div>
                     <span className="text-xs font-bold text-stone-500 uppercase block">Preferred Sect</span>
                     <span className="font-bold text-charcoal-900">{preferences.preferred_sect}</span>
@@ -687,14 +689,19 @@ export default function ProfilePage() {
 
       {/* Confirmation Modal */}
       <ConfirmDialog
+        isOpen={confirmModal.open}
         open={confirmModal.open}
         title={confirmModal.title}
+        description={confirmModal.message}
         message={confirmModal.message}
         confirmText="Confirm"
+        variant={confirmModal.confirmVariant}
         confirmVariant={confirmModal.confirmVariant}
+        isLoading={actionLoading}
         loading={actionLoading}
         onConfirm={confirmModal.action}
-        onCancel={() => setConfirmModal({ ...confirmModal, open: false })}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
+        onCancel={() => setConfirmModal((prev) => ({ ...prev, open: false }))}
       />
 
       {/* Public Profile Preview Modal */}
@@ -764,9 +771,11 @@ export default function ProfilePage() {
                   <span className="font-extrabold text-charcoal-900">{previewData.education}</span>
                 </div>
                 <div>
-                  <span className="text-stone-500 font-bold block uppercase">Faith & Sect</span>
+                  <span className="text-stone-500 font-bold block uppercase">
+                    {previewData.religion === 'Islam' ? 'Faith & Sect' : 'Religion'}
+                  </span>
                   <span className="font-extrabold text-charcoal-900">
-                    {previewData.religion}{previewData.sect ? ` (${previewData.sect})` : ''}
+                    {previewData.religion}{previewData.religion === 'Islam' && previewData.sect ? ` (${previewData.sect})` : ''}
                   </span>
                 </div>
                 <div>

@@ -264,6 +264,29 @@ class DiscoveryTest extends TestCase
         $this->assertNotContains($engineer->profile_code, $codes);
     }
 
+    public function test_minimum_education_filter_includes_higher_qualifications(): void
+    {
+        $user = User::factory()->create();
+
+        $matric = $this->createCandidate(['education' => 'Matric / O-Level']);
+        $bachelor = $this->createCandidate(['education' => "Bachelor's"]);
+        $master = $this->createCandidate(['education' => "Master's"]);
+        $mphil = $this->createCandidate(['education' => 'MPhil']);
+        $phd = $this->createCandidate(['education' => 'PhD']);
+
+        // Filter by minimum Bachelor's: should include Bachelor's, Master's, MPhil, PhD; exclude Matric
+        $response = $this->actingAs($user)->getJson('/api/discovery/profiles?education=' . urlencode("Bachelor's"));
+
+        $response->assertStatus(200);
+        $codes = collect($response->json('data'))->pluck('profile_code')->all();
+
+        $this->assertNotContains($matric->profile_code, $codes);
+        $this->assertContains($bachelor->profile_code, $codes);
+        $this->assertContains($master->profile_code, $codes);
+        $this->assertContains($mphil->profile_code, $codes);
+        $this->assertContains($phd->profile_code, $codes);
+    }
+
     public function test_marital_status_and_height_filters_work(): void
     {
         $user = User::factory()->create();

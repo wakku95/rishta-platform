@@ -21,7 +21,7 @@ class ProfilePreferenceResource extends JsonResource
             'max_age' => $this->max_age,
             'preferred_cities' => $this->preferred_cities ?? [],
             'preferred_religion' => $this->preferred_religion,
-            'preferred_sect' => $this->preferred_sect,
+            'preferred_sect' => $this->preferred_religion === 'Islam' ? $this->preferred_sect : null,
             'min_height' => $this->min_height,
             'max_height' => $this->max_height,
             'preferred_education' => $this->preferred_education,

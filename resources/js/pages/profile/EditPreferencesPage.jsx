@@ -130,7 +130,7 @@ export default function EditPreferencesPage() {
             max_age: d.max_age || 30,
             preferred_cities: d.preferred_cities || [],
             preferred_religion: d.preferred_religion || 'Islam',
-            preferred_sect: d.preferred_sect || '',
+            preferred_sect: d.preferred_religion === 'Islam' ? (d.preferred_sect || '') : '',
             min_height: d.min_height || '',
             max_height: d.max_height || '',
             preferred_education: d.preferred_education || '',
@@ -197,7 +197,11 @@ export default function EditPreferencesPage() {
     setGeneralError('');
 
     try {
-      await savePreferences(formData);
+      const payload = { ...formData };
+      if (payload.preferred_religion !== 'Islam') {
+        payload.preferred_sect = null;
+      }
+      await savePreferences(payload);
       navigate('/profile');
     } catch (err) {
       if (err.response?.status === 422) {

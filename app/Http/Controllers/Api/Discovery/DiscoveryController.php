@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\Discovery;
 
+use App\Constants\ProfileOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Discovery\SearchProfilesRequest;
 use App\Http\Resources\PublicProfileResource;
@@ -83,7 +84,8 @@ class DiscoveryController extends Controller
         }
 
         if ($request->filled('education')) {
-            $query->where('education', $request->education);
+            $qualifyingEducations = ProfileOptions::getEducationsAtOrAbove($request->education);
+            $query->whereIn('education', $qualifyingEducations);
         }
 
         if ($request->filled('profession')) {

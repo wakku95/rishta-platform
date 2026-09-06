@@ -109,7 +109,7 @@ export default function CandidateDetailPage() {
     );
   }
 
-  const faithDisplay = profile.sect
+  const faithDisplay = (profile.religion === 'Islam' && profile.sect)
     ? `${profile.religion} (${profile.sect})`
     : profile.religion;
 

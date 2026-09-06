@@ -19,7 +19,7 @@ class PublicProfileResource extends JsonResource
             'age' => $this->age,
             'gender' => $this->gender,
             'religion' => $this->religion,
-            'sect' => $this->sect,
+            'sect' => $this->religion === 'Islam' ? $this->sect : null,
             'city' => $this->city,
             'education' => $this->education,
             'profession' => $this->profession,

@@ -11,13 +11,15 @@ export default function Button({
   variant = 'primary', // 'primary' | 'secondary' | 'gold' | 'danger' | 'ghost' | 'outline'
   size = 'md',        // 'sm' | 'md' | 'lg'
   isLoading = false,
+  loading = false,
   disabled = false,
   className = '',
   icon: Icon = null,
   iconPosition = 'left',
   ...props
 }) {
-  const isDisabled = disabled || isLoading;
+  const isButtonLoading = isLoading || loading;
+  const isDisabled = disabled || isButtonLoading;
 
   const baseStyles = 'inline-flex items-center justify-center font-semibold rounded-xl transition-all duration-150 select-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2';
 
@@ -57,10 +59,10 @@ export default function Button({
       `}
       {...props}
     >
-      {isLoading && <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />}
-      {!isLoading && Icon && iconPosition === 'left' && <Icon className="w-4 h-4 shrink-0" />}
+      {isButtonLoading && <Loader2 className="w-4 h-4 animate-spin text-current shrink-0" />}
+      {!isButtonLoading && Icon && iconPosition === 'left' && <Icon className="w-4 h-4 shrink-0" />}
       <span className="truncate">{children}</span>
-      {!isLoading && Icon && iconPosition === 'right' && <Icon className="w-4 h-4 shrink-0" />}
+      {!isButtonLoading && Icon && iconPosition === 'right' && <Icon className="w-4 h-4 shrink-0" />}
     </button>
   );
 }

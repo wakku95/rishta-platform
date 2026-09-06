@@ -8,19 +8,30 @@ import { TriangleAlert } from 'lucide-react';
  */
 export default function ConfirmDialog({
   isOpen,
+  open,
   onClose,
+  onCancel,
   onConfirm,
   title = 'Are you sure?',
-  description = 'This action cannot be undone.',
+  description,
+  message,
   confirmText = 'Confirm',
   cancelText = 'Cancel',
-  variant = 'danger', // 'danger' | 'primary'
-  isLoading = false,
+  variant,
+  confirmVariant = 'danger',
+  isLoading,
+  loading = false,
 }) {
+  const isModalOpen = isOpen ?? open ?? false;
+  const handleClose = onClose ?? onCancel ?? (() => {});
+  const modalDescription = description ?? message ?? 'This action cannot be undone.';
+  const modalVariant = variant ?? confirmVariant ?? 'danger';
+  const isActionLoading = isLoading ?? loading ?? false;
+
   return (
     <Modal
-      isOpen={isOpen}
-      onClose={onClose}
+      isOpen={isModalOpen}
+      onClose={handleClose}
       maxWidth="max-w-md"
       title={title}
       footer={
@@ -28,16 +39,16 @@ export default function ConfirmDialog({
           <Button
             variant="secondary"
             size="sm"
-            onClick={onClose}
-            disabled={isLoading}
+            onClick={handleClose}
+            disabled={isActionLoading}
           >
             {cancelText}
           </Button>
           <Button
-            variant={variant === 'danger' ? 'danger' : 'primary'}
+            variant={modalVariant === 'danger' ? 'danger' : 'primary'}
             size="sm"
             onClick={onConfirm}
-            isLoading={isLoading}
+            isLoading={isActionLoading}
           >
             {confirmText}
           </Button>
@@ -45,11 +56,11 @@ export default function ConfirmDialog({
       }
     >
       <div className="flex items-start gap-3.5">
-        <div className={`p-2.5 rounded-xl shrink-0 ${variant === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-burgundy-50 text-burgundy-700'}`}>
+        <div className={`p-2.5 rounded-xl shrink-0 ${modalVariant === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-burgundy-50 text-burgundy-700'}`}>
           <TriangleAlert className="w-5 h-5" />
         </div>
         <div className="text-sm text-charcoal-700 leading-relaxed pt-1">
-          {description}
+          {modalDescription}
         </div>
       </div>
     </Modal>

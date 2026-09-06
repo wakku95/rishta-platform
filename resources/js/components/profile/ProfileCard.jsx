@@ -46,8 +46,8 @@ export default function ProfileCard({ profile }) {
     }
   };
 
-  // Faith formatting (e.g., "Islam • Sunni" or "Christianity")
-  const faithDisplay = profile.sect
+  // Faith formatting (e.g., "Islam • Sunni" or "Hinduism")
+  const faithDisplay = (profile.religion === 'Islam' && profile.sect)
     ? `${profile.religion} • ${profile.sect}`
     : profile.religion;
 

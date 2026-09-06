@@ -86,7 +86,7 @@ class ProfileController extends Controller
         $isNew = false;
 
         if (isset($data['religion']) && $data['religion'] !== 'Islam') {
-            $data['sect'] = $data['sect'] ?? null;
+            $data['sect'] = null;
         }
 
         $profile = $user->profile()->first();
@@ -156,9 +156,14 @@ class ProfileController extends Controller
             );
         }
 
+        $prefData = $request->validated();
+        if (isset($prefData['preferred_religion']) && $prefData['preferred_religion'] !== 'Islam') {
+            $prefData['preferred_sect'] = null;
+        }
+
         $preferences = $profile->preferences()->updateOrCreate(
             ['profile_id' => $profile->id],
-            $request->validated()
+            $prefData
         );
 
         return $this->successResponse(

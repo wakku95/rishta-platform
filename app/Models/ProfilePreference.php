@@ -11,6 +11,18 @@ class ProfilePreference extends Model
     use HasFactory;
 
     /**
+     * Booted method for ProfilePreference model.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (ProfilePreference $preference) {
+            if ($preference->preferred_religion && $preference->preferred_religion !== 'Islam') {
+                $preference->preferred_sect = null;
+            }
+        });
+    }
+
+    /**
      * The attributes that are mass assignable.
      *
      * @var list<string>

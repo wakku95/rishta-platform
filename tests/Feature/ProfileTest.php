@@ -673,6 +673,55 @@ class ProfileTest extends TestCase
         ]);
     }
 
+    public function test_updating_profile_to_non_islam_with_sect_in_payload_forces_sect_to_null(): void
+    {
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-UPDATE2',
+            'gender' => 'male',
+            'date_of_birth' => '1994-01-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Engineering',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'profile_status' => 'draft',
+        ]);
+
+        // Submit with Hinduism and sect still sent as Sunni in payload
+        $response = $this->actingAs($user)->postJson('/api/profile', [
+            'gender' => 'male',
+            'date_of_birth' => '1994-01-15',
+            'religion' => 'Hinduism',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Engineering',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'religion' => 'Hinduism',
+                    'sect' => null,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('profiles', [
+            'id' => $profile->id,
+            'religion' => 'Hinduism',
+            'sect' => null,
+        ]);
+    }
+
     public function test_islam_profile_requires_sect_for_creation_and_activation(): void
     {
         $user = User::factory()->create();

@@ -154,7 +154,7 @@ export default function EditProfilePage() {
             gender: d.gender || 'male',
             date_of_birth: d.date_of_birth || '',
             religion: d.religion || 'Islam',
-            sect: d.sect || 'Sunni',
+            sect: (d.religion === 'Islam' || !d.religion) ? (d.sect || 'Sunni') : '',
             city: d.city || 'Lahore',
             education: d.education || "Bachelor's",
             profession: d.profession || 'Software / IT',
@@ -199,7 +199,11 @@ export default function EditProfilePage() {
     setGeneralError('');
 
     try {
-      await saveProfile(formData);
+      const payload = { ...formData };
+      if (payload.religion !== 'Islam') {
+        payload.sect = null;
+      }
+      await saveProfile(payload);
       navigate('/profile');
     } catch (err) {
       if (err.response?.status === 422) {

@@ -21,7 +21,7 @@ class ProfileResource extends JsonResource
             'date_of_birth' => $this->date_of_birth?->format('Y-m-d'),
             'age' => $this->age,
             'religion' => $this->religion,
-            'sect' => $this->sect,
+            'sect' => $this->religion === 'Islam' ? $this->sect : null,
             'city' => $this->city,
             'education' => $this->education,
             'profession' => $this->profession,
