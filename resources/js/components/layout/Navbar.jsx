@@ -17,6 +17,7 @@ export default function Navbar() {
   ];
 
   if (authenticated) {
+    navLinks.push({ name: 'Find Matches', href: '/search' });
     navLinks.push({ name: 'Dashboard', href: '/dashboard' });
     navLinks.push({ name: 'My Profile', href: '/profile' });
   }

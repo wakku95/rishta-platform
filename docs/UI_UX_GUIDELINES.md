@@ -36,14 +36,18 @@ Every interactive screen must handle four explicit states:
 ## 4. Key User Journeys
 
 ### 4.1 Discovery & Search
-- Quick filters on top (Gender, City, Age Range).
-- Compact profile cards showing:
-  - Profile Code (`#RK-10482`)
-  - Gender & Age (`Female, 27`)
+- Canonical filter drawer (Gender, Age Range, City, Religion, Sect, Education, Profession, Marital Status, Height Range).
+- Compact, mobile-friendly profile cards showing:
+  - Profile Code (`#RK-XXXXXX`)
+  - Age & Gender (`25 yrs • female`)
   - City (`Lahore`)
-  - Education & Profession (`Master's · Software Engineer`)
-  - Height & Marital Status (`5'4" · Never Married`)
-  - Primary Action: `[View Details]` and `[Shortlist icon]`
+  - Faith & Sect (`Islam • Sunni` or `Christianity`)
+  - Education & Profession (`Master's` · `Software / IT`)
+  - Height & Marital Status (`5'7" (170 cm)` · `Never Married`)
+  - Verification badge (`Email Verified`)
+  - Managed By indicator (`Parent` / `Self`)
+  - Primary Action: `[View Profile]` button (strictly no likes, swipes, or hearts)
+- Clear Filters CTA and informative empty state when zero matches occur.
 
 ### 4.2 Rishta Request Interaction
 - **Sender View**: "Request Sent. Waiting for response."

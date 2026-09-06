@@ -59,4 +59,16 @@
   4. Design architecture so future phases can cleanly introduce religion-specific denominations without schema changes.
 - **Consequence**: Full multi-faith compatibility, backwards-compatible with existing Islamic profiles, seamless filtering, and clear UX with no broken or forced sect dropdowns.
 
+## ADR 012: Privacy-Safe Discovery Architecture, Server-Side Filtering & Zero-Trust Serialization
+- **Context**: Candidate discovery must enable authenticated and verified users to browse and filter active matrimonial candidates while strictly preventing public scraping, enumeration, and contact/identity data leaks.
+- **Decision**:
+  1. Restrict discovery (`GET /api/discovery/profiles`) and public candidate details (`GET /api/discovery/profiles/{profile_code}`) strictly to authenticated users with verified email addresses (`EMAIL_NOT_VERIFIED` 403 guard).
+  2. Exclude user's own profile, non-active profiles (draft, hidden, paused, suspended, deleted), suspended users, and unverified user accounts directly in SQL queries.
+  3. Calculate age boundaries dynamically against `date_of_birth` using calendar-precise date math without storing redundant age columns.
+  4. Enforce canonical options validation via `SearchProfilesRequest` matching `ProfileOptions`.
+  5. Use `PublicProfileResource` exclusively for both search results and public profile details, strictly stripping `about`, `family_background`, full `date_of_birth`, `email`, `phone_number`, user credentials, `user_id`, and database IDs.
+  6. Implement server-side pagination with default 12 items per page backed by composite index `(profile_status, updated_at)`.
+- **Consequence**: Eliminates client-side data leaks, prevents scrapers from extracting private biographies, ensures consistent performance, and provides a dignified matrimonial discovery experience without dating/social media patterns.
+
+
 

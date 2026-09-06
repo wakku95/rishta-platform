@@ -63,3 +63,14 @@ Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
     Route::post('/hide', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'hide']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Discovery & Candidate Search Routes (/api/discovery)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('discovery')->group(function () {
+    Route::get('/profiles', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'index']);
+    Route::get('/profiles/{profile_code}', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'show']);
+});
+
+

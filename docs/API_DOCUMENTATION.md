@@ -75,7 +75,39 @@ All API endpoints reside under `/api` and return standardized JSON responses.
 
 ---
 
-## 4. Rishta Requests (`/api/requests`)
+## 4. Discovery & Candidate Search (`/api/discovery`)
+
+| Method | Endpoint | Description | Auth Required | Email Verified |
+| :--- | :--- | :--- | :--- | :--- |
+| `GET` | `/api/discovery/profiles` | Search active candidate profiles with canonical filters and server-side pagination | Yes | Yes |
+| `GET` | `/api/discovery/profiles/{profile_code}` | Retrieve single candidate public profile by unique profile code | Yes | Yes |
+
+### Query Parameters for `GET /api/discovery/profiles`
+- `gender` (optional): `male` \| `female`
+- `min_age` (optional): integer (18–80)
+- `max_age` (optional): integer (18–80, $\ge$ `min_age`)
+- `city` (optional): canonical city string from `ProfileOptions::CITIES`
+- `religion` (optional): canonical religion from `ProfileOptions::RELIGIONS`
+- `sect` (optional): canonical sect from `ProfileOptions::SECTS`
+- `education` (optional): canonical education from `ProfileOptions::EDUCATIONS`
+- `profession` (optional): canonical profession from `ProfileOptions::PROFESSIONS`
+- `marital_status` (optional): canonical marital status from `ProfileOptions::MARITAL_STATUSES`
+- `min_height` (optional): integer in centimeters (120–230)
+- `max_height` (optional): integer in centimeters (120–230, $\ge$ `min_height`)
+- `page` (optional): integer ($\ge 1$, default: 1)
+- `per_page` (optional): integer (1–50, default: 12)
+
+### Access & Exclusion Rules:
+- **Authentication & Verification**: Both endpoints require authenticated users with verified email addresses. Unauthenticated requests return `401 Unauthorized` (`UNAUTHENTICATED`). Unverified users return `403 Forbidden` (`EMAIL_NOT_VERIFIED`). Suspended users return `403 Forbidden` (`ACCOUNT_SUSPENDED`).
+- **Active Only**: Only profiles with `profile_status = 'active'` appear. Draft, hidden, paused, suspended, or deleted profiles are strictly excluded.
+- **User Integrity**: Candidates whose user account is suspended or unverified are excluded.
+- **Self-Exclusion**: The authenticated user's own profile is strictly excluded from discovery results.
+- **Default Ordering**: Recently updated active profiles first (`ORDER BY updated_at DESC`).
+- **Privacy Guarantee**: All results are serialized using `PublicProfileResource`. Never contains `about`, `family_background`, full `date_of_birth`, `email`, `phone_number`, `user_id`, or database IDs.
+
+---
+
+## 5. Rishta Requests (`/api/requests`)
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
@@ -89,7 +121,7 @@ All API endpoints reside under `/api` and return standardized JSON responses.
 
 ---
 
-## 5. Payments & Contact Release (`/api/payments` & `/api/releases`)
+## 6. Payments & Contact Release (`/api/payments` & `/api/releases`)
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
@@ -100,7 +132,7 @@ All API endpoints reside under `/api` and return standardized JSON responses.
 
 ---
 
-## 6. Mobile OTP Verification (`/api/otp`)
+## 7. Mobile OTP Verification (`/api/otp`)
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
@@ -111,7 +143,7 @@ All API endpoints reside under `/api` and return standardized JSON responses.
 
 ---
 
-## 7. Shortlist, Blocking & Reporting
+## 8. Shortlist, Blocking & Reporting
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |

@@ -4,6 +4,31 @@ All notable changes to the Rishta Platform project will be documented in this fi
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Phase 3] - Profile Discovery & Candidate Search - 2026-09-07
+
+### Added
+- **Discovery Backend Architecture**:
+  - `SearchProfilesRequest` validating canonical query parameters (`gender`, `min_age`, `max_age`, `city`, `religion`, `sect`, `education`, `profession`, `marital_status`, `min_height`, `max_height`, `page`, `per_page`).
+  - `DiscoveryController` implementing `index()` (filtered, paginated search) and `show()` (individual candidate profile detail).
+  - Migration `2026_09_07_010000_add_discovery_indexes_to_profiles_table.php` adding composite index `(profile_status, updated_at)`.
+  - Routes under `auth:sanctum`: `GET /api/discovery/profiles` and `GET /api/discovery/profiles/{profile_code}`.
+  - Strict access control enforcing verified email (`EMAIL_NOT_VERIFIED` 403) and active account status (`ACCOUNT_SUSPENDED` 403).
+  - SQL-level exclusions: self-profile exclusion, non-active profile exclusion, suspended and unverified user exclusion.
+  - Server-side pagination with default 12 candidates per page.
+- **Privacy Zero-Trust Serialization**:
+  - `PublicProfileResource` updated with genuine `verifications.email_verified` indicator.
+  - Strictly omits `about`, `family_background`, full `date_of_birth`, `email`, `phone_number`, user credentials, `user_id`, and internal database IDs.
+- **Frontend Discovery Experience**:
+  - `api/discovery.js` with `searchProfiles()` and `getPublicProfile()` methods.
+  - `ProfileCard.jsx`: respectful candidate summary card with public demographics, faith/sect, formatted height, verified badge, and "View Profile" action (no likes, swipes, or dating gamification).
+  - `SearchProfilesPage.jsx`: mobile-first responsive candidate discovery page with toggleable filter drawer, count indicators, candidate grid, `Pagination`, and `EmptyState`.
+  - `CandidateDetailPage.jsx`: dignified public candidate profile view with demographics, verification status, and private information protection banner.
+  - Registered `/search` and `/profiles/:profileCode` under `VerifiedRoute` in `App.jsx`.
+  - Added "Find Matches" navigation link to `Navbar.jsx` for authenticated users.
+- **Automated Testing**:
+  - 25 comprehensive feature tests in `tests/Feature/DiscoveryTest.php` covering authentication, email verification, active status, exclusions, all 9 canonical filters, validation rejections, public detail, strict privacy omissions, pagination, and default ordering.
+  - Full suite passes: 67 tests, 284 assertions.
+
 ## [Phase 2] - Controlled Profile & Private Information (Privacy-First) - 2026-09-06
 
 ### Added

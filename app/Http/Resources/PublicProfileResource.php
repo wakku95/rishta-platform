@@ -28,6 +28,9 @@ class PublicProfileResource extends JsonResource
             'height_formatted' => $this->height_formatted,
             'managed_by' => $this->managed_by,
             'profile_status' => $this->profile_status,
+            'verifications' => [
+                'email_verified' => $this->user ? $this->user->hasVerifiedEmail() : false,
+            ],
         ];
     }
 }

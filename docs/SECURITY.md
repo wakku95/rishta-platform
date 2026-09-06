@@ -23,6 +23,11 @@
 - **Sanctum Token Security**:
   - Tokens expire after 30 days of inactivity.
   - Revoked automatically upon password change or account deletion.
+- **Discovery Access Control**:
+  - Requires authenticated session and verified email address (`EMAIL_NOT_VERIFIED` 403 guard).
+  - Suspended accounts blocked immediately from discovery (`ACCOUNT_SUSPENDED` 403 guard).
+  - Self-exclusion: Authenticated user's own profile is excluded from candidate search results.
+  - Inactive/Draft/Hidden exclusion: Ineligible candidate profiles are excluded at SQL query level.
 
 ---
 

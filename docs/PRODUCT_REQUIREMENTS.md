@@ -46,11 +46,15 @@
   - Preferred gender, age range (`min_age`, `max_age`), preferred cities, religion, sect, minimum education, marital status, height range (`min_height`, `max_height`).
 
 ### 1.4 Profile Discovery & Search
-- **Free Search & Filter**:
-  - Unauthenticated visitors can view sample teaser cards or search landing page; authenticated users can search full profile listings.
-  - Filters: Gender, Age (calculated from DOB), City, Religion, Sect, Education, Marital Status, Height.
-  - Server-side pagination (12 or 15 items per page) to prevent scraping.
-  - Exclusions: Blocked users, hidden profiles, suspended profiles, and user's own profile are automatically excluded from search queries.
+- **Verified Discovery**:
+  - Requires authenticated session with a verified email address (`EMAIL_NOT_VERIFIED` guard).
+  - Unauthenticated visitors receive 401; unverified users receive 403 with prompt to verify email.
+  - Filters: Gender, Age (calculated from DOB: `min_age`, `max_age`), City, Religion, Sect, Education, Profession, Marital Status, Height (`min_height`, `max_height` in cm).
+  - Server-side pagination (12 items per page default) to prevent scraping.
+  - Exclusions: Draft profiles, hidden profiles, paused profiles, suspended user profiles, unverified user profiles, and user's own profile are strictly excluded at query level.
+  - Public Profile Detail: Access individual active candidate profiles by `profile_code` (`GET /api/discovery/profiles/{profile_code}`).
+  - Strict Privacy: Public discovery responses strictly exclude `about`, `family_background`, full DOB, contact details, user credentials, and database IDs.
+
 
 ### 1.5 Shortlisting
 - Users can bookmark profiles to their private "Shortlist" collection.

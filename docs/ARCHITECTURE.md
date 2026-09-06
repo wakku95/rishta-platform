@@ -138,10 +138,11 @@ interface SmsServiceInterface
 | OTP | Submit OTP | Involved Users | `user_id === initiator_id \|\| user_id === recipient_id` |
 | Contact Info | View Phone | Both Verified Parties | `contact_releases.status === 'released'` |
 
-### 3.2 Sensitive Data Sanitization
-Profile API responses use dedicated **Laravel API Resources** (`ProfileResource`, `PublicProfileResource`, `PrivateProfileResource`):
-- `PublicProfileResource`: Strips `email`, `phone_number`, `home_address`, `cnic`.
-- Phone numbers exist in the `users` or `contact_releases` context and are **never** bundled in general profile payloads.
+### 3.2 Sensitive Data Sanitization & Discovery Architecture
+Profile API responses strictly isolate public and private domains using dedicated **Laravel API Resources**:
+- `PublicProfileResource`: Exposes only public demographics (`profile_code`, `age`, `gender`, `religion`, `sect`, `city`, `education`, `profession`, `marital_status`, `height`, `height_formatted`, `managed_by`, `profile_status`, and `verifications.email_verified`). Strictly strips `about`, `family_background`, full `date_of_birth`, `email`, `phone_number`, `user_id`, internal database `id`, and passwords.
+- `ProfileResource`: Emits candidate biodata, private introductory statements, and preferences strictly to the authenticated profile owner.
+- `DiscoveryController`: Enforces verified email, active profile status, self-exclusion, suspended user exclusion, canonical filter queries directly on database indexes, and server-side pagination.
 
 ---
 

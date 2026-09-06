@@ -19,9 +19,14 @@ import ProfilePage from './pages/profile/ProfilePage';
 import EditProfilePage from './pages/profile/EditProfilePage';
 import EditPreferencesPage from './pages/profile/EditPreferencesPage';
 
+// Discovery Pages
+import SearchProfilesPage from './pages/discovery/SearchProfilesPage';
+import CandidateDetailPage from './pages/discovery/CandidateDetailPage';
+
 // Route Guards
 import GuestRoute from './components/auth/GuestRoute';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import VerifiedRoute from './components/auth/VerifiedRoute';
 
 export default function App() {
   return (
@@ -52,6 +57,12 @@ export default function App() {
               <Route path="profile" element={<ProfilePage />} />
               <Route path="profile/edit" element={<EditProfilePage />} />
               <Route path="profile/preferences" element={<EditPreferencesPage />} />
+            </Route>
+
+            {/* Discovery & Search routes (requires verified email) */}
+            <Route element={<VerifiedRoute />}>
+              <Route path="search" element={<SearchProfilesPage />} />
+              <Route path="profiles/:profileCode" element={<CandidateDetailPage />} />
             </Route>
 
             {/* 404 fallback */}

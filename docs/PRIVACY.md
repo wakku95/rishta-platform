@@ -33,7 +33,7 @@ In South Asian matrimonial matchmaking, unwarranted distribution of personal dat
 
 - **Rule**: Never transmit sensitive fields over the wire with the expectation that CSS or React will hide them (`display: none`).
 - **Resource Classes**:
-  - `PublicProfileResource`: Emits only safe, public controlled demographic attributes and calculated age. Strictly omits exact DOB, about, family background, and user credentials.
+  - `PublicProfileResource`: Emits only safe, public controlled demographic attributes, calculated age, and genuine verification indicators (`verifications.email_verified`). Strictly omits exact DOB, about, family background, user_id, internal database IDs, and user credentials.
   - `ProfileResource`: Emits full profile data (including private about and family background) strictly for the owning authenticated user.
   - `ContactReleaseResource`: The **sole** resource permitted to emit phone numbers, executed only after `status === 'released'`.
 

@@ -95,10 +95,10 @@ CREATE TABLE profiles (
     created_at TIMESTAMP NULL,
     updated_at TIMESTAMP NULL,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    INDEX idx_profiles_search (gender, city, profile_status, can_receive_requests),
+    INDEX idx_profiles_status_updated (profile_status, updated_at),
+    INDEX idx_profiles_gender_city_status (gender, city, profile_status),
     INDEX idx_profiles_dob (date_of_birth),
-    INDEX idx_profiles_education (education),
-    INDEX idx_profiles_marital_status (marital_status)
+    INDEX idx_profiles_status (profile_status)
 );
 ```
 
