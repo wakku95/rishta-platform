@@ -5,7 +5,7 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Alert from '../../components/ui/Alert';
-import { Lock, CheckCircle2 } from 'lucide-react';
+import { Lock, CheckCircle2, KeyRound } from 'lucide-react';
 
 export default function ResetPasswordPage() {
   const [searchParams] = useSearchParams();
@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
         setGeneralError(err.response.data.message || 'Please check your inputs.');
       } else {
         setGeneralError(
-          err.response?.data?.message || 'Unable to reset password. The link may have expired.'
+          err.response?.data?.message || 'Unable to reset password. The link may have expired or is invalid.'
         );
       }
     } finally {
@@ -59,32 +59,42 @@ export default function ResetPasswordPage() {
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md">
-            <Lock className="w-6 h-6 text-gold-300" />
+        <div className="text-center space-y-2">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md border-2 border-burgundy-900/30">
+            <Lock className="w-8 h-8 text-gold-300" />
           </div>
-          <h2 className="mt-4 font-serif text-2xl sm:text-3xl font-bold tracking-tight text-burgundy-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
             Set New Password
-          </h2>
-          <p className="mt-1 text-sm text-charcoal-600">
-            Please choose a strong, secure password for your account.
+          </h1>
+          <p className="text-sm font-medium text-stone-600">
+            Choose a new strong password to regain access to your account.
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border border-cream-300 shadow-sm">
+        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md">
+          {!token && (
+            <div className="mb-5">
+              <Alert variant="warning" title="Missing Reset Token">
+                This page was opened without a valid password reset token in the URL. Please use the link sent to your email.
+              </Alert>
+            </div>
+          )}
+
           {isSuccess ? (
-            <div className="space-y-5 text-center">
-              <div className="mx-auto w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-600">
-                <CheckCircle2 className="w-6 h-6" />
+            <div className="space-y-6 text-center">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 border-2 border-emerald-300">
+                <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-lg font-semibold text-charcoal-900">
-                Password Reset Successfully
-              </h3>
-              <p className="text-sm text-charcoal-600">
-                Your password has been updated. You can now sign in with your new credentials.
-              </p>
-              <Link to="/login" className="inline-block w-full">
-                <Button variant="primary" className="w-full justify-center">
+              <div>
+                <h2 className="text-xl font-bold text-charcoal-900">
+                  Password Updated Successfully
+                </h2>
+                <p className="text-sm text-stone-600 mt-1">
+                  Your new password is saved. You can now sign in with your updated credentials.
+                </p>
+              </div>
+              <Link to="/login" className="block w-full">
+                <Button variant="primary" size="lg" className="w-full justify-center text-base font-bold shadow-md">
                   Proceed to Sign In
                 </Button>
               </Link>
@@ -98,11 +108,12 @@ export default function ResetPasswordPage() {
               )}
 
               <Input
-                label="Email Address"
+                label="Registered Email Address"
                 id="email"
                 name="email"
                 type="email"
                 required
+                placeholder="e.g. user@example.com"
                 value={formData.email}
                 onChange={handleChange}
                 error={errors.email?.[0]}
@@ -138,9 +149,10 @@ export default function ResetPasswordPage() {
                 variant="primary"
                 size="lg"
                 isLoading={isLoading}
-                className="w-full justify-center mt-2"
+                icon={KeyRound}
+                className="w-full justify-center text-base font-bold shadow-md mt-2"
               >
-                Reset Password
+                Update Password & Save
               </Button>
             </form>
           )}

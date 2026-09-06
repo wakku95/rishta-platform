@@ -4,7 +4,7 @@ import useAuth from '../../hooks/useAuth';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Alert from '../../components/ui/Alert';
-import { MailCheck, CheckCircle2, AlertCircle, LogOut } from 'lucide-react';
+import { MailCheck, CheckCircle2, RefreshCw, Send, LogOut, ArrowRight } from 'lucide-react';
 
 export default function VerifyEmailPage() {
   const { user, emailVerified, resendVerification, refreshUser, logout } = useAuth();
@@ -20,13 +20,15 @@ export default function VerifyEmailPage() {
     loading: false,
   });
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   const handleResend = async () => {
     setResendStatus({ sent: false, message: '', error: '', loading: true });
     try {
       const res = await resendVerification();
       setResendStatus({
         sent: true,
-        message: res.message || 'A fresh verification link has been sent to your email.',
+        message: res.message || 'A fresh verification link has been dispatched to your email address.',
         error: '',
         loading: false,
       });
@@ -35,7 +37,7 @@ export default function VerifyEmailPage() {
         setResendStatus({
           sent: false,
           message: '',
-          error: 'Please wait before requesting another verification email.',
+          error: 'Please wait a few minutes before requesting another verification email.',
           loading: false,
         });
       } else {
@@ -49,60 +51,80 @@ export default function VerifyEmailPage() {
     }
   };
 
+  const handleManualRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await refreshUser();
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   const isFullyVerified = emailVerified || isVerifiedFromQuery;
 
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
+        <div className="text-center space-y-2">
           <div
-            className={`mx-auto w-12 h-12 rounded-2xl flex items-center justify-center text-white shadow-md ${
-              isFullyVerified ? 'bg-emerald-600' : 'bg-burgundy-700'
+            className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-md border-2 ${
+              isFullyVerified
+                ? 'bg-emerald-600 border-emerald-700/40'
+                : 'bg-burgundy-700 border-burgundy-900/30'
             }`}
           >
             {isFullyVerified ? (
-              <CheckCircle2 className="w-6 h-6 text-white" />
+              <CheckCircle2 className="w-8 h-8 text-white" />
             ) : (
-              <MailCheck className="w-6 h-6 text-gold-300" />
+              <MailCheck className="w-8 h-8 text-gold-300" />
             )}
           </div>
-          <h2 className="mt-4 font-serif text-2xl sm:text-3xl font-bold tracking-tight text-burgundy-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
             {isFullyVerified ? 'Email Verified' : 'Verify Your Email'}
-          </h2>
-          <p className="mt-1 text-sm text-charcoal-600">
+          </h1>
+          <p className="text-sm font-medium text-stone-600">
             {isFullyVerified
-              ? 'Your identity is confirmed. You can now access your dashboard.'
-              : 'Please confirm your email address to ensure genuine matrimonial inquiries.'}
+              ? 'Your account identity is verified and in good standing.'
+              : 'Please confirm your email address to unlock full matrimonial features.'}
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border border-cream-300 shadow-sm space-y-5">
+        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
           {hasError && (
-            <Alert variant="danger">
+            <Alert variant="danger" title="Verification Issue">
               {hasError === 'expired'
-                ? 'Your verification link has expired. Please request a new one below.'
-                : 'The verification link is invalid. Please request a new one.'}
+                ? 'Your email verification link has expired. Please dispatch a fresh link below.'
+                : 'The verification link signature is invalid or altered. Please request a new link.'}
             </Alert>
           )}
 
           {isFullyVerified ? (
-            <div className="space-y-4 text-center">
-              <Alert variant="success">
-                Thank you! Your email address has been verified successfully.
+            <div className="space-y-5 text-center">
+              <Alert variant="success" title="Status: Verified">
+                Your email address has been successfully confirmed. You can now access your dashboard.
               </Alert>
-              <Link to="/dashboard" className="inline-block w-full">
-                <Button variant="primary" size="lg" className="w-full justify-center">
-                  Go to Dashboard
+
+              <Link to="/dashboard" className="block w-full">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  icon={ArrowRight}
+                  iconPosition="right"
+                  className="w-full justify-center text-base font-bold shadow-md"
+                >
+                  Continue to Dashboard
                 </Button>
               </Link>
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-cream-100/70 border border-cream-200 text-sm text-charcoal-700 leading-relaxed">
-                We sent a verification link to:
-                <p className="mt-1 font-semibold text-charcoal-900 break-all">
+              <div className="p-4 rounded-xl bg-stone-50 border-2 border-stone-200 text-sm text-stone-800 leading-relaxed">
+                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block mb-1">
+                  Registered Email Address
+                </span>
+                <strong className="text-charcoal-900 break-all text-base">
                   {user?.email || 'your registered email'}
-                </p>
+                </strong>
               </div>
 
               {resendStatus.sent && (
@@ -117,18 +139,24 @@ export default function VerifyEmailPage() {
                 </Alert>
               )}
 
-              <p className="text-xs text-charcoal-600 leading-relaxed">
-                Click the link in the email to activate your account. If you did not receive it, check your spam or promotions folder or request another link below.
-              </p>
+              {/* Development Testing Hint */}
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed space-y-1">
+                <p className="font-bold">Development Testing Note:</p>
+                <p>Since mail is configured to the log driver in development, the verification link is saved in:</p>
+                <code className="block bg-amber-100/70 p-1.5 rounded font-mono text-[11px] text-amber-950 break-all">
+                  storage/logs/laravel.log
+                </code>
+              </div>
 
               <div className="pt-2 flex flex-col gap-3">
                 <Button
                   type="button"
                   variant="primary"
-                  size="md"
+                  size="lg"
                   isLoading={resendStatus.loading}
+                  icon={Send}
                   onClick={handleResend}
-                  className="w-full justify-center"
+                  className="w-full justify-center text-sm font-bold shadow-md"
                 >
                   Resend Verification Email
                 </Button>
@@ -136,23 +164,25 @@ export default function VerifyEmailPage() {
                 <Button
                   type="button"
                   variant="secondary"
-                  size="sm"
-                  onClick={() => refreshUser()}
-                  className="w-full justify-center"
+                  size="md"
+                  isLoading={isRefreshing}
+                  icon={RefreshCw}
+                  onClick={handleManualRefresh}
+                  className="w-full justify-center font-bold"
                 >
-                  I've Already Verified
+                  Refresh Verification Status
                 </Button>
               </div>
             </div>
           )}
 
           {user && (
-            <div className="pt-4 border-t border-cream-200 flex items-center justify-between text-xs text-charcoal-600">
-              <span>Signed in as <strong>{user.name}</strong></span>
+            <div className="pt-4 border-t-2 border-stone-100 flex items-center justify-between text-xs text-stone-600">
+              <span>Signed in: <strong>{user.name}</strong></span>
               <button
                 type="button"
                 onClick={logout}
-                className="inline-flex items-center gap-1 text-burgundy-700 hover:text-burgundy-900 font-medium hover:underline"
+                className="inline-flex items-center gap-1.5 font-bold text-burgundy-700 hover:text-burgundy-900 underline hover:no-underline cursor-pointer"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Log Out</span>

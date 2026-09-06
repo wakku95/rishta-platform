@@ -1,7 +1,7 @@
 import React from 'react';
 
 /**
- * Reusable Card container for sections and profile teasers.
+ * Reusable Card container with visible borders and distinct header/body/footer divisions.
  */
 export default function Card({
   children,
@@ -15,25 +15,25 @@ export default function Card({
 }) {
   return (
     <div
-      className={`bg-white border border-cream-300/80 rounded-2xl shadow-xs overflow-hidden transition-all duration-150 ${className}`}
+      className={`bg-white border-2 border-stone-200 rounded-2xl shadow-xs overflow-hidden transition-all duration-150 ${className}`}
       {...props}
     >
       {(title || subtitle || action) && (
-        <div className="px-5 py-4 border-b border-cream-200/80 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-b-2 border-stone-100 bg-stone-50/75 flex items-center justify-between gap-3">
           <div>
-            {title && <h3 className="font-semibold text-charcoal-900 text-base">{title}</h3>}
-            {subtitle && <p className="text-xs text-charcoal-600 mt-0.5">{subtitle}</p>}
+            {title && <h3 className="font-bold text-charcoal-900 text-base">{title}</h3>}
+            {subtitle && <p className="text-xs text-stone-600 mt-0.5">{subtitle}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
       )}
 
-      <div className={`p-5 ${bodyClassName}`}>
+      <div className={`p-6 ${bodyClassName}`}>
         {children}
       </div>
 
       {footer && (
-        <div className="px-5 py-3 bg-cream-100/60 border-t border-cream-200/80">
+        <div className="px-6 py-4 bg-stone-50/75 border-t-2 border-stone-100">
           {footer}
         </div>
       )}

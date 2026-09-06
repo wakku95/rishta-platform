@@ -5,7 +5,7 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Alert from '../../components/ui/Alert';
-import { HeartHandshake, ShieldCheck } from 'lucide-react';
+import { HeartHandshake, ShieldCheck, UserPlus } from 'lucide-react';
 
 export default function RegisterPage() {
   const { register } = useAuth();
@@ -43,9 +43,9 @@ export default function RegisterPage() {
     } catch (err) {
       if (err.response?.status === 422) {
         setErrors(err.response.data.errors || {});
-        setGeneralError(err.response.data.message || 'Please correct the validation errors below.');
+        setGeneralError(err.response.data.message || 'Please fix the validation errors below.');
       } else if (err.response?.status === 429) {
-        setGeneralError('Too many registration attempts. Please wait a minute and try again.');
+        setGeneralError('Too many registration attempts. Please wait 60 seconds and try again.');
       } else {
         setGeneralError(err.response?.data?.message || 'Registration failed. Please try again.');
       }
@@ -57,24 +57,24 @@ export default function RegisterPage() {
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md">
-            <HeartHandshake className="w-6 h-6 text-gold-300" />
+        <div className="text-center space-y-2">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md border-2 border-burgundy-900/30">
+            <HeartHandshake className="w-8 h-8 text-gold-300" />
           </div>
-          <h2 className="mt-4 font-serif text-2xl sm:text-3xl font-bold tracking-tight text-burgundy-900">
-            Create Your Account
-          </h2>
-          <p className="mt-1 text-sm text-charcoal-600">
-            Begin your matrimonial journey on Pakistan's privacy-first platform.
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
+            Create Free Account
+          </h1>
+          <p className="text-sm font-medium text-stone-600">
+            Register to search or create private matrimonial profiles.
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border border-cream-300 shadow-sm">
-          {/* Privacy reassurance pill */}
-          <div className="mb-5 flex items-start gap-2.5 p-3 rounded-xl bg-burgundy-50/70 border border-burgundy-100 text-xs text-burgundy-900 leading-relaxed">
-            <ShieldCheck className="w-4 h-4 text-burgundy-700 shrink-0 mt-0.5" />
+        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md">
+          {/* Privacy Guarantee Pill */}
+          <div className="mb-6 flex items-start gap-3 p-3.5 rounded-xl bg-burgundy-50 border-2 border-burgundy-200 text-xs text-burgundy-900 leading-relaxed font-medium">
+            <ShieldCheck className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
             <span>
-              <strong>Privacy Guaranteed:</strong> Your contact number is never made public. Profiles are discovered respectfully with mutual consent.
+              <strong>Privacy Guaranteed:</strong> Phone numbers and personal contacts are never published publicly. Contact exchange requires mutual acceptance and verified OTP.
             </span>
           </div>
 
@@ -88,17 +88,17 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <Input
-              label="Full Name (or Guardian Name)"
+              label="Full Name or Guardian Name"
               id="name"
               name="name"
               type="text"
               autoComplete="name"
               required
-              placeholder="e.g. Muhammad Usman"
+              placeholder="e.g. Fatima Tariq or Tariq Mahmood"
               value={formData.name}
               onChange={handleChange}
               error={errors.name?.[0]}
-              helperText="You can also register on behalf of a son, daughter, or sibling."
+              helperText="Candidate name, or parent/guardian creating on their behalf."
             />
 
             <Input
@@ -108,14 +108,15 @@ export default function RegisterPage() {
               type="email"
               autoComplete="email"
               required
-              placeholder="name@example.com"
+              placeholder="e.g. fatima@example.com"
               value={formData.email}
               onChange={handleChange}
               error={errors.email?.[0]}
+              helperText="Used for login and secure identity verification."
             />
 
             <Input
-              label="Password"
+              label="Create Password"
               id="password"
               name="password"
               type="password"
@@ -125,7 +126,7 @@ export default function RegisterPage() {
               value={formData.password}
               onChange={handleChange}
               error={errors.password?.[0]}
-              helperText="Must contain at least 8 characters with letters and numbers."
+              helperText="Must have at least 8 characters with letters and numbers."
             />
 
             <Input
@@ -135,7 +136,7 @@ export default function RegisterPage() {
               type="password"
               autoComplete="new-password"
               required
-              placeholder="Re-enter your password"
+              placeholder="Re-enter the exact password"
               value={formData.password_confirmation}
               onChange={handleChange}
               error={errors.password_confirmation?.[0]}
@@ -146,19 +147,20 @@ export default function RegisterPage() {
               variant="primary"
               size="lg"
               isLoading={isLoading}
-              className="w-full justify-center mt-3"
+              icon={UserPlus}
+              className="w-full justify-center text-base font-bold shadow-md mt-2"
             >
-              Register Account
+              Create & Register Account
             </Button>
           </form>
 
-          <div className="mt-6 pt-5 border-t border-cream-200 text-center text-sm text-charcoal-600">
-            Already have an account?{' '}
+          <div className="mt-6 pt-5 border-t-2 border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-stone-600">
+            <span>Already registered?</span>
             <Link
               to="/login"
-              className="font-semibold text-burgundy-700 hover:text-burgundy-800 hover:underline"
+              className="font-bold text-burgundy-700 hover:text-burgundy-900 underline hover:no-underline"
             >
-              Sign In
+              Sign In to Account →
             </Link>
           </div>
         </Card>

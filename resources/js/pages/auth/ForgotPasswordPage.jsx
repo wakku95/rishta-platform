@@ -5,7 +5,7 @@ import Input from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Alert from '../../components/ui/Alert';
-import { KeyRound, ArrowLeft } from 'lucide-react';
+import { KeyRound, ArrowLeft, Send } from 'lucide-react';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -41,35 +41,37 @@ export default function ForgotPasswordPage() {
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
-        <div className="text-center">
-          <div className="mx-auto w-12 h-12 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md">
-            <KeyRound className="w-6 h-6 text-gold-300" />
+        <div className="text-center space-y-2">
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md border-2 border-burgundy-900/30">
+            <KeyRound className="w-8 h-8 text-gold-300" />
           </div>
-          <h2 className="mt-4 font-serif text-2xl sm:text-3xl font-bold tracking-tight text-burgundy-900">
-            Forgot Password
-          </h2>
-          <p className="mt-1 text-sm text-charcoal-600">
-            Enter your registered email address and we will send you a secure password reset link.
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
+            Reset Your Password
+          </h1>
+          <p className="text-sm font-medium text-stone-600">
+            We will send a secure password reset link to your registered email.
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border border-cream-300 shadow-sm">
+        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md">
           {successMessage ? (
-            <div className="space-y-5 text-center">
-              <Alert variant="success">
+            <div className="space-y-6 text-center">
+              <Alert variant="success" title="Reset Link Dispatched">
                 {successMessage}
               </Alert>
-              <p className="text-xs text-charcoal-600 leading-relaxed">
-                Please check your inbox (and spam folder) for the reset link. The link is valid for 60 minutes.
-              </p>
-              <Link to="/login" className="inline-block w-full">
-                <Button variant="secondary" className="w-full justify-center">
+              <div className="p-4 rounded-xl bg-stone-50 border-2 border-stone-200 text-xs text-stone-700 text-left space-y-2">
+                <p className="font-semibold text-charcoal-900">Next Steps for Testing:</p>
+                <p>1. In development, email is logged to <code className="bg-stone-200 px-1 py-0.5 rounded text-stone-900">storage/logs/laravel.log</code>.</p>
+                <p>2. Copy the reset link from the log to test password completion.</p>
+              </div>
+              <Link to="/login" className="block w-full">
+                <Button variant="secondary" size="lg" className="w-full justify-center">
                   Return to Sign In
                 </Button>
               </Link>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
                 <Alert variant="danger" onClose={() => setError('')}>
                   {error}
@@ -77,15 +79,16 @@ export default function ForgotPasswordPage() {
               )}
 
               <Input
-                label="Email Address"
+                label="Registered Email Address"
                 id="email"
                 name="email"
                 type="email"
                 autoComplete="email"
                 required
-                placeholder="name@example.com"
+                placeholder="e.g. user@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                helperText="Enter the email associated with your account."
               />
 
               <Button
@@ -93,15 +96,16 @@ export default function ForgotPasswordPage() {
                 variant="primary"
                 size="lg"
                 isLoading={isLoading}
-                className="w-full justify-center mt-2"
+                icon={Send}
+                className="w-full justify-center text-base font-bold shadow-md"
               >
                 Send Password Reset Link
               </Button>
 
-              <div className="pt-3 text-center">
+              <div className="pt-2 text-center">
                 <Link
                   to="/login"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-charcoal-600 hover:text-burgundy-700 transition-colors"
+                  className="inline-flex items-center gap-2 text-sm font-bold text-burgundy-700 hover:text-burgundy-900 underline hover:no-underline"
                 >
                   <ArrowLeft className="w-4 h-4" />
                   <span>Back to Sign In</span>

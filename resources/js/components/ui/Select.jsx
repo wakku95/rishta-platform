@@ -1,8 +1,8 @@
 import React, { forwardRef } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, AlertCircle } from 'lucide-react';
 
 /**
- * Mobile-friendly Select dropdown component.
+ * Mobile-friendly Select dropdown component with prominent borders.
  */
 const Select = forwardRef(function Select({
   label,
@@ -19,11 +19,11 @@ const Select = forwardRef(function Select({
   const selectId = id || name;
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-1.5">
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-sm font-medium text-charcoal-800 mb-1.5"
+          className="block text-sm font-semibold text-charcoal-900"
         >
           {label}
           {required && <span className="text-burgundy-700 ml-1" aria-hidden="true">*</span>}
@@ -39,11 +39,13 @@ const Select = forwardRef(function Select({
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined}
           className={`
-            w-full appearance-none px-3.5 py-2.5 pr-10 min-h-[44px] text-sm text-charcoal-900 bg-white
-            border rounded-xl shadow-xs transition-colors duration-150
-            focus:outline-none focus:ring-2 focus:ring-burgundy-700 focus:border-transparent
-            disabled:bg-cream-200 disabled:text-charcoal-500 disabled:cursor-not-allowed
-            ${error ? 'border-rose-500 focus:ring-rose-500' : 'border-cream-300 hover:border-cream-400'}
+            w-full appearance-none px-4 py-2.5 pr-10 min-h-[44px] text-sm font-medium text-charcoal-900 bg-white
+            border-2 rounded-xl transition-all duration-150 cursor-pointer
+            focus:outline-none focus:ring-4 focus:ring-burgundy-700/15 focus:border-burgundy-700
+            disabled:bg-stone-100 disabled:text-stone-500 disabled:border-stone-200 disabled:cursor-not-allowed
+            ${error
+              ? 'border-rose-600 bg-rose-50/20 text-rose-950 focus:ring-rose-500/20 focus:border-rose-600'
+              : 'border-stone-300 hover:border-stone-400'}
             ${className}
           `}
           {...props}
@@ -63,19 +65,24 @@ const Select = forwardRef(function Select({
           ))}
         </select>
 
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-charcoal-500">
+        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-stone-500">
           <ChevronDown className="w-4 h-4" />
         </div>
       </div>
 
       {error && (
-        <p id={`${selectId}-error`} className="mt-1.5 text-xs text-rose-600 font-medium">
-          {error}
-        </p>
+        <div
+          id={`${selectId}-error`}
+          role="alert"
+          className="flex items-center gap-1.5 text-xs font-semibold text-rose-700 bg-rose-50 border border-rose-200 px-2.5 py-1.5 rounded-lg"
+        >
+          <AlertCircle className="w-3.5 h-3.5 shrink-0 text-rose-600" />
+          <span>{error}</span>
+        </div>
       )}
 
       {!error && helperText && (
-        <p id={`${selectId}-helper`} className="mt-1.5 text-xs text-charcoal-600">
+        <p id={`${selectId}-helper`} className="text-xs text-stone-600 font-medium px-0.5">
           {helperText}
         </p>
       )}
