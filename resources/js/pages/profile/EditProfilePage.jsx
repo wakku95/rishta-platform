@@ -19,6 +19,14 @@ const FALLBACK_OPTIONS = {
   ],
   religions: [
     { value: 'Islam', label: 'Islam' },
+    { value: 'Christianity', label: 'Christianity' },
+    { value: 'Hinduism', label: 'Hinduism' },
+    { value: 'Sikhism', label: 'Sikhism' },
+    { value: 'Buddhism', label: 'Buddhism' },
+    { value: 'Jainism', label: 'Jainism' },
+    { value: 'Other', label: 'Other' },
+    { value: 'No religion', label: 'No religion' },
+    { value: 'Prefer not to say', label: 'Prefer not to say' },
   ],
   sects: [
     { value: 'Sunni', label: 'Sunni' },
@@ -169,10 +177,16 @@ export default function EditProfilePage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: name === 'height' ? parseInt(value, 10) || '' : value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [name]: name === 'height' ? parseInt(value, 10) || '' : value,
+      };
+      if (name === 'religion' && value !== 'Islam') {
+        updated.sect = '';
+      }
+      return updated;
+    });
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -312,15 +326,17 @@ export default function EditProfilePage() {
               required
             />
 
-            <Select
-              label="Sect / Branch"
-              name="sect"
-              value={formData.sect}
-              onChange={handleChange}
-              error={errors.sect?.[0]}
-              options={options.sects}
-              required
-            />
+            {formData.religion === 'Islam' && (
+              <Select
+                label="Sect / Branch"
+                name="sect"
+                value={formData.sect}
+                onChange={handleChange}
+                error={errors.sect?.[0]}
+                options={options.sects}
+                required
+              />
+            )}
 
             <Select
               label="Profile Managed By"

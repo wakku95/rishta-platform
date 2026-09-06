@@ -42,5 +42,6 @@ Status indicators: `NOT_STARTED` | `IN_PROGRESS` | `COMPLETED`
   - Deterministic profile completion formula: Basic Profile (60%), Private Information (10%), Partner Preferences (30%).
   - Profile activation requirements: verified email + 10 complete core biodata fields + completed partner preferences (`about` and `family_background` optional).
   - React UI enhancements: Public Profile Preview modal (`Modal.jsx`), private information protected cards, activation checklist, and controlled select dropdowns.
-  - 13 comprehensive feature tests in `ProfileTest.php` (35 total automated tests passing, 160 assertions).
+  - Extensible canonical religion support: 9 controlled religions, conditional sect handling (required for Islam, optional/cleared for non-Islam), updated completion formula & previews.
+  - 20 comprehensive feature tests in `ProfileTest.php` (42 total automated tests passing, 183 assertions).
 

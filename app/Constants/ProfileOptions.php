@@ -11,6 +11,14 @@ class ProfileOptions
 
     public const RELIGIONS = [
         'Islam' => 'Islam',
+        'Christianity' => 'Christianity',
+        'Hinduism' => 'Hinduism',
+        'Sikhism' => 'Sikhism',
+        'Buddhism' => 'Buddhism',
+        'Jainism' => 'Jainism',
+        'Other' => 'Other',
+        'No religion' => 'No religion',
+        'Prefer not to say' => 'Prefer not to say',
     ];
 
     public const SECTS = [

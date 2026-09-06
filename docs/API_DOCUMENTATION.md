@@ -71,7 +71,7 @@ All API endpoints reside under `/api` and return standardized JSON responses.
 | `POST` | `/api/profile/activate` | Activate profile (enforces verified email, complete biodata, and completed partner preferences) | Yes |
 | `POST` | `/api/profile/hide` | Hide profile from public discovery | Yes |
 
-*Note: Private information (`about`, `family_background`) and private credentials (`email`, `password`, `phone_number`, session tokens) are strictly excluded from all public profile serializers.*
+*Note: Canonical religion values (`Islam`, `Christianity`, `Hinduism`, `Sikhism`, `Buddhism`, `Jainism`, `Other`, `No religion`, `Prefer not to say`) are enforced on profile creation, update, and partner preferences. Free-text input is prohibited. The `sect` field is conditionally required only when `religion === 'Islam'`; for non-Islamic profiles, `sect` is optional and cleared if previously set. Private information (`about`, `family_background`) and private credentials (`email`, `password`, `phone_number`, session tokens) are strictly excluded from all public profile serializers.*
 
 ---
 

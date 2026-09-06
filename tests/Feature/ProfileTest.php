@@ -532,6 +532,282 @@ class ProfileTest extends TestCase
 
         $this->assertEquals(100, $profile->calculateCompletionPercentage());
     }
+
+    public function test_canonical_options_returns_all_nine_religions(): void
+    {
+        $response = $this->getJson('/api/profile/options');
+
+        $response->assertStatus(200);
+        $religions = collect($response->json('data.religions'))->pluck('value')->all();
+
+        $expected = [
+            'Islam',
+            'Christianity',
+            'Hinduism',
+            'Sikhism',
+            'Buddhism',
+            'Jainism',
+            'Other',
+            'No religion',
+            'Prefer not to say',
+        ];
+
+        $this->assertEquals($expected, $religions);
+    }
+
+    public function test_authenticated_user_can_create_non_islam_profile_without_sect(): void
+    {
+        $user = User::factory()->create();
+
+        $profileData = [
+            'gender' => 'female',
+            'date_of_birth' => '1996-08-20',
+            'religion' => 'Christianity',
+            'city' => 'Islamabad',
+            'education' => "Bachelor's",
+            'profession' => 'Finance / Banking',
+            'marital_status' => 'never_married',
+            'height' => 165,
+            'about' => null,
+            'family_background' => null,
+            'managed_by' => 'myself',
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/profile', $profileData);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'religion' => 'Christianity',
+                    'sect' => null,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('profiles', [
+            'user_id' => $user->id,
+            'religion' => 'Christianity',
+            'sect' => null,
+        ]);
+
+        $profile = $user->fresh()->profile;
+        $this->assertEquals(60, $profile->calculateCompletionPercentage());
+    }
+
+    public function test_non_islam_profile_can_be_activated_without_sect(): void
+    {
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-HINDU1',
+            'gender' => 'male',
+            'date_of_birth' => '1993-04-10',
+            'religion' => 'Hinduism',
+            'sect' => null,
+            'city' => 'Karachi',
+            'education' => "Master's",
+            'profession' => 'Business',
+            'marital_status' => 'never_married',
+            'height' => 172,
+            'managed_by' => 'myself',
+            'profile_status' => 'draft',
+        ]);
+
+        $profile->preferences()->create([
+            'preferred_gender' => 'female',
+            'min_age' => 22,
+            'max_age' => 29,
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/api/profile/activate');
+        $response->assertStatus(200)
+            ->assertJsonPath('data.profile_status', 'active');
+
+        $this->assertEquals('active', $profile->fresh()->profile_status);
+    }
+
+    public function test_updating_profile_from_islam_to_non_islam_clears_sect(): void
+    {
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-UPDATE1',
+            'gender' => 'male',
+            'date_of_birth' => '1994-01-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Engineering',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'profile_status' => 'draft',
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/api/profile', [
+            'gender' => 'male',
+            'date_of_birth' => '1994-01-15',
+            'religion' => 'Sikhism',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Engineering',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'religion' => 'Sikhism',
+                    'sect' => null,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('profiles', [
+            'id' => $profile->id,
+            'religion' => 'Sikhism',
+            'sect' => null,
+        ]);
+    }
+
+    public function test_islam_profile_requires_sect_for_creation_and_activation(): void
+    {
+        $user = User::factory()->create();
+
+        // Creation without sect when religion is Islam must fail with 422
+        $response = $this->actingAs($user)->postJson('/api/profile', [
+            'gender' => 'male',
+            'date_of_birth' => '1995-05-14',
+            'religion' => 'Islam',
+            'sect' => null,
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Software / IT',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['sect']);
+
+        // Directly created Muslim profile without sect must fail activation
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-NOSECT',
+            'gender' => 'male',
+            'date_of_birth' => '1995-05-14',
+            'religion' => 'Islam',
+            'sect' => null,
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Software / IT',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'profile_status' => 'draft',
+        ]);
+
+        $profile->preferences()->create([
+            'preferred_gender' => 'female',
+            'min_age' => 20,
+            'max_age' => 28,
+        ]);
+
+        $activateResponse = $this->actingAs($user)->postJson('/api/profile/activate');
+        $activateResponse->assertStatus(422)
+            ->assertJson([
+                'success' => false,
+                'error_code' => 'INCOMPLETE_PROFILE',
+            ]);
+    }
+
+    public function test_partner_preferences_accepts_all_canonical_religions_and_handles_completion(): void
+    {
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-PREFREL',
+            'gender' => 'female',
+            'date_of_birth' => '1996-03-25',
+            'religion' => 'Christianity',
+            'sect' => null,
+            'city' => 'Islamabad',
+            'education' => "Master's",
+            'profession' => 'Education',
+            'marital_status' => 'never_married',
+            'height' => 162,
+            'about' => null,
+            'family_background' => null,
+            'managed_by' => 'myself',
+            'profile_status' => 'draft',
+        ]);
+
+        $response = $this->actingAs($user)->putJson('/api/profile/preferences', [
+            'preferred_gender' => 'male',
+            'min_age' => 26,
+            'max_age' => 34,
+            'preferred_cities' => ['Islamabad', 'Rawalpindi'],
+            'preferred_religion' => 'Christianity',
+            'preferred_sect' => null,
+            'min_height' => 165,
+            'max_height' => 185,
+            'preferred_education' => "Bachelor's",
+            'preferred_marital_status' => ['never_married'],
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'preferred_religion' => 'Christianity',
+                    'preferred_sect' => null,
+                ],
+            ]);
+
+        $this->assertDatabaseHas('profile_preferences', [
+            'profile_id' => $profile->id,
+            'preferred_religion' => 'Christianity',
+            'preferred_sect' => null,
+        ]);
+
+        // 60% basic + 30% preferences (all preferences completed including non-Islam religion) = 90%
+        $this->assertEquals(90, $profile->calculateCompletionPercentage());
+    }
+
+    public function test_profile_preview_for_non_islam_profile_omits_sect(): void
+    {
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-BUDDHA',
+            'gender' => 'male',
+            'date_of_birth' => '1991-11-11',
+            'religion' => 'Buddhism',
+            'sect' => null,
+            'city' => 'Taxila',
+            'education' => 'Doctorate / PhD',
+            'profession' => 'Education',
+            'marital_status' => 'never_married',
+            'height' => 170,
+            'managed_by' => 'myself',
+            'profile_status' => 'draft',
+        ]);
+
+        $response = $this->actingAs($user)->getJson('/api/profile/preview');
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'profile_code' => 'RK-BUDDHA',
+                    'religion' => 'Buddhism',
+                    'sect' => null,
+                ],
+            ]);
+    }
 }
 
 

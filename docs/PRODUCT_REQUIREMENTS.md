@@ -25,8 +25,8 @@
   - `profile_code`: Unique public identifier (e.g., `RK-10482`) to avoid exposing auto-increment database IDs.
   - `gender`: `male` | `female`.
   - `date_of_birth`: Date (used to derive age dynamically, never hardcode age).
-  - `religion`: String (default `Islam`).
-  - `sect`: String (optional, e.g., Sunni, Shia, Ahle-Hadith, Other).
+  - `religion`: Canonical controlled string (`Islam`, `Christianity`, `Hinduism`, `Sikhism`, `Buddhism`, `Jainism`, `Other`, `No religion`, `Prefer not to say`). Free-text religion is prohibited.
+  - `sect`: Controlled string (`Sunni`, `Shia`, `Ahle-Hadith`, `Other`, `Prefer not to say`). Required for Islamic profiles; omitted / cleared for non-Islamic profiles. Extensible for other faith denominations in future phases.
   - `city`: String (e.g., Lahore, Karachi, Islamabad, Faisalabad, Rawalpindi, Overseas).
   - `country`: String (default `Pakistan`).
   - `education`: Enum / String (Matric, Inter, Bachelor's, Master's, MPhil, Doctorate, Other).

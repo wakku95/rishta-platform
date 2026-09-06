@@ -50,3 +50,13 @@
 - **Decision**: All public biodata fields (gender, religion, sect, city, education, profession, marital status, height, managed by) use canonical controlled options defined in `App\Constants\ProfileOptions` and exposed via `GET /api/profile/options`. Free-text fields (`about`, `family_background`) are strictly categorized as **Private Information** and excluded from `PublicProfileResource`. Public views expose calculated age only (never full DOB). Private information is optional for profile activation and is only released after mutual rishta acceptance, unlock fee payment, and dual OTP verification.
 - **Consequence**: Pre-emptively prevents contact leakage, improves search filtering reliability, guarantees privacy for families, and simplifies profile moderation.
 
+## ADR 011: Canonical Extensible Religion Options & Conditional Sects
+- **Context**: The platform's profiles originally defaulted strictly to Islam and required Islamic sects. To accommodate all citizens and communities seeking matrimonial arrangements without compromising data consistency, religion must be extensible across canonical faith options while prohibiting unstructured free text.
+- **Decision**:
+  1. Expand canonical `ProfileOptions::RELIGIONS` to: `Islam`, `Christianity`, `Hinduism`, `Sikhism`, `Buddhism`, `Jainism`, `Other`, `No religion`, and `Prefer not to say`.
+  2. Maintain strict rejection of free-text inputs for religion across profile and preferences endpoints.
+  3. Keep `sect` as a distinct field conditionally required for `Islam` (`Sunni`, `Shia`, `Ahle-Hadith`, `Other`, `Prefer not to say`), while making it optional and automatically cleared if a non-Islamic faith is selected.
+  4. Design architecture so future phases can cleanly introduce religion-specific denominations without schema changes.
+- **Consequence**: Full multi-faith compatibility, backwards-compatible with existing Islamic profiles, seamless filtering, and clear UX with no broken or forced sect dropdowns.
+
+

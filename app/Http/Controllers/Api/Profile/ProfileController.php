@@ -85,6 +85,10 @@ class ProfileController extends Controller
         $data = $request->validated();
         $isNew = false;
 
+        if (isset($data['religion']) && $data['religion'] !== 'Islam') {
+            $data['sect'] = $data['sect'] ?? null;
+        }
+
         $profile = $user->profile()->first();
 
         if (!$profile) {
@@ -192,12 +196,11 @@ class ProfileController extends Controller
             );
         }
 
-        // 3. Mandatory biodata completion check (10 core fields)
+        // 3. Mandatory biodata completion check
         $mandatoryFields = [
             'gender',
             'date_of_birth',
             'religion',
-            'sect',
             'city',
             'education',
             'profession',
@@ -215,6 +218,16 @@ class ProfileController extends Controller
                     'INCOMPLETE_PROFILE'
                 );
             }
+        }
+
+        // Sect is mandatory specifically for Islamic profiles
+        if ($profile->religion === 'Islam' && empty($profile->sect)) {
+            return $this->errorResponse(
+                'Cannot activate profile: The sect field is required for Islamic profiles.',
+                ['sect' => ['The sect field must be completed.']],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'INCOMPLETE_PROFILE'
+            );
         }
 
         // 4. Partner preferences check (Mandatory preferences must be completed)

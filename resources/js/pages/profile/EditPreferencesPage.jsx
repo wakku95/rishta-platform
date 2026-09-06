@@ -17,6 +17,14 @@ const FALLBACK_OPTIONS = {
   ],
   religions: [
     { value: 'Islam', label: 'Islam' },
+    { value: 'Christianity', label: 'Christianity' },
+    { value: 'Hinduism', label: 'Hinduism' },
+    { value: 'Sikhism', label: 'Sikhism' },
+    { value: 'Buddhism', label: 'Buddhism' },
+    { value: 'Jainism', label: 'Jainism' },
+    { value: 'Other', label: 'Other' },
+    { value: 'No religion', label: 'No religion' },
+    { value: 'Prefer not to say', label: 'Prefer not to say' },
   ],
   sects: [
     { value: 'Sunni', label: 'Sunni' },
@@ -145,12 +153,18 @@ export default function EditPreferencesPage() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: ['min_age', 'max_age', 'min_height', 'max_height'].includes(name)
-        ? value === '' ? '' : parseInt(value, 10)
-        : value,
-    }));
+    setFormData((prev) => {
+      const next = {
+        ...prev,
+        [name]: ['min_age', 'max_age', 'min_height', 'max_height'].includes(name)
+          ? value === '' ? '' : parseInt(value, 10)
+          : value,
+      };
+      if (name === 'preferred_religion' && value !== 'Islam') {
+        next.preferred_sect = '';
+      }
+      return next;
+    });
     if (errors[name]) {
       setErrors((prev) => ({ ...prev, [name]: undefined }));
     }
@@ -330,17 +344,19 @@ export default function EditPreferencesPage() {
               ]}
             />
 
-            <Select
-              label="Preferred Sect"
-              name="preferred_sect"
-              value={formData.preferred_sect}
-              onChange={handleChange}
-              error={errors.preferred_sect?.[0]}
-              options={[
-                { value: '', label: 'Any Sect / Branch' },
-                ...options.sects,
-              ]}
-            />
+            {formData.preferred_religion === 'Islam' && (
+              <Select
+                label="Preferred Sect"
+                name="preferred_sect"
+                value={formData.preferred_sect}
+                onChange={handleChange}
+                error={errors.preferred_sect?.[0]}
+                options={[
+                  { value: '', label: 'Any Sect / Branch' },
+                  ...options.sects,
+                ]}
+              />
+            )}
 
             <div className="sm:col-span-2">
               <Select

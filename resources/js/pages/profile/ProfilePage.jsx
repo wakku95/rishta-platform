@@ -187,7 +187,7 @@ export default function ProfilePage() {
     profile.gender &&
     profile.date_of_birth &&
     profile.religion &&
-    profile.sect &&
+    (profile.religion === 'Islam' ? profile.sect : true) &&
     profile.city &&
     profile.education &&
     profile.profession &&
@@ -765,7 +765,9 @@ export default function ProfilePage() {
                 </div>
                 <div>
                   <span className="text-stone-500 font-bold block uppercase">Faith & Sect</span>
-                  <span className="font-extrabold text-charcoal-900">{previewData.religion} ({previewData.sect})</span>
+                  <span className="font-extrabold text-charcoal-900">
+                    {previewData.religion}{previewData.sect ? ` (${previewData.sect})` : ''}
+                  </span>
                 </div>
                 <div>
                   <span className="text-stone-500 font-bold block uppercase">Marital Status</span>

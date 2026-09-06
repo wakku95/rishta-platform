@@ -32,7 +32,12 @@ class StoreProfileRequest extends FormRequest
             'gender' => ['required', 'string', Rule::in(array_keys(ProfileOptions::GENDERS))],
             'date_of_birth' => ['required', 'date', 'before_or_equal:' . $maxDate, 'after_or_equal:' . $minDate],
             'religion' => ['required', 'string', Rule::in(array_keys(ProfileOptions::RELIGIONS))],
-            'sect' => ['nullable', 'string', Rule::in(array_keys(ProfileOptions::SECTS))],
+            'sect' => [
+                Rule::requiredIf(fn () => $this->input('religion') === 'Islam'),
+                'nullable',
+                'string',
+                Rule::in(array_keys(ProfileOptions::SECTS)),
+            ],
             'city' => ['required', 'string', Rule::in(array_keys(ProfileOptions::CITIES))],
             'education' => ['required', 'string', Rule::in(array_keys(ProfileOptions::EDUCATIONS))],
             'profession' => ['required', 'string', Rule::in(array_keys(ProfileOptions::PROFESSIONS))],

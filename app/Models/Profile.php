@@ -134,11 +134,13 @@ class Profile extends Model
         $score = 0;
 
         // 1. Basic Profile (60% total - 10 items @ 6% each)
+        $sectCompleted = $this->religion === 'Islam' ? !empty($this->sect) : true;
+
         $basicItems = [
             !empty($this->gender),
             !empty($this->date_of_birth),
             !empty($this->religion),
-            !empty($this->sect),
+            $sectCompleted,
             !empty($this->city),
             !empty($this->education),
             !empty($this->profession),
@@ -177,7 +179,7 @@ class Profile extends Model
             if (!empty($prefs->preferred_religion)) {
                 $score += 3;
             }
-            if (!empty($prefs->preferred_sect)) {
+            if (!empty($prefs->preferred_sect) || ($prefs->preferred_religion && $prefs->preferred_religion !== 'Islam')) {
                 $score += 3;
             }
             if (!empty($prefs->min_height) || !empty($prefs->max_height)) {

@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - **Controlled Options Architecture**:
   - `App\Constants\ProfileOptions` defining canonical choices for gender, religion, sect, city, education, profession, marital status, and managed by.
+  - Expanded `religions` to 9 canonical options (`Islam`, `Christianity`, `Hinduism`, `Sikhism`, `Buddhism`, `Jainism`, `Other`, `No religion`, `Prefer not to say`) without allowing free-text entries.
+  - Conditional sect handling: `sect` is required for Islam and optional/cleared for other religions.
   - Public options endpoint `GET /api/profile/options` providing canonical choices to client interfaces.
   - Enforced strict `Rule::in(...)` validation across `StoreProfileRequest`, `UpdateProfileRequest`, and `UpdatePreferencesRequest`.
 - **Strict Privacy Segregation**:

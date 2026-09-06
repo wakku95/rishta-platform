@@ -56,3 +56,8 @@ Every interactive screen must handle four explicit states:
 - Payment summary card with transparent fee breakdown (Rs. 300, no hidden charges).
 - Post-payment OTP input with 6 auto-advancing digit boxes, countdown timer (60s), and "Resend OTP" button.
 - Contact release screen: Displays verified phone number, WhatsApp quick-link, and courteous advice on contacting families respectfully.
+
+### 4.4 Profile Creation & Faith Inclusivity
+- Religion selection uses canonical controlled dropdowns (`Islam`, `Christianity`, `Hinduism`, `Sikhism`, `Buddhism`, `Jainism`, `Other`, `No religion`, `Prefer not to say`). Free-text religion is disallowed to maintain privacy and clean filtering.
+- Sect/branch selection appears dynamically only when `Islam` is selected (`Sunni`, `Shia`, `Ahle-Hadith`, `Other`, `Prefer not to say`). For other faiths or non-religious selections, the sect input is hidden and not required.
+- Public previews and biodata cards display religion cleanly (e.g. `Christianity` or `Islam (Sunni)`), without empty parentheses when sect is absent.

@@ -79,8 +79,8 @@ CREATE TABLE profiles (
     profile_code VARCHAR(32) NOT NULL UNIQUE, -- e.g., RK-10482
     gender ENUM('male', 'female') NOT NULL,
     date_of_birth DATE NOT NULL,
-    religion VARCHAR(64) DEFAULT 'Islam' NOT NULL,
-    sect VARCHAR(64) NULL,                    -- Sunni, Shia, etc.
+    religion VARCHAR(64) DEFAULT 'Islam' NOT NULL, -- Canonical choices validated via ProfileOptions (Islam, Christianity, Hinduism, etc.)
+    sect VARCHAR(64) NULL,                    -- Sunni, Shia, etc. Required for Islam; null for non-Islamic profiles
     city VARCHAR(100) NOT NULL,
     country VARCHAR(100) DEFAULT 'Pakistan' NOT NULL,
     education VARCHAR(100) NOT NULL,          -- Bachelor's, Master's, etc.
@@ -112,8 +112,8 @@ CREATE TABLE profile_preferences (
     min_age TINYINT UNSIGNED DEFAULT 18 NOT NULL,
     max_age TINYINT UNSIGNED DEFAULT 70 NOT NULL,
     preferred_cities JSON NULL,              -- Array of strings: ["Lahore", "Islamabad"]
-    religion VARCHAR(64) DEFAULT 'Islam' NULL,
-    sect VARCHAR(64) NULL,
+    preferred_religion VARCHAR(64) DEFAULT 'Islam' NULL, -- Canonical options from ProfileOptions
+    preferred_sect VARCHAR(64) NULL,
     min_education VARCHAR(100) NULL,
     marital_status JSON NULL,                -- Array: ["never_married"]
     min_height_cm SMALLINT UNSIGNED NULL,
