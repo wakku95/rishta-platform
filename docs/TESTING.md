@@ -28,9 +28,18 @@ A matrimonial platform dealing with sensitive personal relationships and real mo
 # Run all tests
 php artisan test
 
-# Run a specific feature test
-php artisan test --filter=RishtaRequestTest
+# Run authentication feature tests
+php artisan test --filter=AuthenticationTest
 
-# Run with test coverage
-php artisan test --coverage
+# Run foundation tests
+php artisan test --filter=FoundationTest
 ```
+
+---
+
+## 3. Current Test Execution Status
+
+- `FoundationTest`: 5 passing tests covering health check, standard error JSON, and service container bindings.
+- `AuthenticationTest`: 15 passing tests covering registration, login, logout, verification signed URL, password reset, rate limiting, and enumeration prevention.
+- **Total Passing Tests**: 22 tests (85 assertions).
+

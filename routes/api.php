@@ -1,12 +1,43 @@
 <?php
 
+use App\Http\Controllers\Api\Auth\AuthController;
+use App\Http\Controllers\Api\Auth\EmailVerificationController;
+use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\HealthCheckController;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/health', HealthCheckController::class);
 
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+/*
+|--------------------------------------------------------------------------
+| Authentication Routes (/api/auth)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('auth')->group(function () {
+    // Guest authentication
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:5,1');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1');
+    Route::post('/forgot-password', [PasswordResetController::class, 'forgot'])->middleware('throttle:3,15');
+    Route::post('/reset-password', [PasswordResetController::class, 'reset'])->middleware('throttle:5,1');
 
+    // Email verification link (accessed from email)
+    Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
+        ->middleware(['signed', 'throttle:6,1'])
+        ->name('verification.verify');
+
+    // Authenticated session routes
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
+            ->middleware('throttle:3,10');
+    });
+});
+
+// Alias for standard Sanctum user endpoint
+Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'me']);

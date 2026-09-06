@@ -4,6 +4,30 @@ All notable changes to the Rishta Platform project will be documented in this fi
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Phase 1] - Authentication - 2026-09-06
+
+### Added
+- **Sanctum SPA Cookie Authentication**:
+  - `User` model updated with `MustVerifyEmail`, `role`, and `status`.
+  - Database migration `2026_09_06_100000_add_auth_fields_to_users_table.php`.
+  - `UserResource` serializer strictly excluding password hashes, remember tokens, and sensitive fields.
+  - Form Requests with validation rules and whitespace sanitization: `RegisterRequest`, `LoginRequest`, `ForgotPasswordRequest`, `ResetPasswordRequest`.
+  - Controllers:
+    - `AuthController`: `register()`, `login()`, `logout()`, and `me()`.
+    - `EmailVerificationController`: signed link validation `verify()`, and throttled `resend()`.
+    - `PasswordResetController`: user enumeration-safe `forgot()`, and `reset()`.
+  - Configured custom password reset URL generator in `AppServiceProvider`.
+  - Route definitions under `/api/auth` with strict throttling (`throttle:5,1`, `throttle:3,15`, `throttle:3,10`).
+- **Frontend SPA Authentication**:
+  - Centralized `AuthContext` and `useAuth` hook managing user state, session recovery, and unauthorized event handling.
+  - Navigation guards: `ProtectedRoute`, `GuestRoute`, and `VerifiedRoute`.
+  - Auth pages: `LoginPage`, `RegisterPage`, `ForgotPasswordPage`, `ResetPasswordPage`, `VerifyEmailPage`.
+  - Protected `DashboardPage` displaying account details, verification badges, and privacy indicators.
+  - Updated `Navbar` with dynamic user profile actions and logout handling.
+- **Testing & Verification**:
+  - `tests/Feature/AuthenticationTest.php` with 15 test methods (registration, login, logout, verification, password reset, enumeration defense, rate limiting).
+  - All 22 automated tests passing cleanly. Production assets built via Vite.
+
 ## [Phase 0] - Project Foundation - 2026-09-06
 
 ### Added

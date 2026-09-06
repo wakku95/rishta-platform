@@ -6,6 +6,7 @@ use App\Contracts\PaymentGatewayInterface;
 use App\Contracts\SmsServiceInterface;
 use App\Services\Payments\FakePaymentService;
 use App\Services\Sms\MockSmsService;
+use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -45,6 +46,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        ResetPassword::createUrlUsing(function (object $notifiable, string $token) {
+            $frontendUrl = rtrim(config('app.frontend_url', config('app.url', 'http://localhost')), '/');
+            return "{$frontendUrl}/reset-password?token={$token}&email={$notifiable->getEmailForPasswordReset()}";
+        });
     }
 }

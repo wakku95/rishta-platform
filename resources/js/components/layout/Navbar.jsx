@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShieldCheck, Menu, X, HeartHandshake } from 'lucide-react';
+import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
+import useAuth from '../../hooks/useAuth';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const { user, authenticated, logout } = useAuth();
 
   const navLinks = [
     { name: 'Home', href: '/' },
@@ -13,6 +15,10 @@ export default function Navbar() {
     { name: 'Pricing', href: '/pricing' },
     { name: 'About', href: '/about' },
   ];
+
+  if (authenticated) {
+    navLinks.push({ name: 'Dashboard', href: '/dashboard' });
+  }
 
   return (
     <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-cream-200">
@@ -51,16 +57,31 @@ export default function Navbar() {
 
           {/* Desktop Right CTA */}
           <div className="hidden md:flex items-center gap-3">
-            <Link to="/login">
-              <Button variant="ghost" size="sm">
-                Log In
-              </Button>
-            </Link>
-            <Link to="/register">
-              <Button variant="primary" size="sm">
-                Create Free Profile
-              </Button>
-            </Link>
+            {authenticated ? (
+              <>
+                <Link to="/dashboard">
+                  <Button variant="ghost" size="sm" icon={User}>
+                    {user?.name ? user.name.split(' ')[0] : 'Dashboard'}
+                  </Button>
+                </Link>
+                <Button variant="secondary" size="sm" icon={LogOut} onClick={logout}>
+                  Log Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login">
+                  <Button variant="ghost" size="sm">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/register">
+                  <Button variant="primary" size="sm">
+                    Create Free Profile
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -98,16 +119,39 @@ export default function Navbar() {
           </div>
 
           <div className="pt-3 border-t border-cream-200 flex flex-col gap-2">
-            <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="secondary" className="w-full justify-center">
-                Log In
-              </Button>
-            </Link>
-            <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="primary" className="w-full justify-center">
-                Create Free Profile
-              </Button>
-            </Link>
+            {authenticated ? (
+              <>
+                <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="primary" className="w-full justify-center" icon={User}>
+                    My Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  variant="secondary"
+                  className="w-full justify-center"
+                  icon={LogOut}
+                  onClick={() => {
+                    logout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  Log Out
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/login" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="secondary" className="w-full justify-center">
+                    Log In
+                  </Button>
+                </Link>
+                <Link to="/register" onClick={() => setMobileMenuOpen(false)}>
+                  <Button variant="primary" className="w-full justify-center">
+                    Create Free Profile
+                  </Button>
+                </Link>
+              </>
+            )}
           </div>
 
           <div className="pt-2 flex items-center justify-center gap-1.5 text-xs text-charcoal-600">

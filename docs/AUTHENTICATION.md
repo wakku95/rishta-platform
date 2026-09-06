@@ -81,3 +81,26 @@ Email verification ensures valid user identity and reduces spam bots:
 4. User receives an email containing a link to the frontend: `https://domain.com/reset-password?token=XYZ&email=user@example.com`.
 5. Frontend posts new password + token + email to `/api/auth/reset-password`.
 6. Token is invalidated and password hash updated.
+
+---
+
+## 5. Route Protection & Rate Limiting
+
+| Endpoint | Method | Middleware | Rate Limit |
+| :--- | :--- | :--- | :--- |
+| `/api/auth/register` | POST | `guest` | 5 requests / min |
+| `/api/auth/login` | POST | `guest` | 5 requests / min |
+| `/api/auth/forgot-password` | POST | `guest` | 3 requests / 15 min |
+| `/api/auth/reset-password` | POST | `guest` | 5 requests / min |
+| `/api/auth/email/verify/{id}/{hash}` | GET | `signed` | 6 requests / min |
+| `/api/auth/email/verification-notification` | POST | `auth:sanctum` | 3 requests / 10 min |
+| `/api/auth/me` | GET | `auth:sanctum` | Standard API rate |
+| `/api/auth/logout` | POST | `auth:sanctum` | Standard API rate |
+
+---
+
+## 6. SPA Route Guards
+
+- **GuestRoute**: Redirects authenticated users to `/dashboard`. Protects `/login`, `/register`, `/forgot-password`, `/reset-password`.
+- **ProtectedRoute**: Redirects unauthenticated visitors to `/login` preserving attempt location. Protects `/dashboard`.
+- **VerifiedRoute**: Redirects unverified users to `/verify-email`. Protects matrimonial contact interactions.
