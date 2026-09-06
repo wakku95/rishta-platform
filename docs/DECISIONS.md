@@ -39,3 +39,9 @@
 - **Context**: Web Single Page Applications storing bearer tokens in `localStorage` or `sessionStorage` are vulnerable to XSS and token exfiltration.
 - **Decision**: Use Laravel Sanctum SPA cookie-based session authentication with HttpOnly, Secure, SameSite cookies and CSRF protection (`EnsureFrontendRequestsAreStateful`). Bearer tokens in localStorage are strictly prohibited in the React web SPA.
 - **Consequence**: Enterprise-grade session security, zero client-side token exposure to JavaScript.
+
+## ADR 009: Random Public Profile Codes & Extensible String Columns
+- **Context**: Exposing sequential auto-increment profile numbers (`RK-1`, `RK-2`) leaks platform growth metrics and facilitates automated enumeration and scraping. Furthermore, hardcoded database ENUMs require schema locks to extend values.
+- **Decision**: Use cryptographically random, uppercase alphanumeric profile codes (`RK-XXXXXX`) generated upon model creation. Use string columns validated via Laravel Form Requests rather than rigid database ENUMs for values like `marital_status`, `managed_by`, and `profile_status`.
+- **Consequence**: Prevents platform business intelligence leakage and enumeration attacks; allows frictionless additions of new options without database migrations.
+

@@ -4,6 +4,34 @@ All notable changes to the Rishta Platform project will be documented in this fi
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [Phase 2] - User Profile & Partner Preferences - 2026-09-06
+
+### Added
+- **Database & Architecture**:
+  - `profiles` table migration with unique, non-sequential `profile_code` (`RK-XXXXXX`), string columns for marital status, managed by, and profile status.
+  - `profile_preferences` table migration for partner criteria (age range, height range, preferred cities, education, religion, sect, marital status).
+  - `Profile` and `ProfilePreference` Eloquent models with automatic random profile code generation, age calculation from DOB, height formatting (`5'7" (170 cm)`), and relationships on `User`.
+- **Deterministic Profile Completion Scoring**:
+  - Centralized 100% calculation: Mandatory Core Biodata (70%, 10 items @ 7% each) + Partner Preferences (30%, 6 items @ 5% each).
+- **API & Security**:
+  - `ProfileController` endpoints:
+    - `GET /api/profile`: retrieves profile with partner preferences.
+    - `POST /api/profile` and `PUT /api/profile`: creates or updates profile biodata.
+    - `GET /api/profile/preferences`: retrieves partner preferences.
+    - `PUT /api/profile/preferences`: creates or updates partner preferences.
+    - `POST /api/profile/activate`: activates profile; enforces email verification and mandatory core fields.
+    - `POST /api/profile/hide`: hides profile from search results.
+  - `ProfileResource` and `ProfilePreferenceResource` serializers strictly excluding email, phone number, password hashes, and tokens.
+  - Form Requests: `StoreProfileRequest`, `UpdateProfileRequest`, `UpdatePreferencesRequest`.
+- **Frontend SPA**:
+  - `ProfilePage`: overview dashboard with completion progress bar, status badges, biodata details, managed by indicators, partner preferences summary, empty state, and activate/hide controls.
+  - `EditProfilePage`: mobile-first form with high-contrast inputs, selects, character counter, height selector, and validation errors.
+  - `EditPreferencesPage`: partner criteria form with multi-city toggles, marital status checklists, and age/height bounds.
+  - Integrated `My Profile` links into `Navbar` and `DashboardPage`.
+- **Testing**:
+  - 12 comprehensive automated feature tests in `tests/Feature/ProfileTest.php`. Total test suite passes with 34 tests and 134 assertions.
+  - Vite production build succeeds with clean asset bundles.
+
 ## [Phase 1] - Authentication - 2026-09-06
 
 ### Added

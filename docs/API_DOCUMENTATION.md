@@ -57,21 +57,19 @@ All API endpoints reside under `/api` and return standardized JSON responses.
 
 ---
 
-## 3. Profile Endpoints (`/api/profile` & `/api/profiles`)
+## 3. Profile Endpoints (`/api/profile`)
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/profile` | Get current user's profile and preferences | Yes |
-| `POST` | `/api/profile` | Create initial profile | Yes |
-| `PUT` | `/api/profile` | Update profile information | Yes |
-| `PUT` | `/api/profile/preferences` | Update partner preferences | Yes |
-| `PUT` | `/api/profile/status` | Change profile status (active/paused/hidden) | Yes |
-| `GET` | `/api/profiles` | Search & filter profiles (paginated, safe fields) | Yes (or guest teaser) |
-| `GET` | `/api/profiles/{code}` | View detailed profile by public `profile_code` | Yes |
-| `POST` | `/api/profiles/{code}/shortlist` | Add profile to private shortlist | Yes |
-| `DELETE` | `/api/profiles/{code}/shortlist`| Remove profile from private shortlist | Yes |
+| `GET` | `/api/profile` | Get current authenticated user's profile and partner preferences | Yes |
+| `POST` | `/api/profile` | Create or update user matrimonial biodata (starts in `draft` status) | Yes |
+| `PUT` | `/api/profile` | Update profile matrimonial biodata | Yes |
+| `GET` | `/api/profile/preferences` | Retrieve partner preferences | Yes |
+| `PUT` | `/api/profile/preferences` | Create or update partner preferences | Yes |
+| `POST` | `/api/profile/activate` | Activate profile (enforces email verification & mandatory fields) | Yes |
+| `POST` | `/api/profile/hide` | Hide profile from public discovery | Yes |
 
-*Note: Contact info is never in `/api/profiles` responses.*
+*Note: Private credentials (email, password, phone number, session tokens) are strictly excluded from all profile serializers.*
 
 ---
 

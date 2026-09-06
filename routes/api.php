@@ -41,3 +41,21 @@ Route::prefix('auth')->group(function () {
 
 // Alias for standard Sanctum user endpoint
 Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'me']);
+
+/*
+|--------------------------------------------------------------------------
+| Profile & Partner Preferences Routes (/api/profile)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'show']);
+    Route::post('/', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'storeOrUpdate']);
+    Route::put('/', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'storeOrUpdate']);
+
+    Route::get('/preferences', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'getPreferences']);
+    Route::put('/preferences', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'updatePreferences']);
+
+    Route::post('/activate', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'activate']);
+    Route::post('/hide', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'hide']);
+});
+

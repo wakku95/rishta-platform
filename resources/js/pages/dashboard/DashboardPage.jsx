@@ -139,13 +139,26 @@ export default function DashboardPage() {
             </div>
           </Card>
 
-          <Card className="p-6 bg-burgundy-50/70 border-2 border-burgundy-200 shadow-sm space-y-2">
-            <h3 className="text-base font-bold text-burgundy-900">
-              Phase 2: Matrimonial Profile
-            </h3>
-            <p className="text-xs text-burgundy-800 leading-relaxed">
-              In Phase 2, candidates will create their dignified biodata including sect, city, education, profession, family background, and partner preferences.
+          {/* Phase 2: Matrimonial Profile Card */}
+          <Card className="p-6 bg-burgundy-50/80 border-2 border-burgundy-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-2 text-burgundy-900 font-serif font-extrabold text-lg">
+              <Sparkles className="w-5 h-5 text-gold-600" />
+              <h3>Matrimonial Biodata</h3>
+            </div>
+            <p className="text-xs text-charcoal-700 font-medium leading-relaxed">
+              Create and manage your private matrimonial profile, partner preferences, and discovery status.
             </p>
+            <Link to="/profile" className="block pt-1">
+              <Button
+                variant="primary"
+                size="md"
+                icon={ArrowRight}
+                iconPosition="right"
+                className="w-full font-bold shadow-sm"
+              >
+                Go to My Profile
+              </Button>
+            </Link>
           </Card>
         </div>
       </div>

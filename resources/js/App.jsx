@@ -14,6 +14,11 @@ import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 
+// Profile Pages
+import ProfilePage from './pages/profile/ProfilePage';
+import EditProfilePage from './pages/profile/EditProfilePage';
+import EditPreferencesPage from './pages/profile/EditPreferencesPage';
+
 // Route Guards
 import GuestRoute from './components/auth/GuestRoute';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -44,6 +49,9 @@ export default function App() {
             {/* Protected authenticated routes */}
             <Route element={<ProtectedRoute />}>
               <Route path="dashboard" element={<DashboardPage />} />
+              <Route path="profile" element={<ProfilePage />} />
+              <Route path="profile/edit" element={<EditProfilePage />} />
+              <Route path="profile/preferences" element={<EditPreferencesPage />} />
             </Route>
 
             {/* 404 fallback */}
