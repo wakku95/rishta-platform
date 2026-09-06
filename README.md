@@ -1,59 +1,120 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Rishta Platform — Privacy-First Matrimonial Discovery
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A modern, culturally respectful, privacy-first Pakistani matrimonial discovery platform built with **Laravel 12 REST API**, **React (Vite + Tailwind CSS)**, and **MySQL**.
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Core Value Proposition
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+> **"Search Privately. Connect With Consent."**
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+The platform is strictly **not a dating app**. It eliminates swiping, casual chatting, public photos, and unsolicited contact. It facilitates serious, family-oriented matchmaking through verified matrimonial discovery, mutual consent, and authorized contact disclosure.
 
-## Learning Laravel
+### The Immutable Business Flow
+```
+REGISTER
+  ↓
+EMAIL VERIFICATION
+  ↓
+CREATE MATRIMONIAL PROFILE
+  ↓
+SEARCH & SHORTLIST PROFILES (FREE)
+  ↓
+SEND RISHTA REQUEST (FREE)
+  ↓
+RECIPIENT ACCEPTS OR DECLINES (FREE)
+  ↓
+IF ACCEPTED: INITIATOR PAYS FOR CONTACT UNLOCK (Fee: e.g. Rs. 300 via PayFast)
+  ↓
+PAYMENT VERIFIED (Server-side Webhook / API confirmation)
+  ↓
+SMS OTP MOBILE VERIFICATION (Both parties must verify their phone numbers)
+  ↓
+MUTUAL CONTACT RELEASE (Revealed exclusively to the verified parties)
+  ↓
+PARTIES COMMUNICATE EXTERNALLY (Phone, WhatsApp, Family meetings)
+```
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+---
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## Architectural Principles & Strict Rules
 
-## Laravel Sponsors
+1. **Absolute Privacy by Default**: 
+   - No public phone numbers, emails, CNIC, or addresses.
+   - Sensitive contact details are **never** returned in API responses prior to mutual acceptance, confirmed payment, and mobile verification. (Never rely on frontend CSS to hide data).
+   - Public photos are omitted in MVP to prioritize modesty, privacy, and safety.
+2. **Provider-Independent Abstractions**:
+   - **Payment**: `PaymentGatewayInterface` decouples core business logic from PayFast. Future gateways (Safepay, JazzCash, Easypaisa) plug in cleanly without rewriting controllers or workflows.
+   - **SMS & OTP**: `SmsServiceInterface` abstracts mobile gateways (Pakistan SMS providers). OTP state machine handles generation, hashing, rate-limiting, and expiry independently.
+3. **Payer Model**:
+   - Only the user who originally sent the Rishta Request pays for contact unlocking once the request is accepted. Registration, browsing, sending, and accepting requests are 100% free.
+4. **No OTP Before Payment**:
+   - To conserve SMS transaction costs, OTP verification is only initiated after payment confirmation is verified via server-side webhook/callback.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+---
 
-### Premium Partners
+## Technology Stack
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- **Backend**: Laravel 12 (PHP 8.2+), Laravel Sanctum, MySQL / SQLite (Dev), Form Requests, Policies, Queues.
+- **Frontend**: React 19 / 18 SPA, Vite, React Router v7 / v6, Tailwind CSS v4, Axios.
+- **Payment Gateway**: PayFast (via `PaymentGatewayInterface`).
+- **SMS / OTP**: Pluggable SMS gateway with mock driver for local testing.
+- **Testing**: PHPUnit / Pest for backend tests; Component & unit testing for frontend.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Permanent Project Documentation (`/docs`)
 
-## Code of Conduct
+All architectural patterns, API contracts, database schemas, and workflows are permanently documented in the `/docs` directory. Consult these documents before making changes:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+- [PROJECT_OVERVIEW.md](docs/PROJECT_OVERVIEW.md) — Mission, core values, problem statement, and scope.
+- [PRODUCT_REQUIREMENTS.md](docs/PRODUCT_REQUIREMENTS.md) — Detailed functional and non-functional requirements.
+- [ARCHITECTURE.md](docs/ARCHITECTURE.md) — System architecture, module boundaries, and service design.
+- [DATABASE_DESIGN.md](docs/DATABASE_DESIGN.md) — ER diagrams, schema specifications, indexing, and data models.
+- [API_DOCUMENTATION.md](docs/API_DOCUMENTATION.md) — REST API specifications, request/response formats, and error codes.
+- [AUTHENTICATION.md](docs/AUTHENTICATION.md) — Sanctum token lifecycle, email verification, password reset.
+- [PAYMENT_ARCHITECTURE.md](docs/PAYMENT_ARCHITECTURE.md) — Payment gateway contract, lifecycle, and security rules.
+- [PAYFAST_INTEGRATION.md](docs/PAYFAST_INTEGRATION.md) — PayFast integration specifications, checksums, and webhook handling.
+- [OTP_ARCHITECTURE.md](docs/OTP_ARCHITECTURE.md) — SMS OTP generation, rate limiting, hashing, and verification state machine.
+- [EMAIL_ARCHITECTURE.md](docs/EMAIL_ARCHITECTURE.md) — Transactional email notification architecture.
+- [SECURITY.md](docs/SECURITY.md) — Authorization policies, rate limiting, sanitization, and audit trails.
+- [PRIVACY.md](docs/PRIVACY.md) — Data isolation rules, access controls, and information minimization.
+- [UI_UX_GUIDELINES.md](docs/UI_UX_GUIDELINES.md) — Design principles, mobile-first guidelines, tone of voice, copy.
+- [DESIGN_SYSTEM.md](docs/DESIGN_SYSTEM.md) — Color palette (Burgundy/Cream/Gold), typography, reusable components.
+- [ADMIN_DASHBOARD.md](docs/ADMIN_DASHBOARD.md) — Back-office specifications for moderation, reports, and manual onboarding.
+- [TESTING.md](docs/TESTING.md) — Testing strategy, test suites, and coverage goals.
+- [DEPLOYMENT.md](docs/DEPLOYMENT.md) — Production environment, deployment steps, queue workers, and backups.
+- [ENVIRONMENT_VARIABLES.md](docs/ENVIRONMENT_VARIABLES.md) — Full reference of configuration keys and `.env` requirements.
+- [DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md) — Git workflow, branch conventions, PR checks.
+- [CHANGELOG.md](docs/CHANGELOG.md) — Historical log of changes by version and phase.
+- [PHASES.md](docs/PHASES.md) — Development roadmap, phases 0 through 11, and tracking.
+- [DECISIONS.md](docs/DECISIONS.md) — Architecture Decision Records (ADRs).
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## Local Development Setup
+
+```bash
+# 1. Clone repository and install backend dependencies
+composer install
+
+# 2. Environment setup
+cp .env.example .env
+php artisan key:generate
+
+# 3. Run database migrations
+php artisan migrate
+
+# 4. Install frontend dependencies
+npm install
+
+# 5. Start dev server (Laravel backend & Vite frontend)
+php artisan serve
+npm run dev
+```
+
+---
 
 ## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Proprietary & Confidential. All rights reserved.

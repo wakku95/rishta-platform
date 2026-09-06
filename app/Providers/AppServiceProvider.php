@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Contracts\PaymentGatewayInterface;
+use App\Contracts\SmsServiceInterface;
+use App\Services\Payments\FakePaymentService;
+use App\Services\Sms\MockSmsService;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +15,29 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Payment Gateway Binding
+        $this->app->bind(PaymentGatewayInterface::class, function ($app) {
+            $gateway = config('payment.default', 'fake');
+
+            return match ($gateway) {
+                'fake' => $app->make(FakePaymentService::class),
+                // When PayFast is implemented in Phase 5:
+                // 'payfast' => $app->make(PayFastPaymentService::class),
+                default => $app->make(FakePaymentService::class),
+            };
+        });
+
+        // SMS Service Binding
+        $this->app->bind(SmsServiceInterface::class, function ($app) {
+            $driver = config('sms.default', 'mock');
+
+            return match ($driver) {
+                'mock' => $app->make(MockSmsService::class),
+                // When Pakistan SMS is implemented in Phase 6:
+                // 'pakistan_sms' => $app->make(PakistanSmsService::class),
+                default => $app->make(MockSmsService::class),
+            };
+        });
     }
 
     /**

@@ -4,8 +4,54 @@
 @source '../../storage/framework/views/*.php';
 @source '../**/*.blade.php';
 @source '../**/*.js';
+@source '../**/*.jsx';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+  --font-serif: 'Cinzel', 'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif;
+
+  /* Primary Brand - Royal Burgundy */
+  --color-burgundy-50: #fdf2f4;
+  --color-burgundy-100: #fce7ea;
+  --color-burgundy-200: #fad2d8;
+  --color-burgundy-300: #f5a9b6;
+  --color-burgundy-400: #ed7389;
+  --color-burgundy-500: #e04261;
+  --color-burgundy-600: #c92244;
+  --color-burgundy-700: #700f2d;
+  --color-burgundy-800: #580c23;
+  --color-burgundy-900: #3f0819;
+
+  /* Subtle Warm Gold */
+  --color-gold-50: #fffbeb;
+  --color-gold-100: #fef3c7;
+  --color-gold-200: #fde68a;
+  --color-gold-300: #fcd34d;
+  --color-gold-400: #fbbf24;
+  --color-gold-500: #d97706;
+  --color-gold-600: #b45309;
+  --color-gold-700: #92400e;
+
+  /* Surface - Warm Cream */
+  --color-cream-50: #ffffff;
+  --color-cream-100: #fcfaf8;
+  --color-cream-200: #f7f3ee;
+  --color-cream-300: #efe8e0;
+  --color-cream-400: #e2d9cd;
+
+  /* Primary Typography - Dark Charcoal */
+  --color-charcoal-900: #1c1917;
+  --color-charcoal-800: #292524;
+  --color-charcoal-700: #44403c;
+  --color-charcoal-600: #57534e;
+  --color-charcoal-500: #78716c;
+}
+
+body {
+  background-color: var(--color-cream-100);
+  color: var(--color-charcoal-900);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
 }
