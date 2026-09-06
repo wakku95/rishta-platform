@@ -34,12 +34,13 @@ Status indicators: `NOT_STARTED` | `IN_PROGRESS` | `COMPLETED`
   - Registration, Login, Logout, Email Verification, Password Reset with enumeration protection.
   - Frontend AuthContext, route guards (GuestRoute, ProtectedRoute, VerifiedRoute), auth pages, and DashboardPage.
   - 15 comprehensive feature tests passing in `AuthenticationTest.php` (22 total tests passing).
-- **Phase 2 (Completed)**:
-  - `profiles` and `profile_preferences` database migrations, models, relationships, and string-backed flexible enums.
-  - Random, non-sequential public profile codes (`RK-XXXXXX`).
-  - Strict server-side DOB age calculation (18–80 years window) and dynamic height conversions.
-  - Deterministic profile completion scoring (Core Biodata 70% + Partner Preferences 30% = 100%).
-  - Mandatory server-side email verification guard for profile activation (`EMAIL_NOT_VERIFIED` 403).
-  - Strict privacy enforcement: Zero exposure of email, phone, passwords, or tokens in profile endpoints.
-  - Mobile-first React UI: `ProfilePage`, `EditProfilePage`, `EditPreferencesPage`, navigation links, and Dashboard integration.
-  - 12 comprehensive feature tests in `ProfileTest.php` (34 total automated tests passing).
+- **Phase 2 (Completed - Replacement Specification)**:
+  - Controlled options architecture via `App\Constants\ProfileOptions` and `GET /api/profile/options` endpoint.
+  - Strict privacy separation: `PublicProfileResource` (calculated age, safe public fields, no DOB, no contact info, no about/family statements) vs `ProfileResource` (full data for owner).
+  - Added `family_background` column to `profiles` table.
+  - Segregated `about` and `family_background` as **Private Information**, revealed only post-mutual acceptance, unlock payment, and dual OTP.
+  - Deterministic profile completion formula: Basic Profile (60%), Private Information (10%), Partner Preferences (30%).
+  - Profile activation requirements: verified email + 10 complete core biodata fields + completed partner preferences (`about` and `family_background` optional).
+  - React UI enhancements: Public Profile Preview modal (`Modal.jsx`), private information protected cards, activation checklist, and controlled select dropdowns.
+  - 13 comprehensive feature tests in `ProfileTest.php` (35 total automated tests passing, 160 assertions).
+

@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Api\Profile;
 
+use App\Constants\ProfileOptions;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Profile\StoreProfileRequest;
 use App\Http\Requests\Profile\UpdatePreferencesRequest;
 use App\Http\Requests\Profile\UpdateProfileRequest;
 use App\Http\Resources\ProfilePreferenceResource;
 use App\Http\Resources\ProfileResource;
+use App\Http\Resources\PublicProfileResource;
 use App\Models\Profile;
 use App\Models\ProfilePreference;
 use App\Traits\ApiResponse;
@@ -18,6 +20,39 @@ use Symfony\Component\HttpFoundation\Response;
 class ProfileController extends Controller
 {
     use ApiResponse;
+
+    /**
+     * Get canonical profile and partner preferences options.
+     */
+    public function getOptions(): JsonResponse
+    {
+        return $this->successResponse(
+            ProfileOptions::all(),
+            'Profile options retrieved successfully.'
+        );
+    }
+
+    /**
+     * Get the public view preview of the authenticated user's profile.
+     */
+    public function preview(Request $request): JsonResponse
+    {
+        $profile = $request->user()->profile()->first();
+
+        if (!$profile) {
+            return $this->errorResponse(
+                'Please create your profile first.',
+                [],
+                Response::HTTP_NOT_FOUND,
+                'PROFILE_NOT_FOUND'
+            );
+        }
+
+        return $this->successResponse(
+            new PublicProfileResource($profile),
+            'Public profile preview retrieved successfully.'
+        );
+    }
 
     /**
      * Get the authenticated user's matrimonial profile with preferences.
@@ -157,11 +192,12 @@ class ProfileController extends Controller
             );
         }
 
-        // 3. Mandatory biodata completion check
+        // 3. Mandatory biodata completion check (10 core fields)
         $mandatoryFields = [
             'gender',
             'date_of_birth',
             'religion',
+            'sect',
             'city',
             'education',
             'profession',
@@ -179,6 +215,17 @@ class ProfileController extends Controller
                     'INCOMPLETE_PROFILE'
                 );
             }
+        }
+
+        // 4. Partner preferences check (Mandatory preferences must be completed)
+        $preferences = $profile->preferences;
+        if (!$preferences || empty($preferences->preferred_gender) || empty($preferences->min_age) || empty($preferences->max_age)) {
+            return $this->errorResponse(
+                'Cannot activate profile: Please complete your partner preferences (preferred gender and age range) before activating.',
+                ['preferences' => ['Partner preferences must be completed before profile activation.']],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'INCOMPLETE_PREFERENCES'
+            );
         }
 
         $profile->profile_status = 'active';

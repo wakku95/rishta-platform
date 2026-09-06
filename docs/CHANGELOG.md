@@ -4,33 +4,29 @@ All notable changes to the Rishta Platform project will be documented in this fi
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [Phase 2] - User Profile & Partner Preferences - 2026-09-06
+## [Phase 2] - Controlled Profile & Private Information (Privacy-First) - 2026-09-06
 
 ### Added
-- **Database & Architecture**:
-  - `profiles` table migration with unique, non-sequential `profile_code` (`RK-XXXXXX`), string columns for marital status, managed by, and profile status.
-  - `profile_preferences` table migration for partner criteria (age range, height range, preferred cities, education, religion, sect, marital status).
-  - `Profile` and `ProfilePreference` Eloquent models with automatic random profile code generation, age calculation from DOB, height formatting (`5'7" (170 cm)`), and relationships on `User`.
-- **Deterministic Profile Completion Scoring**:
-  - Centralized 100% calculation: Mandatory Core Biodata (70%, 10 items @ 7% each) + Partner Preferences (30%, 6 items @ 5% each).
-- **API & Security**:
-  - `ProfileController` endpoints:
-    - `GET /api/profile`: retrieves profile with partner preferences.
-    - `POST /api/profile` and `PUT /api/profile`: creates or updates profile biodata.
-    - `GET /api/profile/preferences`: retrieves partner preferences.
-    - `PUT /api/profile/preferences`: creates or updates partner preferences.
-    - `POST /api/profile/activate`: activates profile; enforces email verification and mandatory core fields.
-    - `POST /api/profile/hide`: hides profile from search results.
-  - `ProfileResource` and `ProfilePreferenceResource` serializers strictly excluding email, phone number, password hashes, and tokens.
-  - Form Requests: `StoreProfileRequest`, `UpdateProfileRequest`, `UpdatePreferencesRequest`.
+- **Controlled Options Architecture**:
+  - `App\Constants\ProfileOptions` defining canonical choices for gender, religion, sect, city, education, profession, marital status, and managed by.
+  - Public options endpoint `GET /api/profile/options` providing canonical choices to client interfaces.
+  - Enforced strict `Rule::in(...)` validation across `StoreProfileRequest`, `UpdateProfileRequest`, and `UpdatePreferencesRequest`.
+- **Strict Privacy Segregation**:
+  - Migration `2026_09_06_140236_add_family_background_to_profiles_table.php` adding `family_background` column.
+  - Segregated `about` and `family_background` as **Private Information**, strictly excluded from public search and preview until mutual acceptance, unlock fee payment, and dual OTP verification.
+  - `PublicProfileResource` returning only privacy-safe public demographics, calculated age (never DOB), and formatted height; omitting DOB, contact details, user credentials, about, and family background.
+  - `GET /api/profile/preview` endpoint returning public preview of the authenticated user's profile.
+- **Deterministic Completion & Activation**:
+  - Updated completion formula: Basic Biodata (60%, 10 items @ 6%), Private Information (10%, about 5% + family_background 5%), Partner Preferences (30%, 8 criteria).
+  - Profile activation requires: verified email + 10 complete core biodata fields + completed partner preferences. `about` and `family_background` remain optional.
 - **Frontend SPA**:
-  - `ProfilePage`: overview dashboard with completion progress bar, status badges, biodata details, managed by indicators, partner preferences summary, empty state, and activate/hide controls.
-  - `EditProfilePage`: mobile-first form with high-contrast inputs, selects, character counter, height selector, and validation errors.
-  - `EditPreferencesPage`: partner criteria form with multi-city toggles, marital status checklists, and age/height bounds.
-  - Integrated `My Profile` links into `Navbar` and `DashboardPage`.
+  - "Public Profile Preview" modal in `ProfilePage` showcasing what prospective matches see.
+  - Dedicated "Private Information (Protected)" sections with privacy guarantee notices in `ProfilePage` and `EditProfilePage`.
+  - Dynamic canonical select dropdowns and multi-city selection in `EditProfilePage` and `EditPreferencesPage`.
+  - Activation checklist in `ProfilePage` detailing verification and profile completion prerequisites.
 - **Testing**:
-  - 12 comprehensive automated feature tests in `tests/Feature/ProfileTest.php`. Total test suite passes with 34 tests and 134 assertions.
-  - Vite production build succeeds with clean asset bundles.
+  - 13 comprehensive feature tests in `tests/Feature/ProfileTest.php`. Total test suite passes with 35 tests and 160 assertions.
+  - Production frontend build validated via Vite (`npm run build`).
 
 ## [Phase 1] - Authentication - 2026-09-06
 

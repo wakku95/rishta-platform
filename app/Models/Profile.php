@@ -31,6 +31,7 @@ class Profile extends Model
         'marital_status',
         'height',
         'about',
+        'family_background',
         'managed_by',
         'profile_status',
     ];
@@ -120,56 +121,73 @@ class Profile extends Model
      * Deterministic profile completion score (0 to 100).
      * 
      * Breakdown:
-     * - Mandatory Core Biodata: 70% total (10 items @ 7% each)
-     *   [gender, date_of_birth, religion, city, education, profession, marital_status, height, managed_by, about]
-     * - Partner Preferences: 30% total (6 items @ 5% each)
-     *   [preferred_gender, min_age & max_age, preferred_cities, preferred_education, preferred_marital_status, min_height & max_height]
+     * - Basic Profile (Required for activation): 60% total (10 items @ 6% each)
+     *   [gender, date_of_birth, religion, sect, city, education, profession, marital_status, height, managed_by]
+     * - Private Introduction (Optional): 10% total (2 items @ 5% each)
+     *   [about (5%), family_background (5%)]
+     * - Partner Preferences (Required for activation): 30% total (8 items)
+     *   [preferred_gender (4%), min_age & max_age (4%), preferred_cities (4%), preferred_religion (3%),
+     *    preferred_sect (3%), min_height & max_height (4%), preferred_education (4%), preferred_marital_status (4%)]
      */
     public function calculateCompletionPercentage(): int
     {
         $score = 0;
 
-        // Core Biodata items (70% total)
-        $coreItems = [
+        // 1. Basic Profile (60% total - 10 items @ 6% each)
+        $basicItems = [
             !empty($this->gender),
             !empty($this->date_of_birth),
             !empty($this->religion),
+            !empty($this->sect),
             !empty($this->city),
             !empty($this->education),
             !empty($this->profession),
             !empty($this->marital_status),
             !empty($this->height) && $this->height > 0,
             !empty($this->managed_by),
-            !empty($this->about) && mb_strlen(trim($this->about)) >= 10,
         ];
 
-        foreach ($coreItems as $completed) {
+        foreach ($basicItems as $completed) {
             if ($completed) {
-                $score += 7;
+                $score += 6;
             }
         }
 
-        // Partner Preferences items (30% total)
+        // 2. Private Introduction (10% total - 2 items @ 5% each)
+        if (!empty($this->about) && mb_strlen(trim($this->about)) >= 10) {
+            $score += 5;
+        }
+        if (!empty($this->family_background) && mb_strlen(trim($this->family_background)) >= 10) {
+            $score += 5;
+        }
+
+        // 3. Partner Preferences (30% total)
         $prefs = $this->relationLoaded('preferences') ? $this->preferences : $this->preferences()->first();
 
         if ($prefs) {
             if (!empty($prefs->preferred_gender)) {
-                $score += 5;
+                $score += 4;
             }
             if (!empty($prefs->min_age) && !empty($prefs->max_age)) {
-                $score += 5;
+                $score += 4;
             }
             if (!empty($prefs->preferred_cities) && count($prefs->preferred_cities) > 0) {
-                $score += 5;
+                $score += 4;
             }
-            if (!empty($prefs->preferred_education)) {
-                $score += 5;
+            if (!empty($prefs->preferred_religion)) {
+                $score += 3;
             }
-            if (!empty($prefs->preferred_marital_status) && count($prefs->preferred_marital_status) > 0) {
-                $score += 5;
+            if (!empty($prefs->preferred_sect)) {
+                $score += 3;
             }
             if (!empty($prefs->min_height) || !empty($prefs->max_height)) {
-                $score += 5;
+                $score += 4;
+            }
+            if (!empty($prefs->preferred_education)) {
+                $score += 4;
+            }
+            if (!empty($prefs->preferred_marital_status) && count($prefs->preferred_marital_status) > 0) {
+                $score += 4;
             }
         }
 

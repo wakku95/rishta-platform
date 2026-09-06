@@ -11,11 +11,15 @@ In South Asian matrimonial matchmaking, unwarranted distribution of personal dat
 | Data Element | Storage Location | Public Visitor | Authenticated Searcher | Shortlist / Request | Post-Acceptance | Post-Payment & Dual OTP |
 | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
 | **Profile Code** | `profiles.profile_code` | Visible | Visible | Visible | Visible | Visible |
-| **Gender & Age** | Derived from DOB | Visible | Visible | Visible | Visible | Visible |
+| **Age (Calculated)** | Derived from DOB | Visible | Visible | Visible | Visible | Visible |
+| **Exact Date of Birth** | `profiles.date_of_birth`| **NEVER** | **NEVER** | **NEVER** | **NEVER** | **NEVER** |
 | **City & Country** | `profiles.city` | Visible | Visible | Visible | Visible | Visible |
 | **Education & Profession**| `profiles` | Visible | Visible | Visible | Visible | Visible |
 | **Marital Status & Height**| `profiles` | Visible | Visible | Visible | Visible | Visible |
-| **About Bio** | `profiles.about` | Hidden | Visible | Visible | Visible | Visible |
+| **Religion & Sect** | `profiles` | Visible | Visible | Visible | Visible | Visible |
+| **Managed By** | `profiles.managed_by` | Visible | Visible | Visible | Visible | Visible |
+| **About Statement** | `profiles.about` | **HIDDEN** | **HIDDEN** | **HIDDEN** | **HIDDEN** | **REVEALED** |
+| **Family Background** | `profiles.family_background` | **HIDDEN** | **HIDDEN** | **HIDDEN** | **HIDDEN** | **REVEALED** |
 | **Full Name** | `users.name` | Hidden | Hidden | Hidden | First Name Only | Full Name |
 | **Email Address** | `users.email` | **NEVER** | **NEVER** | **NEVER** | **NEVER** | **NEVER** |
 | **Exact Street Address** | N/A | **EXCLUDED IN MVP** | | | | |
@@ -29,8 +33,8 @@ In South Asian matrimonial matchmaking, unwarranted distribution of personal dat
 
 - **Rule**: Never transmit sensitive fields over the wire with the expectation that CSS or React will hide them (`display: none`).
 - **Resource Classes**:
-  - `ProfileSearchResource`: Emits only demographic and discovery attributes.
-  - `ProfileDetailResource`: Emits bio and preferences, omitting user authentication credentials and contacts.
+  - `PublicProfileResource`: Emits only safe, public controlled demographic attributes and calculated age. Strictly omits exact DOB, about, family background, and user credentials.
+  - `ProfileResource`: Emits full profile data (including private about and family background) strictly for the owning authenticated user.
   - `ContactReleaseResource`: The **sole** resource permitted to emit phone numbers, executed only after `status === 'released'`.
 
 ---

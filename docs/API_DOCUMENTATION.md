@@ -61,15 +61,17 @@ All API endpoints reside under `/api` and return standardized JSON responses.
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
-| `GET` | `/api/profile` | Get current authenticated user's profile and partner preferences | Yes |
-| `POST` | `/api/profile` | Create or update user matrimonial biodata (starts in `draft` status) | Yes |
+| `GET` | `/api/profile/options` | Retrieve canonical controlled dropdown choices (genders, religions, sects, cities, educations, professions, marital statuses, managed by) | No |
+| `GET` | `/api/profile` | Get current authenticated user's full profile, preferences, and completion percentage | Yes |
+| `GET` | `/api/profile/preview` | Public preview of user's own profile as seen by others (omits exact DOB, about, family background, and credentials) | Yes |
+| `POST` | `/api/profile` | Create or update user matrimonial biodata with controlled options (starts in `draft` status) | Yes |
 | `PUT` | `/api/profile` | Update profile matrimonial biodata | Yes |
 | `GET` | `/api/profile/preferences` | Retrieve partner preferences | Yes |
 | `PUT` | `/api/profile/preferences` | Create or update partner preferences | Yes |
-| `POST` | `/api/profile/activate` | Activate profile (enforces email verification & mandatory fields) | Yes |
+| `POST` | `/api/profile/activate` | Activate profile (enforces verified email, complete biodata, and completed partner preferences) | Yes |
 | `POST` | `/api/profile/hide` | Hide profile from public discovery | Yes |
 
-*Note: Private credentials (email, password, phone number, session tokens) are strictly excluded from all profile serializers.*
+*Note: Private information (`about`, `family_background`) and private credentials (`email`, `password`, `phone_number`, session tokens) are strictly excluded from all public profile serializers.*
 
 ---
 

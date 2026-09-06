@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { getProfile, activateProfile, hideProfile } from '../../api/profile';
+import { getProfile, activateProfile, hideProfile, getProfilePreview } from '../../api/profile';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
-import EmptyState from '../../components/ui/EmptyState';
 import LoadingState from '../../components/ui/LoadingState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import Modal from '../../components/ui/Modal';
 import {
   User,
   HeartHandshake,
@@ -24,9 +24,12 @@ import {
   Sparkles,
   Edit,
   Sliders,
+  ShieldCheck,
   ShieldAlert,
   ArrowRight,
-  RefreshCw,
+  Lock,
+  Check,
+  X,
 } from 'lucide-react';
 
 export default function ProfilePage() {
@@ -38,6 +41,11 @@ export default function ProfilePage() {
   const [error, setError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Public Preview Modal state
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewLoading, setPreviewLoading] = useState(false);
+  const [previewData, setPreviewData] = useState(null);
 
   const [confirmModal, setConfirmModal] = useState({
     open: false,
@@ -63,6 +71,36 @@ export default function ProfilePage() {
   useEffect(() => {
     fetchProfileData();
   }, []);
+
+  const handleOpenPreview = async () => {
+    setPreviewModalOpen(true);
+    setPreviewLoading(true);
+    try {
+      const res = await getProfilePreview();
+      setPreviewData(res.data);
+    } catch (err) {
+      // Fallback to local profile safe preview if preview route errors
+      if (profile) {
+        setPreviewData({
+          profile_code: profile.profile_code,
+          age: profile.age,
+          gender: profile.gender,
+          religion: profile.religion,
+          sect: profile.sect,
+          city: profile.city,
+          education: profile.education,
+          profession: profile.profession,
+          marital_status: profile.marital_status,
+          height: profile.height,
+          height_formatted: profile.height_formatted,
+          managed_by: profile.managed_by,
+          profile_status: profile.profile_status,
+        });
+      }
+    } finally {
+      setPreviewLoading(false);
+    }
+  };
 
   const handleActivate = async () => {
     setActionLoading(true);
@@ -118,7 +156,7 @@ export default function ProfilePage() {
               Create Your Matrimonial Profile
             </h1>
             <p className="text-sm sm:text-base text-stone-600 font-medium leading-relaxed">
-              Complete your profile to start finding suitable rishtas. Your profile will be private and confidential, strictly respecting Pakistani cultural standards.
+              Create your profile using structured options. Your personal contact details and private introduction remain strictly protected.
             </p>
           </div>
 
@@ -142,6 +180,28 @@ export default function ProfilePage() {
 
   const completion = profile.completion_percentage ?? 0;
   const preferences = profile.preferences;
+
+  // Activation checklist calculations
+  const isEmailOk = Boolean(emailVerified);
+  const isBasicComplete = Boolean(
+    profile.gender &&
+    profile.date_of_birth &&
+    profile.religion &&
+    profile.sect &&
+    profile.city &&
+    profile.education &&
+    profile.profession &&
+    profile.marital_status &&
+    profile.height &&
+    profile.managed_by
+  );
+  const isPreferencesSet = Boolean(
+    preferences &&
+    preferences.preferred_gender &&
+    preferences.min_age &&
+    preferences.max_age
+  );
+  const canActivate = isEmailOk && isBasicComplete && isPreferencesSet;
 
   const getStatusBadge = (status) => {
     switch (status) {
@@ -208,9 +268,20 @@ export default function ProfilePage() {
         </div>
 
         <div className="flex flex-wrap items-center gap-3">
+          {/* Public Profile Preview Button */}
+          <Button
+            variant="secondary"
+            size="md"
+            icon={Eye}
+            onClick={handleOpenPreview}
+            className="bg-white hover:bg-stone-50 text-burgundy-900 font-bold shadow-sm"
+          >
+            Public Preview
+          </Button>
+
           <Link to="/profile/edit">
             <Button variant="secondary" size="md" icon={Edit} className="bg-white hover:bg-stone-50 text-burgundy-900 font-bold shadow-sm">
-              Edit Profile
+              Edit Biodata
             </Button>
           </Link>
 
@@ -218,17 +289,17 @@ export default function ProfilePage() {
             <Button
               variant="gold"
               size="md"
-              icon={Eye}
+              icon={CheckCircle2}
               loading={actionLoading}
               onClick={() => {
-                if (!emailVerified) {
-                  setError('You must verify your email address before activating your profile.');
+                if (!canActivate) {
+                  setError('Please complete the activation requirements below before activating.');
                   return;
                 }
                 setConfirmModal({
                   open: true,
                   title: 'Activate Matrimonial Profile',
-                  message: 'Your profile will become active and discoverable to compatible matches on the platform. You can hide it anytime.',
+                  message: 'Your profile will become active and discoverable to compatible matches. You can hide it at any time.',
                   action: handleActivate,
                   confirmVariant: 'primary',
                 });
@@ -249,7 +320,7 @@ export default function ProfilePage() {
                 setConfirmModal({
                   open: true,
                   title: 'Hide Profile from Search',
-                  message: 'When hidden, other members cannot discover your profile in search. Existing requests remain intact.',
+                  message: 'When hidden, your profile will not appear in search or discovery.',
                   action: handleHide,
                   confirmVariant: 'danger',
                 });
@@ -275,23 +346,74 @@ export default function ProfilePage() {
         </div>
       </div>
 
+      {/* Activation Requirements Checklist Card (Shown when Draft or Hidden) */}
+      {profile.profile_status !== 'active' && (
+        <Card className="p-6 bg-white border-2 border-stone-300 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-stone-200">
+            <h2 className="text-base font-serif font-extrabold text-burgundy-900 flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-burgundy-700" />
+              Profile Activation Requirements
+            </h2>
+            <span className="text-xs font-bold text-stone-500">
+              {canActivate ? 'All Requirements Met ✓' : 'Incomplete'}
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-medium">
+            <div className={`p-3.5 rounded-xl border-2 flex items-start gap-2.5 ${
+              isEmailOk ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'
+            }`}>
+              {isEmailOk ? <Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />}
+              <div>
+                <span className="font-bold block">1. Verified Email</span>
+                <span>{isEmailOk ? 'Email address verified' : 'Email verification required'}</span>
+              </div>
+            </div>
+
+            <div className={`p-3.5 rounded-xl border-2 flex items-start gap-2.5 ${
+              isBasicComplete ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'
+            }`}>
+              {isBasicComplete ? <Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />}
+              <div>
+                <span className="font-bold block">2. Basic Biodata (60%)</span>
+                <span>{isBasicComplete ? 'All 10 core fields filled' : 'Complete all 10 core fields'}</span>
+              </div>
+            </div>
+
+            <div className={`p-3.5 rounded-xl border-2 flex items-start gap-2.5 ${
+              isPreferencesSet ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'
+            }`}>
+              {isPreferencesSet ? <Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />}
+              <div>
+                <span className="font-bold block">3. Partner Preferences (30%)</span>
+                <span>{isPreferencesSet ? 'Preferences configured' : 'Set partner preferences'}</span>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-xs text-stone-500 font-medium">
+            💡 <em>Note:</em> "About Candidate" and "Family Background" (10%) are optional and not required to activate your profile.
+          </p>
+        </Card>
+      )}
+
       {/* Completion Meter Card */}
       <Card className="p-6 bg-white border-2 border-stone-300 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Sparkles className="w-5 h-5 text-burgundy-700" />
-            <h2 className="text-base font-bold text-charcoal-900">Profile Completion</h2>
+            <h2 className="text-base font-bold text-charcoal-900">Profile Completion Score</h2>
           </div>
-          <span className="text-sm font-extrabold text-burgundy-800">{completion}%</span>
+          <span className="text-sm font-extrabold text-burgundy-800">{completion}% / 100%</span>
         </div>
 
         {/* Progress Bar */}
         <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden border border-stone-200">
           <div
             className={`h-full transition-all duration-300 rounded-full ${
-              completion >= 80
+              completion >= 90
                 ? 'bg-emerald-600'
-                : completion >= 50
+                : completion >= 60
                 ? 'bg-amber-600'
                 : 'bg-burgundy-700'
             }`}
@@ -299,44 +421,28 @@ export default function ProfilePage() {
           />
         </div>
 
-        <p className="text-xs text-stone-500 font-medium">
-          {completion < 70
-            ? 'Complete mandatory biodata fields to reach 70% and unlock profile activation.'
-            : completion < 100
-            ? 'Add partner preferences to reach 100% complete and improve mutual compatibility.'
-            : 'Your profile and partner preferences are 100% complete!'}
-        </p>
+        <div className="flex flex-wrap gap-4 text-xs text-stone-500 pt-1 font-medium">
+          <span>• <strong>Basic Biodata:</strong> 60% (10 fields @ 6% each)</span>
+          <span>• <strong>Private Info:</strong> 10% (About & Family Background)</span>
+          <span>• <strong>Partner Preferences:</strong> 30% (8 match criteria)</span>
+        </div>
       </Card>
-
-      {/* Unverified Email Warning */}
-      {!emailVerified && (
-        <Alert
-          variant="warning"
-          title="Email Verification Needed for Activation"
-          className="border-2 border-amber-300"
-        >
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mt-1">
-            <p className="text-sm text-amber-950 font-medium">
-              You can draft and preview your matrimonial biodata anytime, but your profile cannot be activated until your email is verified.
-            </p>
-            <Link to="/verify-email" className="shrink-0">
-              <Button size="sm" variant="gold" icon={ArrowRight} iconPosition="right" className="font-bold">
-                Verify Email
-              </Button>
-            </Link>
-          </div>
-        </Alert>
-      )}
 
       {/* Biodata Details Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Main Biodata Column */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Card: Public Matrimonial Biodata */}
           <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-6">
             <div className="flex items-center justify-between pb-4 border-b-2 border-stone-100">
-              <h2 className="text-lg font-serif font-extrabold text-burgundy-900">
-                Biodata & Basic Information
-              </h2>
+              <div>
+                <h2 className="text-lg font-serif font-extrabold text-burgundy-900">
+                  Public Matrimonial Biodata
+                </h2>
+                <p className="text-xs text-stone-500 font-medium">
+                  Standardized fields visible during prospective match discovery.
+                </p>
+              </div>
               <Link to="/profile/edit">
                 <Button variant="ghost" size="sm" icon={Edit} className="text-burgundy-800 font-bold">
                   Edit
@@ -356,9 +462,9 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
                 <Calendar className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Age & Date of Birth</span>
+                  <span className="text-xs font-bold text-stone-500 block uppercase">Age</span>
                   <span className="text-sm font-bold text-charcoal-900">
-                    {profile.age} years old ({profile.date_of_birth})
+                    {profile.age} years old <span className="text-xs text-stone-400 font-normal">(DOB: {profile.date_of_birth})</span>
                   </span>
                 </div>
               </div>
@@ -382,7 +488,7 @@ export default function ProfilePage() {
               <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
                 <GraduationCap className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Education</span>
+                  <span className="text-xs font-bold text-stone-500 block uppercase">Highest Education</span>
                   <span className="text-sm font-bold text-charcoal-900">{profile.education}</span>
                 </div>
               </div>
@@ -417,16 +523,45 @@ export default function ProfilePage() {
             </div>
           </Card>
 
-          {/* About / Bio Card */}
-          <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-stone-100">
-              <h2 className="text-lg font-serif font-extrabold text-burgundy-900">
-                About & Family Background
-              </h2>
+          {/* Card: Private Information (Strictly Confidential) */}
+          <Card className="p-6 sm:p-8 bg-stone-50/60 border-2 border-stone-300 shadow-md space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b-2 border-stone-200">
+              <div className="flex items-center gap-2">
+                <Lock className="w-5 h-5 text-burgundy-800" />
+                <h2 className="text-lg font-serif font-extrabold text-burgundy-900">
+                  Private Information (Protected)
+                </h2>
+              </div>
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300 inline-flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Confidential
+              </span>
             </div>
-            <p className="text-sm sm:text-base text-charcoal-800 leading-relaxed font-medium whitespace-pre-line">
-              {profile.about || 'No personal statement provided yet.'}
-            </p>
+
+            <div className="p-3.5 rounded-xl bg-burgundy-50 border border-burgundy-200 text-xs text-burgundy-950 font-medium">
+              🔒 <strong>Privacy Assurance:</strong> About and Family Background are never visible publicly or during search.
+              They are only released after mutual rishta acceptance, unlock fee payment, and dual OTP mobile verification.
+            </div>
+
+            <div className="space-y-4">
+              <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-1.5">
+                <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block">
+                  About Candidate
+                </span>
+                <p className="text-sm text-charcoal-800 leading-relaxed font-medium whitespace-pre-line">
+                  {profile.about || <em className="text-stone-400">No personal statement entered yet.</em>}
+                </p>
+              </div>
+
+              <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-1.5">
+                <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block">
+                  Family Background
+                </span>
+                <p className="text-sm text-charcoal-800 leading-relaxed font-medium whitespace-pre-line">
+                  {profile.family_background || <em className="text-stone-400">No family background details entered yet.</em>}
+                </p>
+              </div>
+            </div>
           </Card>
         </div>
 
@@ -445,7 +580,7 @@ export default function ProfilePage() {
                 </span>
               </div>
               <p className="text-xs text-stone-500 font-medium leading-relaxed">
-                This indicates whether inquiries will be addressed by the candidate directly or by a family representative.
+                Indicates whether proposals are handled by the candidate directly or family elders.
               </p>
             </div>
           </Card>
@@ -471,7 +606,7 @@ export default function ProfilePage() {
                 <div>
                   <span className="text-xs font-bold text-stone-500 uppercase block">Looking For</span>
                   <span className="font-bold text-charcoal-900 capitalize">
-                    {preferences.preferred_gender}
+                    {preferences.preferred_gender === 'female' ? 'Bride (Female)' : 'Groom (Male)'}
                   </span>
                 </div>
 
@@ -492,6 +627,20 @@ export default function ProfilePage() {
                         </span>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {preferences.preferred_religion && (
+                  <div>
+                    <span className="text-xs font-bold text-stone-500 uppercase block">Preferred Religion</span>
+                    <span className="font-bold text-charcoal-900">{preferences.preferred_religion}</span>
+                  </div>
+                )}
+
+                {preferences.preferred_sect && (
+                  <div>
+                    <span className="text-xs font-bold text-stone-500 uppercase block">Preferred Sect</span>
+                    <span className="font-bold text-charcoal-900">{preferences.preferred_sect}</span>
                   </div>
                 )}
 
@@ -547,6 +696,91 @@ export default function ProfilePage() {
         onConfirm={confirmModal.action}
         onCancel={() => setConfirmModal({ ...confirmModal, open: false })}
       />
+
+      {/* Public Profile Preview Modal */}
+      <Modal
+        isOpen={previewModalOpen}
+        onClose={() => setPreviewModalOpen(false)}
+        title="Public Profile Preview"
+        subtitle="This preview shows exactly what other verified members will see during search and discovery."
+        maxWidth="max-w-xl"
+        footer={
+          <Button
+            variant="primary"
+            size="md"
+            onClick={() => setPreviewModalOpen(false)}
+            className="font-bold"
+          >
+            Close Preview
+          </Button>
+        }
+      >
+        {previewLoading ? (
+          <div className="py-8">
+            <LoadingState text="Loading public preview..." />
+          </div>
+        ) : previewData ? (
+          <div className="space-y-5">
+            {/* Privacy Notice Banner */}
+            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs text-emerald-950 font-medium space-y-1">
+              <p className="font-bold flex items-center gap-1.5 text-emerald-900">
+                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                Privacy Protection Active
+              </p>
+              <p className="leading-relaxed">
+                Full Date of Birth, Contact Details, Email, Phone Number, About Statement, and Family Background are strictly <strong>excluded</strong> from public view.
+              </p>
+            </div>
+
+            {/* Simulated Public Profile Card */}
+            <div className="rounded-2xl border-2 border-burgundy-900/20 bg-stone-50 p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+                <div>
+                  <span className="font-mono text-xs uppercase tracking-wider bg-burgundy-900 text-gold-300 px-2.5 py-1 rounded font-bold">
+                    {previewData.profile_code}
+                  </span>
+                  <h3 className="font-serif text-xl font-extrabold text-burgundy-950 mt-2">
+                    {previewData.profession} • {previewData.age} years old
+                  </h3>
+                </div>
+                {getStatusBadge(previewData.profile_status)}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <span className="text-stone-500 font-bold block uppercase">Gender</span>
+                  <span className="font-extrabold text-charcoal-900 capitalize">{previewData.gender}</span>
+                </div>
+                <div>
+                  <span className="text-stone-500 font-bold block uppercase">Location</span>
+                  <span className="font-extrabold text-charcoal-900">{previewData.city}, Pakistan</span>
+                </div>
+                <div>
+                  <span className="text-stone-500 font-bold block uppercase">Height</span>
+                  <span className="font-extrabold text-charcoal-900">{previewData.height_formatted}</span>
+                </div>
+                <div>
+                  <span className="text-stone-500 font-bold block uppercase">Education</span>
+                  <span className="font-extrabold text-charcoal-900">{previewData.education}</span>
+                </div>
+                <div>
+                  <span className="text-stone-500 font-bold block uppercase">Faith & Sect</span>
+                  <span className="font-extrabold text-charcoal-900">{previewData.religion} ({previewData.sect})</span>
+                </div>
+                <div>
+                  <span className="text-stone-500 font-bold block uppercase">Marital Status</span>
+                  <span className="font-extrabold text-charcoal-900">{getMaritalStatusLabel(previewData.marital_status)}</span>
+                </div>
+                <div className="col-span-2 pt-1 border-t border-stone-200">
+                  <span className="text-stone-500 font-bold block uppercase">Managed By</span>
+                  <span className="font-extrabold text-charcoal-900">{getManagedByLabel(previewData.managed_by)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+      </Modal>
     </div>
   );
 }
+

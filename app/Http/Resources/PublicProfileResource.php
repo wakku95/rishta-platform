@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProfileResource extends JsonResource
+class PublicProfileResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -15,11 +15,9 @@ class ProfileResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
             'profile_code' => $this->profile_code,
-            'gender' => $this->gender,
-            'date_of_birth' => $this->date_of_birth?->format('Y-m-d'),
             'age' => $this->age,
+            'gender' => $this->gender,
             'religion' => $this->religion,
             'sect' => $this->sect,
             'city' => $this->city,
@@ -28,14 +26,8 @@ class ProfileResource extends JsonResource
             'marital_status' => $this->marital_status,
             'height' => $this->height,
             'height_formatted' => $this->height_formatted,
-            'about' => $this->about,
-            'family_background' => $this->family_background,
             'managed_by' => $this->managed_by,
             'profile_status' => $this->profile_status,
-            'completion_percentage' => $this->calculateCompletionPercentage(),
-            'preferences' => new ProfilePreferenceResource($this->whenLoaded('preferences')),
-            'created_at' => $this->created_at?->toIso8601String(),
-            'updated_at' => $this->updated_at?->toIso8601String(),
         ];
     }
 }

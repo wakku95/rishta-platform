@@ -87,7 +87,8 @@ CREATE TABLE profiles (
     profession VARCHAR(150) NOT NULL,
     marital_status ENUM('never_married', 'divorced', 'widowed', 'separated') NOT NULL,
     height_cm SMALLINT UNSIGNED NOT NULL,     -- In centimeters (e.g., 170cm = 5'7")
-    about TEXT NULL,
+    about TEXT NULL,                          -- Private personal statement (revealed post-unlock)
+    family_background TEXT NULL,              -- Private family background (revealed post-unlock)
     profile_status ENUM('active', 'hidden', 'paused', 'under_review', 'suspended', 'deleted') DEFAULT 'active' NOT NULL,
     can_receive_requests BOOLEAN DEFAULT TRUE NOT NULL,
     profile_source ENUM('self_registered', 'admin_assisted') DEFAULT 'self_registered' NOT NULL,

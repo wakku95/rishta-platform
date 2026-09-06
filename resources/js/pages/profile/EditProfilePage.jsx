@@ -1,66 +1,95 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { getProfile, saveProfile } from '../../api/profile';
+import { getProfile, saveProfile, getProfileOptions } from '../../api/profile';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
 import Textarea from '../../components/ui/Textarea';
 import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
-import FormError from '../../components/ui/FormError';
 import LoadingState from '../../components/ui/LoadingState';
-import { User, Save, X, Sparkles, ArrowLeft, HeartHandshake } from 'lucide-react';
+import { Save, ArrowLeft, Lock, ShieldCheck } from 'lucide-react';
 
-const CITIES = [
-  'Lahore',
-  'Karachi',
-  'Islamabad',
-  'Rawalpindi',
-  'Faisalabad',
-  'Multan',
-  'Peshawar',
-  'Quetta',
-  'Sialkot',
-  'Gujranwala',
-  'Hyderabad',
-  'Bahawalpur',
-  'Sargodha',
-  'Abbottabad',
-  'Overseas / Other',
-];
+// Canonical fallback options matching App\Constants\ProfileOptions
+const FALLBACK_OPTIONS = {
+  genders: [
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+  ],
+  religions: [
+    { value: 'Islam', label: 'Islam' },
+  ],
+  sects: [
+    { value: 'Sunni', label: 'Sunni' },
+    { value: 'Shia', label: 'Shia' },
+    { value: 'Ahle-Hadith', label: 'Ahle-Hadith' },
+    { value: 'Other', label: 'Other' },
+    { value: 'Prefer not to say', label: 'Prefer not to say' },
+  ],
+  cities: [
+    { value: 'Karachi', label: 'Karachi' },
+    { value: 'Lahore', label: 'Lahore' },
+    { value: 'Islamabad', label: 'Islamabad' },
+    { value: 'Rawalpindi', label: 'Rawalpindi' },
+    { value: 'Faisalabad', label: 'Faisalabad' },
+    { value: 'Multan', label: 'Multan' },
+    { value: 'Peshawar', label: 'Peshawar' },
+    { value: 'Quetta', label: 'Quetta' },
+    { value: 'Hyderabad', label: 'Hyderabad' },
+    { value: 'Gujranwala', label: 'Gujranwala' },
+    { value: 'Sialkot', label: 'Sialkot' },
+    { value: 'Bahawalpur', label: 'Bahawalpur' },
+    { value: 'Sargodha', label: 'Sargodha' },
+    { value: 'Abbottabad', label: 'Abbottabad' },
+    { value: 'Sukkur', label: 'Sukkur' },
+    { value: 'Other', label: 'Other' },
+  ],
+  educations: [
+    { value: 'Matric / O-Level', label: 'Matric / O-Level' },
+    { value: 'Intermediate / A-Level', label: 'Intermediate / A-Level' },
+    { value: 'Diploma', label: 'Diploma' },
+    { value: "Bachelor's", label: "Bachelor's" },
+    { value: "Master's", label: "Master's" },
+    { value: 'MPhil', label: 'MPhil' },
+    { value: 'PhD', label: 'PhD' },
+    { value: 'Other', label: 'Other' },
+  ],
+  professions: [
+    { value: 'Student', label: 'Student' },
+    { value: 'Software / IT', label: 'Software / IT' },
+    { value: 'Engineering', label: 'Engineering' },
+    { value: 'Medical / Healthcare', label: 'Medical / Healthcare' },
+    { value: 'Education', label: 'Education' },
+    { value: 'Business', label: 'Business' },
+    { value: 'Finance / Banking', label: 'Finance / Banking' },
+    { value: 'Government', label: 'Government' },
+    { value: 'Law', label: 'Law' },
+    { value: 'Marketing / Sales', label: 'Marketing / Sales' },
+    { value: 'Freelance / Self-employed', label: 'Freelance / Self-employed' },
+    { value: 'Skilled Professional', label: 'Skilled Professional' },
+    { value: 'Homemaker', label: 'Homemaker' },
+    { value: 'Retired', label: 'Retired' },
+    { value: 'Other', label: 'Other' },
+  ],
+  marital_statuses: [
+    { value: 'never_married', label: 'Never Married' },
+    { value: 'divorced', label: 'Divorced' },
+    { value: 'widowed', label: 'Widowed' },
+    { value: 'separated', label: 'Separated' },
+  ],
+  managed_by: [
+    { value: 'myself', label: 'Myself (Candidate)' },
+    { value: 'parent', label: 'Parent (Father / Mother)' },
+    { value: 'sibling', label: 'Brother / Sister' },
+    { value: 'guardian', label: 'Guardian' },
+    { value: 'family', label: 'Other Family Member' },
+  ],
+};
 
-const EDUCATIONS = [
-  "Doctorate / PhD",
-  "Master's Degree",
-  "Bachelor's (4 Years / Honors)",
-  "Bachelor's (2 Years)",
-  "Chartered Accountant / ACCA",
-  "Medical (MBBS / BDS)",
-  "Engineering (BE / BS)",
-  "Intermediate / A-Levels",
-  "Matric / O-Levels",
-  "Other Qualification",
-];
-
-const MARITAL_STATUSES = [
-  { value: 'never_married', label: 'Never Married' },
-  { value: 'divorced', label: 'Divorced' },
-  { value: 'widowed', label: 'Widowed' },
-  { value: 'separated', label: 'Separated' },
-];
-
-const MANAGED_BY_OPTIONS = [
-  { value: 'myself', label: 'Myself (Candidate)' },
-  { value: 'parent', label: 'Parent (Father / Mother)' },
-  { value: 'sibling', label: 'Brother / Sister' },
-  { value: 'guardian', label: 'Guardian' },
-  { value: 'family', label: 'Other Family Member' },
-];
-
-// Generates height options from 135 cm (4'5") to 213 cm (7'0")
-const HEIGHT_OPTIONS = Array.from({ length: 79 }, (_, i) => {
-  const cm = 135 + i;
+// Generates height options from 120 cm (3'11") to 220 cm (7'3")
+const HEIGHT_OPTIONS = Array.from({ length: 101 }, (_, i) => {
+  const cm = 120 + i;
   const totalInches = Math.round(cm / 2.54);
   const feet = Math.floor(totalInches / 12);
   const inches = totalInches % 12;
@@ -78,6 +107,7 @@ export default function EditProfilePage() {
   const [submitting, setSubmitting] = useState(false);
   const [generalError, setGeneralError] = useState('');
   const [errors, setErrors] = useState({});
+  const [options, setOptions] = useState(FALLBACK_OPTIONS);
 
   const [formData, setFormData] = useState({
     gender: 'male',
@@ -85,42 +115,56 @@ export default function EditProfilePage() {
     religion: 'Islam',
     sect: 'Sunni',
     city: 'Lahore',
-    education: "Bachelor's (4 Years / Honors)",
-    profession: '',
+    education: "Bachelor's",
+    profession: 'Software / IT',
     marital_status: 'never_married',
     height: 175,
     about: '',
+    family_background: '',
     managed_by: 'myself',
   });
 
   useEffect(() => {
-    const fetchExisting = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await getProfile();
-        if (res.data) {
+        const [optRes, profRes] = await Promise.allSettled([
+          getProfileOptions(),
+          getProfile(),
+        ]);
+
+        if (optRes.status === 'fulfilled' && optRes.value?.data) {
+          setOptions((prev) => ({
+            ...prev,
+            ...optRes.value.data,
+          }));
+        }
+
+        if (profRes.status === 'fulfilled' && profRes.value?.data) {
+          const d = profRes.value.data;
           setFormData({
-            gender: res.data.gender || 'male',
-            date_of_birth: res.data.date_of_birth || '',
-            religion: res.data.religion || 'Islam',
-            sect: res.data.sect || '',
-            city: res.data.city || 'Lahore',
-            education: res.data.education || "Bachelor's (4 Years / Honors)",
-            profession: res.data.profession || '',
-            marital_status: res.data.marital_status || 'never_married',
-            height: res.data.height || 175,
-            about: res.data.about || '',
-            managed_by: res.data.managed_by || 'myself',
+            gender: d.gender || 'male',
+            date_of_birth: d.date_of_birth || '',
+            religion: d.religion || 'Islam',
+            sect: d.sect || 'Sunni',
+            city: d.city || 'Lahore',
+            education: d.education || "Bachelor's",
+            profession: d.profession || 'Software / IT',
+            marital_status: d.marital_status || 'never_married',
+            height: d.height || 175,
+            about: d.about || '',
+            family_background: d.family_background || '',
+            managed_by: d.managed_by || 'myself',
           });
         }
       } catch (err) {
-        setGeneralError('Could not load profile data.');
+        setGeneralError('Could not load profile configuration.');
       } finally {
         setLoading(false);
       }
     };
 
-    fetchExisting();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -158,7 +202,7 @@ export default function EditProfilePage() {
   if (loading) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-16">
-        <LoadingState text="Loading profile form..." />
+        <LoadingState text="Loading matrimonial profile form..." />
       </div>
     );
   }
@@ -178,17 +222,20 @@ export default function EditProfilePage() {
           <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900 tracking-tight">
             Edit Matrimonial Profile
           </h1>
+          <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
+            Information is structured using standardized options to maintain privacy and searchability.
+          </p>
         </div>
       </div>
 
       {generalError && (
-        <Alert variant="danger" title="Validation Error">
+        <Alert variant="danger" title="Validation Notice">
           {generalError}
         </Alert>
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Card 1: Core Identification & Demographics */}
+        {/* Card 1: Core Demographics */}
         <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
           <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
             1. Basic Demographics
@@ -201,10 +248,7 @@ export default function EditProfilePage() {
               value={formData.gender}
               onChange={handleChange}
               error={errors.gender?.[0]}
-              options={[
-                { value: 'male', label: 'Male' },
-                { value: 'female', label: 'Female' },
-              ]}
+              options={options.genders}
               required
             />
 
@@ -215,7 +259,7 @@ export default function EditProfilePage() {
               value={formData.date_of_birth}
               onChange={handleChange}
               error={errors.date_of_birth?.[0]}
-              helperText="Candidate must be at least 18 years old. Stored privately."
+              helperText="Candidate must be 18 to 80 years old. DOB is strictly private; only calculated age is shown to others."
               required
             />
 
@@ -235,7 +279,7 @@ export default function EditProfilePage() {
               value={formData.marital_status}
               onChange={handleChange}
               error={errors.marital_status?.[0]}
-              options={MARITAL_STATUSES}
+              options={options.marital_statuses}
               required
             />
           </div>
@@ -249,32 +293,33 @@ export default function EditProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Select
-              label="Current City (Pakistan or Overseas)"
+              label="Current City"
               name="city"
               value={formData.city}
               onChange={handleChange}
               error={errors.city?.[0]}
-              options={CITIES.map((c) => ({ value: c, label: c }))}
+              options={options.cities}
               required
             />
 
-            <Input
+            <Select
               label="Religion"
               name="religion"
               value={formData.religion}
               onChange={handleChange}
               error={errors.religion?.[0]}
-              placeholder="e.g. Islam"
+              options={options.religions}
               required
             />
 
-            <Input
-              label="Sect / Branch (Optional)"
+            <Select
+              label="Sect / Branch"
               name="sect"
               value={formData.sect}
               onChange={handleChange}
               error={errors.sect?.[0]}
-              placeholder="e.g. Sunni, Shia, Ahle-Hadith, etc."
+              options={options.sects}
+              required
             />
 
             <Select
@@ -283,16 +328,16 @@ export default function EditProfilePage() {
               value={formData.managed_by}
               onChange={handleChange}
               error={errors.managed_by?.[0]}
-              options={MANAGED_BY_OPTIONS}
+              options={options.managed_by}
               required
             />
           </div>
         </Card>
 
-        {/* Card 3: Education & Career */}
+        {/* Card 3: Education & Profession */}
         <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
           <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
-            3. Education & Profession
+            3. Education & Career
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -302,39 +347,75 @@ export default function EditProfilePage() {
               value={formData.education}
               onChange={handleChange}
               error={errors.education?.[0]}
-              options={EDUCATIONS.map((ed) => ({ value: ed, label: ed }))}
+              options={options.educations}
               required
             />
 
-            <Input
-              label="Profession / Occupation"
+            <Select
+              label="Profession / Field"
               name="profession"
               value={formData.profession}
               onChange={handleChange}
               error={errors.profession?.[0]}
-              placeholder="e.g. Software Engineer, Doctor, Banker..."
+              options={options.professions}
               required
             />
           </div>
         </Card>
 
-        {/* Card 4: About & Family Background */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
-            4. About & Family Background
-          </h2>
+        {/* Card 4: Private Information (Strictly Protected) */}
+        <Card className="p-6 sm:p-8 bg-stone-50/70 border-2 border-stone-300 shadow-md space-y-5">
+          <div className="flex items-center justify-between pb-2 border-b-2 border-stone-200">
+            <div className="flex items-center gap-2">
+              <Lock className="w-5 h-5 text-burgundy-800" />
+              <h2 className="text-base font-serif font-extrabold text-burgundy-900">
+                4. Private Information (Protected)
+              </h2>
+            </div>
+            <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300 inline-flex items-center gap-1">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              Protected
+            </span>
+          </div>
 
-          <Textarea
-            label="Brief Introduction & Family Values"
-            name="about"
-            rows={5}
-            maxLength={2000}
-            value={formData.about}
-            onChange={handleChange}
-            error={errors.about?.[0]}
-            placeholder="Share details regarding family background, personal interests, personality, and religious outlook. Do NOT share private contact numbers or addresses."
-            helperText="Clear and respectful descriptions help suitable families initiate meaningful inquiry."
-          />
+          <div className="p-3.5 rounded-xl bg-burgundy-50 border border-burgundy-200 text-xs text-burgundy-950 font-medium space-y-1">
+            <p className="font-bold flex items-center gap-1.5">
+              🔒 Privacy Protection Guarantee
+            </p>
+            <p className="leading-relaxed">
+              These details are <strong>never</strong> shown on public profile discovery or search results.
+              They are only shared after a mutual rishta request is accepted, contact unlock fee is paid, and dual OTP verification is completed.
+            </p>
+            <p className="text-burgundy-900 font-bold pt-1">
+              ⚠️ Strict Rule: Do NOT write phone numbers, email addresses, social handles, or street addresses here.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            <Textarea
+              label="About Candidate (Optional)"
+              name="about"
+              rows={4}
+              maxLength={2000}
+              value={formData.about}
+              onChange={handleChange}
+              error={errors.about?.[0]}
+              placeholder="Describe personality, hobbies, life outlook, values, and religious practice..."
+              helperText="Optional for profile activation. Max 2,000 characters."
+            />
+
+            <Textarea
+              label="Family Background (Optional)"
+              name="family_background"
+              rows={4}
+              maxLength={2000}
+              value={formData.family_background}
+              onChange={handleChange}
+              error={errors.family_background?.[0]}
+              placeholder="Describe parents, siblings, family traditions, values, and native origin..."
+              helperText="Optional for profile activation. Max 2,000 characters."
+            />
+          </div>
         </Card>
 
         {/* Action Buttons */}

@@ -2,8 +2,10 @@
 
 namespace App\Http\Requests\Profile;
 
+use App\Constants\ProfileOptions;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreProfileRequest extends FormRequest
 {
@@ -27,17 +29,18 @@ class StoreProfileRequest extends FormRequest
         $minDate = now()->subYears(80)->format('Y-m-d');
 
         return [
-            'gender' => ['required', 'string', 'in:male,female'],
+            'gender' => ['required', 'string', Rule::in(array_keys(ProfileOptions::GENDERS))],
             'date_of_birth' => ['required', 'date', 'before_or_equal:' . $maxDate, 'after_or_equal:' . $minDate],
-            'religion' => ['required', 'string', 'max:64'],
-            'sect' => ['nullable', 'string', 'max:64'],
-            'city' => ['required', 'string', 'max:100'],
-            'education' => ['required', 'string', 'max:100'],
-            'profession' => ['required', 'string', 'max:150'],
-            'marital_status' => ['required', 'string', 'in:never_married,divorced,widowed,separated'],
+            'religion' => ['required', 'string', Rule::in(array_keys(ProfileOptions::RELIGIONS))],
+            'sect' => ['nullable', 'string', Rule::in(array_keys(ProfileOptions::SECTS))],
+            'city' => ['required', 'string', Rule::in(array_keys(ProfileOptions::CITIES))],
+            'education' => ['required', 'string', Rule::in(array_keys(ProfileOptions::EDUCATIONS))],
+            'profession' => ['required', 'string', Rule::in(array_keys(ProfileOptions::PROFESSIONS))],
+            'marital_status' => ['required', 'string', Rule::in(array_keys(ProfileOptions::MARITAL_STATUSES))],
             'height' => ['required', 'integer', 'min:120', 'max:230'], // height in cm
             'about' => ['nullable', 'string', 'max:2000'],
-            'managed_by' => ['required', 'string', 'in:myself,parent,sibling,guardian,family'],
+            'family_background' => ['nullable', 'string', 'max:2000'],
+            'managed_by' => ['required', 'string', Rule::in(array_keys(ProfileOptions::MANAGED_BY))],
         ];
     }
 

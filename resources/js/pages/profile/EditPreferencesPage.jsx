@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
-import { getPreferences, savePreferences } from '../../api/profile';
+import { getPreferences, savePreferences, getProfileOptions } from '../../api/profile';
 import Card from '../../components/ui/Card';
 import Input from '../../components/ui/Input';
 import Select from '../../components/ui/Select';
@@ -10,27 +10,70 @@ import Alert from '../../components/ui/Alert';
 import LoadingState from '../../components/ui/LoadingState';
 import { Sliders, Save, ArrowLeft, CheckSquare, Square } from 'lucide-react';
 
-const CITIES = [
-  'Lahore',
-  'Karachi',
-  'Islamabad',
-  'Rawalpindi',
-  'Faisalabad',
-  'Multan',
-  'Peshawar',
-  'Quetta',
-  'Sialkot',
-  'Gujranwala',
-  'Hyderabad',
-  'Bahawalpur',
-  'Overseas / Other',
-];
+const FALLBACK_OPTIONS = {
+  genders: [
+    { value: 'male', label: 'Male' },
+    { value: 'female', label: 'Female' },
+  ],
+  religions: [
+    { value: 'Islam', label: 'Islam' },
+  ],
+  sects: [
+    { value: 'Sunni', label: 'Sunni' },
+    { value: 'Shia', label: 'Shia' },
+    { value: 'Ahle-Hadith', label: 'Ahle-Hadith' },
+    { value: 'Other', label: 'Other' },
+    { value: 'Prefer not to say', label: 'Prefer not to say' },
+  ],
+  cities: [
+    { value: 'Karachi', label: 'Karachi' },
+    { value: 'Lahore', label: 'Lahore' },
+    { value: 'Islamabad', label: 'Islamabad' },
+    { value: 'Rawalpindi', label: 'Rawalpindi' },
+    { value: 'Faisalabad', label: 'Faisalabad' },
+    { value: 'Multan', label: 'Multan' },
+    { value: 'Peshawar', label: 'Peshawar' },
+    { value: 'Quetta', label: 'Quetta' },
+    { value: 'Hyderabad', label: 'Hyderabad' },
+    { value: 'Gujranwala', label: 'Gujranwala' },
+    { value: 'Sialkot', label: 'Sialkot' },
+    { value: 'Bahawalpur', label: 'Bahawalpur' },
+    { value: 'Sargodha', label: 'Sargodha' },
+    { value: 'Abbottabad', label: 'Abbottabad' },
+    { value: 'Sukkur', label: 'Sukkur' },
+    { value: 'Other', label: 'Other' },
+  ],
+  educations: [
+    { value: 'Matric / O-Level', label: 'Matric / O-Level' },
+    { value: 'Intermediate / A-Level', label: 'Intermediate / A-Level' },
+    { value: 'Diploma', label: 'Diploma' },
+    { value: "Bachelor's", label: "Bachelor's" },
+    { value: "Master's", label: "Master's" },
+    { value: 'MPhil', label: 'MPhil' },
+    { value: 'PhD', label: 'PhD' },
+    { value: 'Other', label: 'Other' },
+  ],
+  marital_statuses: [
+    { value: 'never_married', label: 'Never Married' },
+    { value: 'divorced', label: 'Divorced' },
+    { value: 'widowed', label: 'Widowed' },
+    { value: 'separated', label: 'Separated' },
+  ],
+};
 
-const MARITAL_STATUS_OPTIONS = [
-  { value: 'never_married', label: 'Never Married' },
-  { value: 'divorced', label: 'Divorced' },
-  { value: 'widowed', label: 'Widowed' },
-  { value: 'separated', label: 'Separated' },
+// Generates height options from 120 cm (3'11") to 220 cm (7'3")
+const HEIGHT_OPTIONS = [
+  { value: '', label: 'Any Height' },
+  ...Array.from({ length: 101 }, (_, i) => {
+    const cm = 120 + i;
+    const totalInches = Math.round(cm / 2.54);
+    const feet = Math.floor(totalInches / 12);
+    const inches = totalInches % 12;
+    return {
+      value: cm,
+      label: `${feet}'${inches}" (${cm} cm)`,
+    };
+  }),
 ];
 
 export default function EditPreferencesPage() {
@@ -40,6 +83,7 @@ export default function EditPreferencesPage() {
   const [submitting, setSubmitting] = useState(false);
   const [generalError, setGeneralError] = useState('');
   const [errors, setErrors] = useState({});
+  const [options, setOptions] = useState(FALLBACK_OPTIONS);
 
   const [formData, setFormData] = useState({
     preferred_gender: 'female',
@@ -48,29 +92,41 @@ export default function EditPreferencesPage() {
     preferred_cities: ['Lahore', 'Islamabad'],
     preferred_religion: 'Islam',
     preferred_sect: '',
-    min_height: 155,
-    max_height: 180,
-    preferred_education: "Bachelor's Degree or Higher",
+    min_height: '',
+    max_height: '',
+    preferred_education: '',
     preferred_marital_status: ['never_married'],
   });
 
   useEffect(() => {
-    const fetchExisting = async () => {
+    const fetchData = async () => {
       setLoading(true);
       try {
-        const res = await getPreferences();
-        if (res.data) {
+        const [optRes, prefRes] = await Promise.allSettled([
+          getProfileOptions(),
+          getPreferences(),
+        ]);
+
+        if (optRes.status === 'fulfilled' && optRes.value?.data) {
+          setOptions((prev) => ({
+            ...prev,
+            ...optRes.value.data,
+          }));
+        }
+
+        if (prefRes.status === 'fulfilled' && prefRes.value?.data) {
+          const d = prefRes.value.data;
           setFormData({
-            preferred_gender: res.data.preferred_gender || 'female',
-            min_age: res.data.min_age || 20,
-            max_age: res.data.max_age || 30,
-            preferred_cities: res.data.preferred_cities || [],
-            preferred_religion: res.data.preferred_religion || 'Islam',
-            preferred_sect: res.data.preferred_sect || '',
-            min_height: res.data.min_height || '',
-            max_height: res.data.max_height || '',
-            preferred_education: res.data.preferred_education || '',
-            preferred_marital_status: res.data.preferred_marital_status || ['never_married'],
+            preferred_gender: d.preferred_gender || 'female',
+            min_age: d.min_age || 20,
+            max_age: d.max_age || 30,
+            preferred_cities: d.preferred_cities || [],
+            preferred_religion: d.preferred_religion || 'Islam',
+            preferred_sect: d.preferred_sect || '',
+            min_height: d.min_height || '',
+            max_height: d.max_height || '',
+            preferred_education: d.preferred_education || '',
+            preferred_marital_status: d.preferred_marital_status || ['never_married'],
           });
         }
       } catch (err) {
@@ -84,7 +140,7 @@ export default function EditPreferencesPage() {
       }
     };
 
-    fetchExisting();
+    fetchData();
   }, []);
 
   const handleChange = (e) => {
@@ -164,7 +220,7 @@ export default function EditPreferencesPage() {
           Partner Preferences
         </h1>
         <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-          Specify what you look for in a compatible matrimonial match. These criteria will guide match discovery.
+          Specify what you look for in a compatible matrimonial match. These criteria use standardized options.
         </p>
       </div>
 
@@ -229,13 +285,14 @@ export default function EditPreferencesPage() {
           <p className="text-xs text-stone-500 font-medium">Select one or more cities you would consider:</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
-            {CITIES.map((city) => {
-              const selected = formData.preferred_cities.includes(city);
+            {options.cities.map((cityOpt) => {
+              const cityVal = cityOpt.value;
+              const selected = formData.preferred_cities.includes(cityVal);
               return (
                 <button
-                  key={city}
+                  key={cityVal}
                   type="button"
-                  onClick={() => handleCityToggle(city)}
+                  onClick={() => handleCityToggle(cityVal)}
                   className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors cursor-pointer text-left ${
                     selected
                       ? 'bg-burgundy-50 border-burgundy-700 text-burgundy-950'
@@ -247,7 +304,7 @@ export default function EditPreferencesPage() {
                   ) : (
                     <Square className="w-4 h-4 text-stone-400 shrink-0" />
                   )}
-                  <span>{city}</span>
+                  <span>{cityOpt.label}</span>
                 </button>
               );
             })}
@@ -261,32 +318,41 @@ export default function EditPreferencesPage() {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <Input
+            <Select
               label="Preferred Religion"
               name="preferred_religion"
               value={formData.preferred_religion}
               onChange={handleChange}
               error={errors.preferred_religion?.[0]}
-              placeholder="e.g. Islam"
+              options={[
+                { value: '', label: 'Any Religion' },
+                ...options.religions,
+              ]}
             />
 
-            <Input
-              label="Preferred Sect (Optional)"
+            <Select
+              label="Preferred Sect"
               name="preferred_sect"
               value={formData.preferred_sect}
               onChange={handleChange}
               error={errors.preferred_sect?.[0]}
-              placeholder="e.g. Sunni, Shia, Ahle-Hadith, or Any"
+              options={[
+                { value: '', label: 'Any Sect / Branch' },
+                ...options.sects,
+              ]}
             />
 
             <div className="sm:col-span-2">
-              <Input
-                label="Preferred Education / Qualification"
+              <Select
+                label="Preferred Minimum Education"
                 name="preferred_education"
                 value={formData.preferred_education}
                 onChange={handleChange}
                 error={errors.preferred_education?.[0]}
-                placeholder="e.g. Bachelor's or Master's, Doctor, Engineer..."
+                options={[
+                  { value: '', label: 'Any Educational Qualification' },
+                  ...options.educations,
+                ]}
               />
             </div>
           </div>
@@ -299,28 +365,22 @@ export default function EditPreferencesPage() {
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            <Input
-              label="Minimum Height (cm, e.g. 155 for approx 5'1)"
+            <Select
+              label="Minimum Height"
               name="min_height"
-              type="number"
-              min="120"
-              max="230"
               value={formData.min_height}
               onChange={handleChange}
               error={errors.min_height?.[0]}
-              placeholder="150"
+              options={HEIGHT_OPTIONS}
             />
 
-            <Input
-              label="Maximum Height (cm, e.g. 185 for approx 6'1)"
+            <Select
+              label="Maximum Height"
               name="max_height"
-              type="number"
-              min="120"
-              max="230"
               value={formData.max_height}
               onChange={handleChange}
               error={errors.max_height?.[0]}
-              placeholder="190"
+              options={HEIGHT_OPTIONS}
             />
           </div>
 
@@ -329,7 +389,7 @@ export default function EditPreferencesPage() {
               Acceptable Marital Status
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
-              {MARITAL_STATUS_OPTIONS.map((opt) => {
+              {options.marital_statuses.map((opt) => {
                 const selected = formData.preferred_marital_status.includes(opt.value);
                 return (
                   <button

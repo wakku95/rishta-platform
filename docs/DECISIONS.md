@@ -45,3 +45,8 @@
 - **Decision**: Use cryptographically random, uppercase alphanumeric profile codes (`RK-XXXXXX`) generated upon model creation. Use string columns validated via Laravel Form Requests rather than rigid database ENUMs for values like `marital_status`, `managed_by`, and `profile_status`.
 - **Consequence**: Prevents platform business intelligence leakage and enumeration attacks; allows frictionless additions of new options without database migrations.
 
+## ADR 010: Controlled Public Fields & Private Information Segregation
+- **Context**: Free-form text fields in public profiles invite phone number/email leakage and require intensive moderation. Additionally, candidates and families need to know their sensitive family details and personal statements are not publicly readable during casual browsing.
+- **Decision**: All public biodata fields (gender, religion, sect, city, education, profession, marital status, height, managed by) use canonical controlled options defined in `App\Constants\ProfileOptions` and exposed via `GET /api/profile/options`. Free-text fields (`about`, `family_background`) are strictly categorized as **Private Information** and excluded from `PublicProfileResource`. Public views expose calculated age only (never full DOB). Private information is optional for profile activation and is only released after mutual rishta acceptance, unlock fee payment, and dual OTP verification.
+- **Consequence**: Pre-emptively prevents contact leakage, improves search filtering reliability, guarantees privacy for families, and simplifies profile moderation.
+

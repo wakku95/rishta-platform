@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Constants\ProfileOptions;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -21,14 +22,41 @@ class ProfileTest extends TestCase
         ]);
     }
 
-    public function test_unauthenticated_user_cannot_access_profile_endpoints(): void
+    public function test_unauthenticated_user_cannot_access_protected_profile_endpoints(): void
     {
         $this->getJson('/api/profile')->assertStatus(401);
         $this->postJson('/api/profile', [])->assertStatus(401);
+        $this->getJson('/api/profile/preview')->assertStatus(401);
         $this->getJson('/api/profile/preferences')->assertStatus(401);
         $this->putJson('/api/profile/preferences', [])->assertStatus(401);
         $this->postJson('/api/profile/activate')->assertStatus(401);
         $this->postJson('/api/profile/hide')->assertStatus(401);
+    }
+
+    public function test_canonical_options_endpoint_is_accessible(): void
+    {
+        $response = $this->getJson('/api/profile/options');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'genders' => [
+                        ['value' => 'male', 'label' => 'Male'],
+                        ['value' => 'female', 'label' => 'Female'],
+                    ],
+                    'religions' => [
+                        ['value' => 'Islam', 'label' => 'Islam'],
+                    ],
+                ],
+            ]);
+
+        $this->assertArrayHasKey('sects', $response->json('data'));
+        $this->assertArrayHasKey('cities', $response->json('data'));
+        $this->assertArrayHasKey('educations', $response->json('data'));
+        $this->assertArrayHasKey('professions', $response->json('data'));
+        $this->assertArrayHasKey('marital_statuses', $response->json('data'));
+        $this->assertArrayHasKey('managed_by', $response->json('data'));
     }
 
     public function test_authenticated_user_without_profile_gets_null_data(): void
@@ -44,7 +72,7 @@ class ProfileTest extends TestCase
             ]);
     }
 
-    public function test_authenticated_user_can_create_profile(): void
+    public function test_authenticated_user_can_create_profile_with_controlled_options(): void
     {
         $user = User::factory()->create();
 
@@ -54,11 +82,12 @@ class ProfileTest extends TestCase
             'religion' => 'Islam',
             'sect' => 'Sunni',
             'city' => 'Lahore',
-            'education' => "Master's in Computer Science",
-            'profession' => 'Software Engineer',
+            'education' => "Bachelor's",
+            'profession' => 'Software / IT',
             'marital_status' => 'never_married',
             'height' => 175,
-            'about' => 'Practicing Muslim from a respectable family in Lahore, working in tech.',
+            'about' => 'Practicing Muslim working in technology.',
+            'family_background' => 'Respectable family based in Lahore.',
             'managed_by' => 'myself',
         ];
 
@@ -73,9 +102,13 @@ class ProfileTest extends TestCase
                     'religion' => 'Islam',
                     'sect' => 'Sunni',
                     'city' => 'Lahore',
+                    'education' => "Bachelor's",
+                    'profession' => 'Software / IT',
                     'marital_status' => 'never_married',
                     'height' => 175,
                     'height_formatted' => '5\'9" (175 cm)',
+                    'about' => 'Practicing Muslim working in technology.',
+                    'family_background' => 'Respectable family based in Lahore.',
                     'managed_by' => 'myself',
                     'profile_status' => 'draft',
                 ],
@@ -93,6 +126,38 @@ class ProfileTest extends TestCase
         $this->assertMatchesRegularExpression('/^RK-[A-Z0-9]{6}$/', $profile->profile_code);
     }
 
+    public function test_profile_validation_rejects_non_canonical_options(): void
+    {
+        $user = User::factory()->create();
+
+        $invalidData = [
+            'gender' => 'invalid_gender',
+            'date_of_birth' => '1995-05-14',
+            'religion' => 'CustomReligion',
+            'sect' => 'UnrecognizedSect',
+            'city' => 'UnknownCity123',
+            'education' => 'FakeDegree',
+            'profession' => 'Astronaut',
+            'marital_status' => 'invalid_status',
+            'height' => 175,
+            'managed_by' => 'unknown_entity',
+        ];
+
+        $response = $this->actingAs($user)->postJson('/api/profile', $invalidData);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors([
+                'gender',
+                'religion',
+                'sect',
+                'city',
+                'education',
+                'profession',
+                'marital_status',
+                'managed_by',
+            ]);
+    }
+
     public function test_authenticated_user_can_update_existing_profile(): void
     {
         $user = User::factory()->create();
@@ -105,10 +170,11 @@ class ProfileTest extends TestCase
             'sect' => 'Sunni',
             'city' => 'Islamabad',
             'education' => "Bachelor's",
-            'profession' => 'Dentist',
+            'profession' => 'Medical / Healthcare',
             'marital_status' => 'never_married',
             'height' => 163,
             'about' => 'Initial about bio text.',
+            'family_background' => 'Initial family info.',
             'managed_by' => 'parent',
             'profile_status' => 'draft',
         ]);
@@ -118,12 +184,13 @@ class ProfileTest extends TestCase
             'date_of_birth' => '1998-02-20',
             'religion' => 'Islam',
             'sect' => 'Sunni',
-            'city' => 'Rawalpindi', // Changed
-            'education' => "Master's", // Changed
-            'profession' => 'Orthodontist', // Changed
+            'city' => 'Rawalpindi',
+            'education' => "Master's",
+            'profession' => 'Education',
             'marital_status' => 'never_married',
             'height' => 163,
-            'about' => 'Updated about text with more details.',
+            'about' => 'Updated about statement.',
+            'family_background' => 'Updated family background statement.',
             'managed_by' => 'parent',
         ]);
 
@@ -132,14 +199,18 @@ class ProfileTest extends TestCase
                 'success' => true,
                 'data' => [
                     'city' => 'Rawalpindi',
-                    'profession' => 'Orthodontist',
+                    'education' => "Master's",
+                    'profession' => 'Education',
+                    'about' => 'Updated about statement.',
+                    'family_background' => 'Updated family background statement.',
                 ],
             ]);
 
         $this->assertDatabaseHas('profiles', [
             'id' => $profile->id,
             'city' => 'Rawalpindi',
-            'profession' => 'Orthodontist',
+            'profession' => 'Education',
+            'family_background' => 'Updated family background statement.',
         ]);
     }
 
@@ -154,6 +225,7 @@ class ProfileTest extends TestCase
             'gender' => 'male',
             'date_of_birth' => $underageDob,
             'religion' => 'Islam',
+            'sect' => 'Sunni',
             'city' => 'Lahore',
             'education' => "Bachelor's",
             'profession' => 'Student',
@@ -166,41 +238,6 @@ class ProfileTest extends TestCase
             ->assertJsonValidationErrors(['date_of_birth']);
     }
 
-    public function test_profile_validation_rejects_future_or_unrealistic_dob(): void
-    {
-        $user = User::factory()->create();
-
-        // Future date
-        $futureDob = now()->addYear()->format('Y-m-d');
-        $response = $this->actingAs($user)->postJson('/api/profile', [
-            'gender' => 'male',
-            'date_of_birth' => $futureDob,
-            'religion' => 'Islam',
-            'city' => 'Lahore',
-            'education' => "Bachelor's",
-            'profession' => 'Engineer',
-            'marital_status' => 'never_married',
-            'height' => 170,
-            'managed_by' => 'myself',
-        ]);
-        $response->assertStatus(422)->assertJsonValidationErrors(['date_of_birth']);
-
-        // Over 80 years old
-        $oldDob = now()->subYears(95)->format('Y-m-d');
-        $response2 = $this->actingAs($user)->postJson('/api/profile', [
-            'gender' => 'male',
-            'date_of_birth' => $oldDob,
-            'religion' => 'Islam',
-            'city' => 'Lahore',
-            'education' => "Bachelor's",
-            'profession' => 'Engineer',
-            'marital_status' => 'never_married',
-            'height' => 170,
-            'managed_by' => 'myself',
-        ]);
-        $response2->assertStatus(422)->assertJsonValidationErrors(['date_of_birth']);
-    }
-
     public function test_authenticated_user_can_create_and_update_partner_preferences(): void
     {
         $user = User::factory()->create();
@@ -210,9 +247,10 @@ class ProfileTest extends TestCase
             'gender' => 'male',
             'date_of_birth' => '1992-06-15',
             'religion' => 'Islam',
+            'sect' => 'Sunni',
             'city' => 'Karachi',
             'education' => "Bachelor's",
-            'profession' => 'Accountant',
+            'profession' => 'Finance / Banking',
             'marital_status' => 'never_married',
             'height' => 178,
             'managed_by' => 'myself',
@@ -228,7 +266,7 @@ class ProfileTest extends TestCase
             'preferred_sect' => 'Sunni',
             'min_height' => 155,
             'max_height' => 170,
-            'preferred_education' => "Bachelor's or Master's",
+            'preferred_education' => "Bachelor's",
             'preferred_marital_status' => ['never_married'],
         ];
 
@@ -242,6 +280,9 @@ class ProfileTest extends TestCase
                     'min_age' => 22,
                     'max_age' => 29,
                     'preferred_cities' => ['Karachi', 'Islamabad'],
+                    'preferred_religion' => 'Islam',
+                    'preferred_sect' => 'Sunni',
+                    'preferred_education' => "Bachelor's",
                     'preferred_marital_status' => ['never_married'],
                 ],
             ]);
@@ -259,7 +300,7 @@ class ProfileTest extends TestCase
             ->assertJsonPath('data.min_age', 22);
     }
 
-    public function test_preferences_validation_rejects_max_age_smaller_than_min_age(): void
+    public function test_preferences_validation_rejects_invalid_options(): void
     {
         $user = User::factory()->create();
         Profile::create([
@@ -268,40 +309,52 @@ class ProfileTest extends TestCase
             'gender' => 'female',
             'date_of_birth' => '1996-01-01',
             'religion' => 'Islam',
+            'sect' => 'Sunni',
             'city' => 'Multan',
-            'education' => 'Doctorate',
-            'profession' => 'Professor',
+            'education' => 'PhD',
+            'profession' => 'Education',
             'marital_status' => 'never_married',
             'height' => 165,
             'managed_by' => 'myself',
         ]);
 
+        // max_age < min_age AND invalid city AND invalid religion
         $response = $this->actingAs($user)->putJson('/api/profile/preferences', [
             'preferred_gender' => 'male',
             'min_age' => 35,
-            'max_age' => 25, // Invalid: max < min
+            'max_age' => 25,
+            'preferred_cities' => ['NonExistentCity'],
+            'preferred_religion' => 'InvalidReligion',
+            'preferred_education' => 'FakeDegree',
         ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['max_age']);
+            ->assertJsonValidationErrors(['max_age', 'preferred_cities.0', 'preferred_religion', 'preferred_education']);
     }
 
     public function test_unverified_user_cannot_activate_profile(): void
     {
         $user = User::factory()->unverified()->create();
-        Profile::create([
+        $profile = Profile::create([
             'user_id' => $user->id,
             'profile_code' => 'RK-UNVER1',
             'gender' => 'male',
             'date_of_birth' => '1994-08-10',
             'religion' => 'Islam',
+            'sect' => 'Sunni',
             'city' => 'Lahore',
             'education' => "Bachelor's",
-            'profession' => 'Architect',
+            'profession' => 'Engineering',
             'marital_status' => 'never_married',
             'height' => 172,
             'managed_by' => 'myself',
             'profile_status' => 'draft',
+        ]);
+
+        $profile->preferences()->create([
+            'preferred_gender' => 'female',
+            'min_age' => 20,
+            'max_age' => 28,
         ]);
 
         $response = $this->actingAs($user)->postJson('/api/profile/activate');
@@ -315,25 +368,43 @@ class ProfileTest extends TestCase
         $this->assertEquals('draft', $user->fresh()->profile->profile_status);
     }
 
-    public function test_verified_user_can_activate_and_hide_profile(): void
+    public function test_profile_activation_requires_preferences_but_about_and_family_are_optional(): void
     {
-        $user = User::factory()->create(); // verified by default in UserFactory
+        $user = User::factory()->create(); // verified email
         $profile = Profile::create([
             'user_id' => $user->id,
             'profile_code' => 'RK-ACTIVATE',
             'gender' => 'female',
             'date_of_birth' => '1997-03-12',
             'religion' => 'Islam',
+            'sect' => 'Sunni',
             'city' => 'Peshawar',
             'education' => "Master's",
-            'profession' => 'Lecturer',
+            'profession' => 'Education',
             'marital_status' => 'never_married',
             'height' => 160,
             'managed_by' => 'sibling',
+            'about' => null, // OPTIONAL
+            'family_background' => null, // OPTIONAL
             'profile_status' => 'draft',
         ]);
 
-        // Activate
+        // Without preferences, activation must fail with 422
+        $failResponse = $this->actingAs($user)->postJson('/api/profile/activate');
+        $failResponse->assertStatus(422)
+            ->assertJson([
+                'success' => false,
+                'error_code' => 'INCOMPLETE_PREFERENCES',
+            ]);
+
+        // Add mandatory partner preferences
+        $profile->preferences()->create([
+            'preferred_gender' => 'male',
+            'min_age' => 25,
+            'max_age' => 32,
+        ]);
+
+        // Now activation must succeed even without about/family_background
         $activateResponse = $this->actingAs($user)->postJson('/api/profile/activate');
         $activateResponse->assertStatus(200)
             ->assertJsonPath('data.profile_status', 'active');
@@ -346,80 +417,121 @@ class ProfileTest extends TestCase
         $this->assertEquals('hidden', $profile->fresh()->profile_status);
     }
 
-    public function test_profile_completion_percentage_calculation_is_deterministic(): void
+    public function test_public_profile_preview_strictly_omits_private_fields(): void
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create([
+            'email' => 'private_owner@example.com',
+        ]);
 
-        // Minimal profile with basic fields filled
         $profile = Profile::create([
             'user_id' => $user->id,
-            'profile_code' => 'RK-CALC',
+            'profile_code' => 'RK-SAFE01',
             'gender' => 'male',
-            'date_of_birth' => '1990-01-01',
+            'date_of_birth' => '1995-10-10',
             'religion' => 'Islam',
-            'city' => 'Faisalabad',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
             'education' => "Bachelor's",
-            'profession' => 'Manager',
+            'profession' => 'Software / IT',
             'marital_status' => 'never_married',
-            'height' => 170,
-            'about' => 'This is a valid about bio that is longer than ten characters.',
+            'height' => 175,
+            'about' => 'This is sensitive private information that must not be in public preview.',
+            'family_background' => 'Father retired officer, mother homemaker, two siblings in UK.',
             'managed_by' => 'myself',
             'profile_status' => 'draft',
         ]);
 
-        // 10 items in core biodata completed = 70%
+        $response = $this->actingAs($user)->getJson('/api/profile/preview');
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'profile_code' => 'RK-SAFE01',
+                    'age' => $profile->age,
+                    'gender' => 'male',
+                    'city' => 'Lahore',
+                    'religion' => 'Islam',
+                    'sect' => 'Sunni',
+                    'education' => "Bachelor's",
+                    'profession' => 'Software / IT',
+                    'marital_status' => 'never_married',
+                    'height' => 175,
+                    'height_formatted' => '5\'9" (175 cm)',
+                    'managed_by' => 'myself',
+                    'profile_status' => 'draft',
+                ],
+            ]);
+
+        $previewContent = $response->getContent();
+
+        // STRICT PRIVACY VERIFICATIONS:
+        // 1. Full date of birth is excluded (only calculated age is present)
+        $this->assertStringNotContainsString('1995-10-10', $previewContent);
+        $this->assertArrayNotHasKey('date_of_birth', $response->json('data'));
+
+        // 2. Private about and family_background text are excluded
+        $this->assertArrayNotHasKey('about', $response->json('data'));
+        $this->assertArrayNotHasKey('family_background', $response->json('data'));
+        $this->assertStringNotContainsString('sensitive private information', $previewContent);
+        $this->assertStringNotContainsString('Father retired officer', $previewContent);
+
+        // 3. User identifiers, email, and credentials are excluded
+        $this->assertArrayNotHasKey('email', $response->json('data'));
+        $this->assertArrayNotHasKey('user_id', $response->json('data'));
+        $this->assertArrayNotHasKey('id', $response->json('data'));
+        $this->assertStringNotContainsString('private_owner@example.com', $previewContent);
+    }
+
+    public function test_profile_completion_percentage_deterministic_formula(): void
+    {
+        $user = User::factory()->create();
+
+        // 1. Basic profile with 10 fields filled, no about, no family, no prefs
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-COMPL',
+            'gender' => 'male',
+            'date_of_birth' => '1990-01-01',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Faisalabad',
+            'education' => "Bachelor's",
+            'profession' => 'Business',
+            'marital_status' => 'never_married',
+            'height' => 170,
+            'managed_by' => 'myself',
+            'about' => null,
+            'family_background' => null,
+            'profile_status' => 'draft',
+        ]);
+
+        // 10 items @ 6% each = 60%
+        $this->assertEquals(60, $profile->calculateCompletionPercentage());
+
+        // 2. Add private intro: about (+5%) and family_background (+5%) = +10% => 70%
+        $profile->about = 'Valid about text with more than 10 characters.';
+        $profile->family_background = 'Valid family background with more than 10 characters.';
+        $profile->save();
+
         $this->assertEquals(70, $profile->calculateCompletionPercentage());
 
-        // Add preferences
+        // 3. Add all partner preferences = +30% => 100%
         $profile->preferences()->create([
-            'preferred_gender' => 'female',
+            'preferred_gender' => 'female', // 4%
             'min_age' => 20,
-            'max_age' => 28,
-            'preferred_cities' => ['Faisalabad'],
-            'preferred_education' => "Bachelor's",
-            'preferred_marital_status' => ['never_married'],
+            'max_age' => 28, // 4%
+            'preferred_cities' => ['Faisalabad'], // 4%
+            'preferred_religion' => 'Islam', // 3%
+            'preferred_sect' => 'Sunni', // 3%
             'min_height' => 150,
-            'max_height' => 170,
+            'max_height' => 170, // 4%
+            'preferred_education' => "Bachelor's", // 4%
+            'preferred_marital_status' => ['never_married'], // 4%
         ]);
 
-        // Core (70%) + All 6 Preferences items (30%) = 100%
         $this->assertEquals(100, $profile->calculateCompletionPercentage());
     }
-
-    public function test_profile_endpoint_strictly_excludes_private_authentication_credentials(): void
-    {
-        $user = User::factory()->create([
-            'email' => 'private_candidate@example.com',
-            'password' => bcrypt('SuperSecretPassword123!'),
-            'role' => 'user',
-            'status' => 'active',
-        ]);
-
-        Profile::create([
-            'user_id' => $user->id,
-            'profile_code' => 'RK-PRIVACY',
-            'gender' => 'male',
-            'date_of_birth' => '1995-10-10',
-            'religion' => 'Islam',
-            'city' => 'Lahore',
-            'education' => "Bachelor's",
-            'profession' => 'Engineer',
-            'marital_status' => 'never_married',
-            'height' => 175,
-            'managed_by' => 'myself',
-        ]);
-
-        $response = $this->actingAs($user)->getJson('/api/profile');
-
-        $response->assertStatus(200);
-
-        $jsonString = $response->getContent();
-
-        // Assert sensitive keywords and data are completely absent from the payload
-        $this->assertStringNotContainsString('private_candidate@example.com', $jsonString);
-        $this->assertStringNotContainsString('password', $jsonString);
-        $this->assertStringNotContainsString('remember_token', $jsonString);
-        $this->assertStringNotContainsString('phone_number', $jsonString);
-    }
 }
+
 

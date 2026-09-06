@@ -47,3 +47,19 @@ export const hideProfile = async () => {
   const response = await api.post('/profile/hide');
   return response.data;
 };
+
+/**
+ * Fetch canonical profile options for dropdowns.
+ */
+export const getProfileOptions = async () => {
+  const response = await api.get('/profile/options');
+  return response.data;
+};
+
+/**
+ * Fetch the public preview of the profile (what other users see).
+ */
+export const getProfilePreview = async () => {
+  const response = await api.get('/profile/preview');
+  return response.data;
+};

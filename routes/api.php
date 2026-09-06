@@ -47,11 +47,15 @@ Route::middleware('auth:sanctum')->get('/user', [AuthController::class, 'me']);
 | Profile & Partner Preferences Routes (/api/profile)
 |--------------------------------------------------------------------------
 */
+// Canonical profile options
+Route::get('/profile/options', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'getOptions']);
+
 Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'show']);
     Route::post('/', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'storeOrUpdate']);
     Route::put('/', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'storeOrUpdate']);
 
+    Route::get('/preview', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'preview']);
     Route::get('/preferences', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'getPreferences']);
     Route::put('/preferences', [\App\Http\Controllers\Api\Profile\ProfileController::class, 'updatePreferences']);
 
