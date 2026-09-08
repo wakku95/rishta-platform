@@ -162,4 +162,22 @@ class FoundationTest extends TestCase
         $response->assertStatus(200)
             ->assertSee('id="app"', false);
     }
+
+    /**
+     * Test that Laravel 12 application instance supports rebinding public path for public_html deployment.
+     */
+    public function test_application_supports_custom_public_path_binding(): void
+    {
+        $customPath = base_path('../public_html');
+        $originalPath = app()->publicPath();
+
+        app()->usePublicPath($customPath);
+
+        $this->assertEquals($customPath, app()->publicPath());
+        $this->assertEquals($customPath, app('path.public'));
+
+        // Restore original path to avoid polluting subsequent tests
+        app()->usePublicPath($originalPath);
+        $this->assertEquals($originalPath, app()->publicPath());
+    }
 }
