@@ -23,6 +23,10 @@ import EditPreferencesPage from './pages/profile/EditPreferencesPage';
 import SearchProfilesPage from './pages/discovery/SearchProfilesPage';
 import CandidateDetailPage from './pages/discovery/CandidateDetailPage';
 
+// Requests & Shortlist Pages
+import ShortlistPage from './pages/requests/ShortlistPage';
+import RequestsPage from './pages/requests/RequestsPage';
+
 // Route Guards
 import GuestRoute from './components/auth/GuestRoute';
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -59,10 +63,12 @@ export default function App() {
               <Route path="profile/preferences" element={<EditPreferencesPage />} />
             </Route>
 
-            {/* Discovery & Search routes (requires verified email) */}
+            {/* Discovery & Shortlist & Requests routes (requires verified email) */}
             <Route element={<VerifiedRoute />}>
               <Route path="search" element={<SearchProfilesPage />} />
               <Route path="profiles/:profileCode" element={<CandidateDetailPage />} />
+              <Route path="shortlist" element={<ShortlistPage />} />
+              <Route path="requests" element={<RequestsPage />} />
             </Route>
 
             {/* 404 fallback */}

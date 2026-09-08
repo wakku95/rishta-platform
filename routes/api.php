@@ -73,4 +73,30 @@ Route::middleware('auth:sanctum')->prefix('discovery')->group(function () {
     Route::get('/profiles/{profile_code}', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'show']);
 });
 
+/*
+|--------------------------------------------------------------------------
+| Shortlists Routes (/api/shortlists)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('shortlists')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\Requests\ShortlistController::class, 'index']);
+    Route::post('/', [\App\Http\Controllers\Api\Requests\ShortlistController::class, 'store']);
+    Route::delete('/{profile_code}', [\App\Http\Controllers\Api\Requests\ShortlistController::class, 'destroy']);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Rishta Requests Routes (/api/requests)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('requests')->group(function () {
+    Route::post('/', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'store'])->middleware('throttle:10,1');
+    Route::get('/sent', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'sent']);
+    Route::get('/received', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'received']);
+    Route::get('/{request_code}', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'show']);
+    Route::post('/{request_code}/accept', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'accept']);
+    Route::post('/{request_code}/decline', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'decline']);
+    Route::post('/{request_code}/cancel', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'cancel']);
+});
+
 

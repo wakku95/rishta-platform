@@ -176,8 +176,41 @@ class DiscoveryController extends Controller
             );
         }
 
+        // Viewer context: shortlist status and active rishta request
+        $isShortlisted = \App\Models\Shortlist::where('user_id', $user->id)
+            ->where('profile_id', $profile->id)
+            ->exists();
+
+        $activePairHash = \App\Models\RishtaRequest::generateActivePairHash($user->id, $profile->user_id);
+        $activeRequest = \App\Models\RishtaRequest::where('active_pair_hash', $activePairHash)->first();
+
+        // If found, check lazy expiration
+        if ($activeRequest) {
+            $activeRequest->checkAndApplyLazyExpiration();
+            if ($activeRequest->status === \App\Models\RishtaRequest::STATUS_EXPIRED) {
+                $activeRequest = null;
+            }
+        }
+
+        $activeRequestData = null;
+        if ($activeRequest) {
+            $activeRequestData = [
+                'request_code' => $activeRequest->request_code,
+                'status' => $activeRequest->status,
+                'is_sender' => ($activeRequest->sender_id === $user->id),
+                'expires_at' => $activeRequest->expires_at?->toIso8601String(),
+                'created_at' => $activeRequest->created_at?->toIso8601String(),
+            ];
+        }
+
+        $profileData = (new PublicProfileResource($profile))->toArray($request);
+        $profileData['viewer_context'] = [
+            'is_shortlisted' => $isShortlisted,
+            'active_request' => $activeRequestData,
+        ];
+
         return $this->successResponse(
-            new PublicProfileResource($profile),
+            $profileData,
             'Candidate profile retrieved successfully.'
         );
     }

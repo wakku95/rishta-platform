@@ -96,6 +96,14 @@ class Profile extends Model
     }
 
     /**
+     * Get shortlists referencing this profile.
+     */
+    public function shortlists(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Shortlist::class);
+    }
+
+    /**
      * Calculate candidate's current age from date of birth.
      */
     public function getAgeAttribute(): ?int

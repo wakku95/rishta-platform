@@ -93,4 +93,35 @@ class FoundationTest extends TestCase
         $this->assertNotNull($smsService->getLastSent());
         $this->assertEquals('+923001234567', $smsService->getLastSent()['phone_number']);
     }
+
+    /**
+     * Test that GET / on the API domain returns the operational JSON response.
+     */
+    public function test_api_domain_root_returns_operational_json_response(): void
+    {
+        $response = $this->get('http://api.raabtanow.com/');
+
+        $response->assertStatus(200)
+            ->assertHeader('content-type', 'application/json')
+            ->assertExactJson([
+                'success' => true,
+                'message' => 'RaabtaNow API is operational.',
+                'version' => '1.0.0',
+            ]);
+    }
+
+    /**
+     * Test that GET / with Accept: application/json returns the operational JSON response.
+     */
+    public function test_root_with_json_accept_header_returns_operational_json_response(): void
+    {
+        $response = $this->getJson('/');
+
+        $response->assertStatus(200)
+            ->assertExactJson([
+                'success' => true,
+                'message' => 'RaabtaNow API is operational.',
+                'version' => '1.0.0',
+            ]);
+    }
 }

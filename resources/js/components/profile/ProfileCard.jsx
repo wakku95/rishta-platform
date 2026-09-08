@@ -1,16 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, GraduationCap, Briefcase, Ruler, ShieldCheck, HeartHandshake, Eye } from 'lucide-react';
+import { MapPin, GraduationCap, Briefcase, Ruler, ShieldCheck, HeartHandshake, Eye, Bookmark } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
+import { addToShortlist, removeFromShortlist } from '../../api/shortlist';
 
 /**
  * Matrimonial candidate summary card for search discovery results.
  * Strictly respects privacy: displays only public demographics without private statements or contacts.
  */
-export default function ProfileCard({ profile }) {
+export default function ProfileCard({ profile, isInitiallyShortlisted = false, onShortlistChange }) {
   if (!profile) return null;
+
+  const [isShortlisted, setIsShortlisted] = useState(isInitiallyShortlisted);
+  const [loadingShortlist, setLoadingShortlist] = useState(false);
+
+  const handleToggleShortlist = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (loadingShortlist) return;
+
+    setLoadingShortlist(true);
+    try {
+      if (isShortlisted) {
+        await removeFromShortlist(profile.profile_code);
+        setIsShortlisted(false);
+        if (onShortlistChange) onShortlistChange(profile.profile_code, false);
+      } else {
+        await addToShortlist(profile.profile_code);
+        setIsShortlisted(true);
+        if (onShortlistChange) onShortlistChange(profile.profile_code, true);
+      }
+    } catch (err) {
+      console.error('Shortlist error:', err);
+    } finally {
+      setLoadingShortlist(false);
+    }
+  };
 
   // Format marital status for presentation
   const formatMaritalStatus = (status) => {
@@ -65,12 +92,27 @@ export default function ProfileCard({ profile }) {
             </span>
           </div>
 
-          {profile.verifications?.email_verified && (
-            <Badge variant="success" className="inline-flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" />
-              <span>Verified</span>
-            </Badge>
-          )}
+          <div className="flex items-center gap-2">
+            {profile.verifications?.email_verified && (
+              <Badge variant="success" className="inline-flex items-center gap-1">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Verified</span>
+              </Badge>
+            )}
+
+            <button
+              onClick={handleToggleShortlist}
+              disabled={loadingShortlist}
+              title={isShortlisted ? 'Remove from shortlist' : 'Add to shortlist'}
+              className={`p-1.5 rounded-lg border transition-colors ${
+                isShortlisted
+                  ? 'bg-gold-50 border-gold-400 text-gold-700 hover:bg-gold-100'
+                  : 'bg-stone-50 border-stone-200 text-stone-400 hover:text-burgundy-800 hover:border-stone-300'
+              }`}
+            >
+              <Bookmark className={`w-4 h-4 ${isShortlisted ? 'fill-gold-600 text-gold-600' : ''}`} />
+            </button>
+          </div>
         </div>
 
         {/* Primary Demographics */}

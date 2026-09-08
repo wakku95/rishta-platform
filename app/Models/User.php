@@ -57,4 +57,28 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Profile::class);
     }
+
+    /**
+     * Get the shortlists saved by the user.
+     */
+    public function shortlists(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Shortlist::class);
+    }
+
+    /**
+     * Get the rishta requests sent by the user.
+     */
+    public function sentRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RishtaRequest::class, 'sender_id');
+    }
+
+    /**
+     * Get the rishta requests received by the user.
+     */
+    public function receivedRequests(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(RishtaRequest::class, 'receiver_id');
+    }
 }
