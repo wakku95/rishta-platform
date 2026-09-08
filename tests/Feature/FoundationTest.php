@@ -124,4 +124,42 @@ class FoundationTest extends TestCase
                 'version' => '1.0.0',
             ]);
     }
+
+    /**
+     * Test that GET / on the primary web domain returns the React SPA Blade view.
+     */
+    public function test_primary_web_root_returns_spa_blade_view(): void
+    {
+        $response = $this->get('http://raabtanow.com/');
+
+        $response->assertStatus(200)
+            ->assertSee('id="app"', false);
+    }
+
+    /**
+     * Test that non-API web paths on the API domain return 404 JSON and never render Blade.
+     */
+    public function test_api_domain_non_api_paths_return_404_json(): void
+    {
+        $response = $this->get('http://api.raabtanow.com/login');
+
+        $response->assertStatus(404)
+            ->assertHeader('content-type', 'application/json')
+            ->assertExactJson([
+                'success' => false,
+                'message' => 'The requested API resource was not found.',
+                'error_code' => 'NOT_FOUND',
+            ]);
+    }
+
+    /**
+     * Test that SPA deep links on the web domain return the React SPA Blade shell.
+     */
+    public function test_spa_deep_links_return_blade_spa_view(): void
+    {
+        $response = $this->get('http://raabtanow.com/profile');
+
+        $response->assertStatus(200)
+            ->assertSee('id="app"', false);
+    }
 }
