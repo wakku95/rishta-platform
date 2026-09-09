@@ -10,6 +10,8 @@ import {
   Hourglass,
   Eye,
   Calendar,
+  Lock,
+  Unlock,
 } from 'lucide-react';
 import {
   getReceivedRequests,
@@ -26,6 +28,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import Alert from '../../components/ui/Alert';
 import Pagination from '../../components/ui/Pagination';
+import ContactUnlockModal from '../../components/requests/ContactUnlockModal';
 
 export default function RequestsPage() {
   const [activeTab, setActiveTab] = useState('received'); // 'received' | 'sent'
@@ -42,6 +45,8 @@ export default function RequestsPage() {
   const [confirmAcceptOpen, setConfirmAcceptOpen] = useState(false);
   const [confirmDeclineOpen, setConfirmDeclineOpen] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [unlockModalOpen, setUnlockModalOpen] = useState(false);
+  const [unlockRequest, setUnlockRequest] = useState(null);
 
   useEffect(() => {
     fetchRequests(activeTab, page, statusFilter);
@@ -300,6 +305,22 @@ export default function RequestsPage() {
                     </Link>
                   )}
 
+                  {/* Accepted Connection Actions */}
+                  {req.status === 'accepted' && (
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      icon={Lock}
+                      onClick={() => {
+                        setUnlockRequest(req);
+                        setUnlockModalOpen(true);
+                      }}
+                      className="font-bold shadow-xs"
+                    >
+                      Contact Details & Verification
+                    </Button>
+                  )}
+
                   {/* Received Pending Actions */}
                   {activeTab === 'received' && req.status === 'pending' && (
                     <>
@@ -347,6 +368,22 @@ export default function RequestsPage() {
             </div>
           )}
         </div>
+      )}
+
+      {/* Phase 5 Contact Unlock & Payment Modal */}
+      {unlockRequest && (
+        <ContactUnlockModal
+          isOpen={unlockModalOpen}
+          onClose={() => {
+            setUnlockModalOpen(false);
+            setUnlockRequest(null);
+          }}
+          requestCode={unlockRequest.request_code}
+          candidateProfile={unlockRequest.candidate_profile}
+          onUnlocked={() => {
+            fetchRequests(activeTab, page, statusFilter);
+          }}
+        />
       )}
 
       {/* Confirm Dialogs */}

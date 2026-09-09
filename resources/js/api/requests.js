@@ -76,3 +76,79 @@ export const cancelRequest = async (requestCode) => {
   const response = await api.post(`/requests/${requestCode}/cancel`);
   return response.data;
 };
+
+/*
+|--------------------------------------------------------------------------
+| Phase 5: Payment & Contact Unlock APIs
+|--------------------------------------------------------------------------
+*/
+
+/**
+ * Initiate contact unlock fee payment (Rs. 300 PKR) for accepted request.
+ * Restricted to request sender.
+ *
+ * @param {string} requestCode
+ * @returns {Promise<Object>}
+ */
+export const initiatePayment = async (requestCode) => {
+  const response = await api.post(`/requests/${requestCode}/payment/initiate`);
+  return response.data;
+};
+
+/**
+ * Verify payment with gateway.
+ *
+ * @param {string} paymentUuid
+ * @param {Object} payload
+ * @returns {Promise<Object>}
+ */
+export const verifyPayment = async (paymentUuid, payload = {}) => {
+  const response = await api.post(`/payments/${paymentUuid}/verify`, payload);
+  return response.data;
+};
+
+/**
+ * Fetch contact unlock and phone verification status.
+ *
+ * @param {string} requestCode
+ * @returns {Promise<Object>}
+ */
+export const getUnlockStatus = async (requestCode) => {
+  const response = await api.get(`/requests/${requestCode}/unlock/status`);
+  return response.data;
+};
+
+/**
+ * Send 6-digit SMS OTP to user's mobile phone number.
+ *
+ * @param {string} requestCode
+ * @param {string} phone
+ * @returns {Promise<Object>}
+ */
+export const sendUnlockOtp = async (requestCode, phone) => {
+  const response = await api.post(`/requests/${requestCode}/otp/send`, { phone });
+  return response.data;
+};
+
+/**
+ * Verify submitted OTP code.
+ *
+ * @param {string} requestCode
+ * @param {string} otp
+ * @returns {Promise<Object>}
+ */
+export const verifyUnlockOtp = async (requestCode, otp) => {
+  const response = await api.post(`/requests/${requestCode}/otp/verify`, { otp });
+  return response.data;
+};
+
+/**
+ * Fetch unlocked mutual contact details.
+ *
+ * @param {string} requestCode
+ * @returns {Promise<Object>}
+ */
+export const getUnlockedContact = async (requestCode) => {
+  const response = await api.get(`/requests/${requestCode}/contact`);
+  return response.data;
+};

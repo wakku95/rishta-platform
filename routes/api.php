@@ -97,6 +97,22 @@ Route::middleware('auth:sanctum')->prefix('requests')->group(function () {
     Route::post('/{request_code}/accept', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'accept']);
     Route::post('/{request_code}/decline', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'decline']);
     Route::post('/{request_code}/cancel', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'cancel']);
+
+    // Phase 5: Payment (Rs. 300 initiator payment)
+    Route::post('/{request_code}/payment/initiate', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'initiate']);
+
+    // Phase 5: Mutual OTP verification & Contact details unlock
+    Route::get('/{request_code}/unlock/status', [\App\Http\Controllers\Api\Unlock\ContactUnlockController::class, 'status']);
+    Route::post('/{request_code}/otp/send', [\App\Http\Controllers\Api\Unlock\ContactUnlockController::class, 'sendOtp']);
+    Route::post('/{request_code}/otp/verify', [\App\Http\Controllers\Api\Unlock\ContactUnlockController::class, 'verifyOtp']);
+    Route::get('/{request_code}/contact', [\App\Http\Controllers\Api\Unlock\ContactUnlockController::class, 'showContact']);
 });
 
-
+/*
+|--------------------------------------------------------------------------
+| Payment Verification Routes (/api/payments)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
+    Route::post('/{payment_uuid}/verify', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'verify']);
+});

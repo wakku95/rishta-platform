@@ -69,6 +69,21 @@ class RishtaRequest extends Model
         return $this->belongsTo(User::class, 'receiver_id');
     }
 
+    public function payments(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function successfulPayment(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Payment::class)->where('status', Payment::STATUS_PAID);
+    }
+
+    public function contactUnlock(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(ContactUnlock::class);
+    }
+
     /**
      * Check if request is currently pending and expired, and if so lazily expire it.
      */

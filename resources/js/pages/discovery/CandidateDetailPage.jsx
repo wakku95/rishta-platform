@@ -28,6 +28,7 @@ import LoadingState from '../../components/ui/LoadingState';
 import Alert from '../../components/ui/Alert';
 import Modal from '../../components/ui/Modal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
+import ContactUnlockModal from '../../components/requests/ContactUnlockModal';
 
 export default function CandidateDetailPage() {
   const { profileCode } = useParams();
@@ -49,13 +50,14 @@ export default function CandidateDetailPage() {
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [confirmDeclineOpen, setConfirmDeclineOpen] = useState(false);
   const [confirmAcceptOpen, setConfirmAcceptOpen] = useState(false);
+  const [showUnlockModal, setShowUnlockModal] = useState(false);
 
   useEffect(() => {
     fetchProfile();
   }, [profileCode]);
 
-  const fetchProfile = async () => {
-    setLoading(true);
+  const fetchProfile = async (silent = false) => {
+    if (!silent) setLoading(true);
     setError(null);
     try {
       const res = await getPublicProfile(profileCode);
@@ -355,10 +357,21 @@ export default function CandidateDetailPage() {
                 </Button>
               </div>
             ) : activeRequest.status === 'accepted' ? (
-              <Badge variant="success" className="inline-flex items-center gap-1.5 py-1.5 px-3">
-                <CheckCircle className="w-4 h-4 text-emerald-600" />
-                <span className="font-bold">Rishta Request Accepted</span>
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant="success" className="inline-flex items-center gap-1.5 py-1.5 px-3">
+                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                  <span className="font-bold">Rishta Request Accepted</span>
+                </Badge>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  icon={Lock}
+                  onClick={() => setShowUnlockModal(true)}
+                  className="font-bold shadow-xs"
+                >
+                  Contact & Verification
+                </Button>
+              </div>
             ) : null}
           </div>
         </div>
@@ -528,6 +541,19 @@ export default function CandidateDetailPage() {
         variant="primary"
         loading={actionLoading}
       />
+
+      {/* Phase 5 Contact Unlock & Payment Modal */}
+      {activeRequest && (
+        <ContactUnlockModal
+          isOpen={showUnlockModal}
+          onClose={() => setShowUnlockModal(false)}
+          requestCode={activeRequest.request_code}
+          candidateProfile={profile}
+          onUnlocked={() => {
+            fetchProfile(true);
+          }}
+        />
+      )}
     </div>
   );
 }
