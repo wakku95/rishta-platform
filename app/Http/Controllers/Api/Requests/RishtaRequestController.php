@@ -87,9 +87,23 @@ class RishtaRequestController extends Controller
             );
         }
 
+        // 5. Daily Request Limit: Maximum 3 requests per calendar day
+        $todayRequestsCount = RishtaRequest::where('sender_id', $sender->id)
+            ->where('created_at', '>=', Carbon::now()->startOfDay())
+            ->count();
+
+        if ($todayRequestsCount >= 3) {
+            return $this->errorResponse(
+                'You have reached your daily limit of 3 Rishta requests. Your limit will reset at midnight.',
+                [],
+                Response::HTTP_TOO_MANY_REQUESTS,
+                'DAILY_REQUEST_LIMIT_REACHED'
+            );
+        }
+
         $activePairHash = RishtaRequest::generateActivePairHash($sender->id, $receiver->id);
 
-        // 5. Database transaction with concurrency lock and lazy expiration cleanup
+        // 6. Database transaction with concurrency lock and lazy expiration cleanup
         try {
             $rishtaRequest = DB::transaction(function () use ($sender, $receiver, $activePairHash) {
                 // Check if an active request exists with this hash
@@ -142,6 +156,13 @@ class RishtaRequestController extends Controller
 
         $rishtaRequest->load(['sender.profile', 'receiver.profile']);
         event(new RishtaRequestSent($rishtaRequest));
+
+        // Intimate recipient via email notification
+        try {
+            $receiver->notify(new \App\Notifications\NewRishtaRequestNotification($rishtaRequest));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed to send new rishta request notification: {$e->getMessage()}");
+        }
 
         return $this->successResponse(
             new RishtaRequestResource($rishtaRequest),
@@ -217,6 +238,10 @@ class RishtaRequestController extends Controller
             $item->checkAndApplyLazyExpiration();
         }
 
+        $todayRequestsCount = RishtaRequest::where('sender_id', $user->id)
+            ->where('created_at', '>=', Carbon::now()->startOfDay())
+            ->count();
+
         return response()->json([
             'success' => true,
             'message' => 'Sent requests retrieved successfully.',
@@ -226,6 +251,8 @@ class RishtaRequestController extends Controller
                 'last_page' => $paginator->lastPage(),
                 'per_page' => $paginator->perPage(),
                 'total' => $paginator->total(),
+                'daily_limit' => 3,
+                'daily_requests_remaining' => max(0, 3 - $todayRequestsCount),
             ],
         ], Response::HTTP_OK);
     }
@@ -318,6 +345,13 @@ class RishtaRequestController extends Controller
 
         $rishtaRequest->load(['sender.profile', 'receiver.profile']);
         event(new RishtaRequestAccepted($rishtaRequest));
+
+        // Intimate sender that their request was accepted
+        try {
+            $rishtaRequest->sender->notify(new \App\Notifications\RishtaRequestAcceptedNotification($rishtaRequest));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed to send rishta request accepted notification: {$e->getMessage()}");
+        }
 
         return $this->successResponse(
             new RishtaRequestResource($rishtaRequest),

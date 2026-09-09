@@ -203,10 +203,15 @@ class DiscoveryController extends Controller
             ];
         }
 
+        $todayRequestsCount = \App\Models\RishtaRequest::where('sender_id', $user->id)
+            ->where('created_at', '>=', \Illuminate\Support\Carbon::now()->startOfDay())
+            ->count();
+
         $profileData = (new PublicProfileResource($profile))->toArray($request);
         $profileData['viewer_context'] = [
             'is_shortlisted' => $isShortlisted,
             'active_request' => $activeRequestData,
+            'daily_requests_remaining' => max(0, 3 - $todayRequestsCount),
         ];
 
         return $this->successResponse(

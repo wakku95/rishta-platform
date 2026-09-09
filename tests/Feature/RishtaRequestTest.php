@@ -9,9 +9,12 @@ use App\Events\RishtaRequestSent;
 use App\Models\Profile;
 use App\Models\RishtaRequest;
 use App\Models\User;
+use App\Notifications\NewRishtaRequestNotification;
+use App\Notifications\RishtaRequestAcceptedNotification;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Notification;
 use Symfony\Component\HttpFoundation\Response;
 use Tests\TestCase;
 
@@ -419,5 +422,124 @@ class RishtaRequestTest extends TestCase
                     ],
                 ],
             ]);
+    }
+
+    public function test_user_cannot_exceed_daily_limit_of_three_requests(): void
+    {
+        Notification::fake();
+
+        $sender = $this->createVerifiedUser();
+        $this->createActiveProfile($sender, ['gender' => 'male']);
+
+        // Create 4 target candidates
+        $targets = [];
+        for ($i = 0; $i < 4; $i++) {
+            $user = $this->createVerifiedUser();
+            $targets[] = $this->createActiveProfile($user);
+        }
+
+        // Send 1st request -> OK
+        $res1 = $this->actingAs($sender)->postJson('/api/requests', ['profile_code' => $targets[0]->profile_code]);
+        $res1->assertStatus(Response::HTTP_CREATED);
+
+        // Send 2nd request -> OK
+        $res2 = $this->actingAs($sender)->postJson('/api/requests', ['profile_code' => $targets[1]->profile_code]);
+        $res2->assertStatus(Response::HTTP_CREATED);
+
+        // Send 3rd request -> OK
+        $res3 = $this->actingAs($sender)->postJson('/api/requests', ['profile_code' => $targets[2]->profile_code]);
+        $res3->assertStatus(Response::HTTP_CREATED);
+
+        // Send 4th request on the same day -> Blocked with 429
+        $res4 = $this->actingAs($sender)->postJson('/api/requests', ['profile_code' => $targets[3]->profile_code]);
+        $res4->assertStatus(Response::HTTP_TOO_MANY_REQUESTS)
+            ->assertJson([
+                'success' => false,
+                'error_code' => 'DAILY_REQUEST_LIMIT_REACHED',
+            ]);
+    }
+
+    public function test_daily_request_limit_resets_for_next_day(): void
+    {
+        Notification::fake();
+
+        $sender = $this->createVerifiedUser();
+        $this->createActiveProfile($sender, ['gender' => 'male']);
+
+        // Simulate 3 requests sent yesterday
+        for ($i = 0; $i < 3; $i++) {
+            $user = $this->createVerifiedUser();
+            $profile = $this->createActiveProfile($user);
+            $req = RishtaRequest::create([
+                'request_code' => RishtaRequest::generateUniqueRequestCode(),
+                'sender_id' => $sender->id,
+                'receiver_id' => $user->id,
+                'status' => RishtaRequest::STATUS_PENDING,
+                'active_pair_hash' => RishtaRequest::generateActivePairHash($sender->id, $user->id),
+                'expires_at' => Carbon::now()->addDays(13),
+            ]);
+            $req->created_at = Carbon::yesterday();
+            $req->save();
+        }
+
+        // Send a request today -> Should succeed because yesterday's requests don't count towards today
+        $newTarget = $this->createVerifiedUser();
+        $newProfile = $this->createActiveProfile($newTarget);
+
+        $response = $this->actingAs($sender)->postJson('/api/requests', ['profile_code' => $newProfile->profile_code]);
+        $response->assertStatus(Response::HTTP_CREATED);
+    }
+
+    public function test_recipient_receives_email_notification_on_new_request(): void
+    {
+        Notification::fake();
+
+        $sender = $this->createVerifiedUser();
+        $this->createActiveProfile($sender, ['gender' => 'male', 'city' => 'Islamabad', 'profession' => 'Doctor']);
+
+        $recipient = $this->createVerifiedUser();
+        $targetProfile = $this->createActiveProfile($recipient, ['gender' => 'female']);
+
+        $response = $this->actingAs($sender)->postJson('/api/requests', ['profile_code' => $targetProfile->profile_code]);
+        $response->assertStatus(Response::HTTP_CREATED);
+
+        Notification::assertSentTo(
+            $recipient,
+            NewRishtaRequestNotification::class,
+            function (NewRishtaRequestNotification $notification) use ($sender) {
+                return $notification->rishtaRequest->sender_id === $sender->id;
+            }
+        );
+    }
+
+    public function test_sender_receives_email_notification_when_request_is_accepted(): void
+    {
+        Notification::fake();
+
+        $sender = $this->createVerifiedUser();
+        $this->createActiveProfile($sender, ['gender' => 'male']);
+
+        $recipient = $this->createVerifiedUser();
+        $this->createActiveProfile($recipient, ['gender' => 'female']);
+
+        $request = RishtaRequest::create([
+            'request_code' => RishtaRequest::generateUniqueRequestCode(),
+            'sender_id' => $sender->id,
+            'receiver_id' => $recipient->id,
+            'status' => RishtaRequest::STATUS_PENDING,
+            'active_pair_hash' => RishtaRequest::generateActivePairHash($sender->id, $recipient->id),
+            'expires_at' => Carbon::now()->addDays(14),
+        ]);
+
+        $response = $this->actingAs($recipient)->postJson("/api/requests/{$request->request_code}/accept");
+        $response->assertStatus(Response::HTTP_OK);
+
+        Notification::assertSentTo(
+            $sender,
+            RishtaRequestAcceptedNotification::class,
+            function (RishtaRequestAcceptedNotification $notification) use ($request) {
+                return $notification->rishtaRequest->id === $request->id;
+            }
+        );
     }
 }
