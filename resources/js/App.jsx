@@ -3,7 +3,16 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import AppLayout from './components/layout/AppLayout';
 import HomePage from './pages/HomePage';
-import { HowItWorksPage, PricingPage, AboutPage } from './pages/StaticInfoPage';
+import {
+  HowItWorksPage,
+  PricingPage,
+  AboutPage,
+  PrivacyPolicyPage,
+  TermsPage,
+  RefundPolicyPage,
+  DeliveryPolicyPage,
+  ContactUsPage,
+} from './pages/StaticInfoPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 // Auth Pages
@@ -43,6 +52,11 @@ export default function App() {
             <Route path="how-it-works" element={<HowItWorksPage />} />
             <Route path="pricing" element={<PricingPage />} />
             <Route path="about" element={<AboutPage />} />
+            <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
+            <Route path="terms" element={<TermsPage />} />
+            <Route path="refund-policy" element={<RefundPolicyPage />} />
+            <Route path="delivery-policy" element={<DeliveryPolicyPage />} />
+            <Route path="contact" element={<ContactUsPage />} />
 
             {/* Guest-only routes */}
             <Route element={<GuestRoute />}>

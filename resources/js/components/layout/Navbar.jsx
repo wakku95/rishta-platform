@@ -36,7 +36,7 @@ export default function Navbar() {
             </div>
             <div>
               <span className="font-serif text-lg sm:text-xl font-bold tracking-tight text-burgundy-900 block leading-tight">
-                Rishta Platform
+                RaabtaNow
               </span>
               <span className="text-[10px] sm:text-[11px] font-bold text-gold-600 block uppercase tracking-wider">
                 Privacy-First Matrimonial

@@ -60,14 +60,16 @@ export default function Footer() {
                 <HeartHandshake className="w-4 h-4" />
               </div>
               <span className="font-serif text-lg font-bold text-white">
-                Rishta Platform
+                RaabtaNow
               </span>
             </div>
             <p className="text-xs text-charcoal-400 max-w-sm leading-relaxed mb-4">
               A dignified, privacy-first Pakistani matrimonial discovery platform designed for families and serious individuals. Not a dating app. Search privately and connect with genuine mutual consent.
             </p>
-            <div className="text-[11px] text-gold-500/90 font-medium">
-              Lahore · Karachi · Islamabad · Overseas Pakistanis
+            <div className="text-[11px] text-stone-400 space-y-1 bg-charcoal-800/40 p-3 rounded-xl border border-charcoal-700/60 max-w-sm">
+              <p><strong className="text-white">Registered Address:</strong> L95, 48C, Korangi, Karachi, Pakistan</p>
+              <p><strong className="text-white">Helpline / Support:</strong> +92 323 9225450</p>
+              <p><strong className="text-white">Email:</strong> support@raabtanow.com</p>
             </div>
           </div>
 
@@ -75,26 +77,28 @@ export default function Footer() {
             <h5 className="text-xs font-semibold uppercase tracking-wider text-white mb-3">Platform</h5>
             <ul className="space-y-2 text-xs text-charcoal-400">
               <li><Link to="/how-it-works" className="hover:text-gold-400 transition-colors">How It Works</Link></li>
-              <li><Link to="/pricing" className="hover:text-gold-400 transition-colors">Pricing & Unlocking</Link></li>
+              <li><Link to="/pricing" className="hover:text-gold-400 transition-colors">Pricing & Unlocking (Rs. 300)</Link></li>
               <li><Link to="/about" className="hover:text-gold-400 transition-colors">About Our Mission</Link></li>
+              <li><Link to="/contact" className="hover:text-gold-400 transition-colors">Contact Us & Services</Link></li>
               <li><Link to="/register" className="hover:text-gold-400 transition-colors">Register Profile</Link></li>
             </ul>
           </div>
 
           <div>
-            <h5 className="text-xs font-semibold uppercase tracking-wider text-white mb-3">Privacy & Trust</h5>
+            <h5 className="text-xs font-semibold uppercase tracking-wider text-white mb-3">Policies & Compliance</h5>
             <ul className="space-y-2 text-xs text-charcoal-400">
               <li><Link to="/privacy-policy" className="hover:text-gold-400 transition-colors">Privacy Policy</Link></li>
-              <li><Link to="/terms" className="hover:text-gold-400 transition-colors">Terms of Service</Link></li>
-              <li><Link to="/safety" className="hover:text-gold-400 transition-colors">Safety Guidelines</Link></li>
-              <li><span className="text-charcoal-500">Support: support@rishta-platform.com</span></li>
+              <li><Link to="/terms" className="hover:text-gold-400 transition-colors">Terms & Conditions</Link></li>
+              <li><Link to="/refund-policy" className="hover:text-gold-400 transition-colors">Return & Refund Policy</Link></li>
+              <li><Link to="/delivery-policy" className="hover:text-gold-400 transition-colors">Service Delivery Policy</Link></li>
+              <li><Link to="/contact" className="hover:text-gold-400 transition-colors">Head Office & Support</Link></li>
             </ul>
           </div>
 
         </div>
 
         <div className="mt-8 pt-6 border-t border-charcoal-800 text-center sm:flex sm:items-center sm:justify-between text-xs text-charcoal-500">
-          <p>© {new Date().getFullYear()} Rishta Platform. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} RaabtaNow Matrimonial Services. All rights reserved.</p>
           <p className="mt-2 sm:mt-0 text-[11px]">
             Strictly matrimonial. Zero tolerance for inappropriate behavior or fake profiles.
           </p>
