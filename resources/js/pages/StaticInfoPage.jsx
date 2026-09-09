@@ -212,7 +212,7 @@ export function TermsPage() {
         </div>
 
         <div className="pt-4 border-t border-stone-200 text-xs text-stone-500">
-          <p>RaabtaNow | Address: L95, 48C, Korangi, Karachi, Pakistan. | Email: support@raabtanow.com</p>
+          <p>RaabtaNow | Address: Sector 48-C, Korangi, Karachi, Sindh, Pakistan. | Email: support@raabtanow.com</p>
         </div>
       </Card>
     </div>
@@ -309,7 +309,7 @@ export function DeliveryPolicyPage() {
         </div>
 
         <div className="pt-4 border-t border-stone-200 text-xs text-stone-500">
-          <p>RaabtaNow Matrimonial Services | Head Office: L95, 48C, Korangi, Karachi, Pakistan</p>
+          <p>RaabtaNow Matrimonial Services | Head Office: Sector 48-C, Korangi, Karachi, Sindh, Pakistan</p>
         </div>
       </Card>
     </div>
@@ -335,7 +335,7 @@ export function ContactUsPage() {
             </div>
             <div>
               <span className="font-bold block text-stone-500">Registered Office Address:</span>
-              <span>L95, 48C, Korangi, Karachi, Sindh, Pakistan</span>
+              <span>Sector 48-C, Korangi, Karachi, Sindh, Pakistan</span>
             </div>
             <div>
               <span className="font-bold block text-stone-500">Customer Support Helpline:</span>

@@ -67,7 +67,7 @@ export default function Footer() {
               A dignified, privacy-first Pakistani matrimonial discovery platform designed for families and serious individuals. Not a dating app. Search privately and connect with genuine mutual consent.
             </p>
             <div className="text-[11px] text-stone-400 space-y-1 bg-charcoal-800/40 p-3 rounded-xl border border-charcoal-700/60 max-w-sm">
-              <p><strong className="text-white">Registered Address:</strong> L95, 48C, Korangi, Karachi, Pakistan</p>
+              <p><strong className="text-white">Registered Address:</strong> Sector 48-C, Korangi, Karachi, Sindh, Pakistan</p>
               <p><strong className="text-white">Helpline / Support:</strong> +92 323 9225450</p>
               <p><strong className="text-white">Email:</strong> support@raabtanow.com</p>
             </div>
