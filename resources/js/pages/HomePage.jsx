@@ -122,11 +122,12 @@ export default function HomePage() {
           alt=""
           aria-hidden="true"
           loading="eager"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none select-none"
         />
-        {/* Glow ambient spots */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-magenta-500/15 rounded-full blur-[120px] pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-500/15 rounded-full blur-[120px] pointer-events-none" />
+        {/* Glow ambient spots - disabled on mobile for 60fps scrolling */}
+        <div className="hidden sm:block absolute top-0 right-0 w-96 h-96 bg-magenta-500/15 rounded-full blur-[120px] pointer-events-none will-change-transform" />
+        <div className="hidden sm:block absolute bottom-0 left-0 w-96 h-96 bg-purple-500/15 rounded-full blur-[120px] pointer-events-none will-change-transform" />
 
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-8 items-center">
           
@@ -155,7 +156,7 @@ export default function HomePage() {
             {/* Hero Quick Search Box */}
             <form
               onSubmit={handleHeroSearch}
-              className="bg-navy-900/90 backdrop-blur-md border border-slate-700/80 rounded-2xl p-3 sm:p-4 shadow-xl grid grid-cols-1 sm:grid-cols-4 gap-2.5 sm:gap-3"
+              className="bg-navy-900/95 sm:backdrop-blur-md border border-slate-700/80 rounded-2xl p-3 sm:p-4 shadow-xl grid grid-cols-1 sm:grid-cols-4 gap-2.5 sm:gap-3"
             >
               <div>
                 <label className="block text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-1">
@@ -273,6 +274,7 @@ export default function HomePage() {
                 src="/images/raabtanow/hero-couple.jpg"
                 alt="Meaningful connections start with the right introduction"
                 loading="eager"
+                decoding="async"
                 className="w-full h-48 object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-navy-850 via-navy-850/40 to-transparent" />
@@ -351,6 +353,7 @@ export default function HomePage() {
             src="/images/raabtanow/success-connection.jpg"
             alt="Families finding happiness through meaningful connections"
             loading="lazy"
+            decoding="async"
             className="absolute inset-0 w-full h-full object-cover object-[center_30%] sm:object-center"
           />
           {/* Dual-layer responsive overlay & shadow for mobile readability */}
@@ -412,6 +415,7 @@ export default function HomePage() {
           src="/images/raabtanow/family-discussion.jpg"
           alt="Pakistani family discussing rishta in a warm, supportive environment"
           loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover object-[center_20%] sm:object-center"
         />
         {/* Responsive dark scrim + directional gradient */}
@@ -448,6 +452,7 @@ export default function HomePage() {
           alt=""
           aria-hidden="true"
           loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none"
         />
         <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -528,6 +533,7 @@ export default function HomePage() {
               src="/images/raabtanow/privacy-trust.jpg"
               alt="RaabtaNow Privacy, Trust and Security Architecture"
               loading="lazy"
+              decoding="async"
               className="relative z-10 w-full h-auto aspect-square rounded-2xl object-cover shadow-lg"
             />
           </div>
@@ -603,7 +609,8 @@ export default function HomePage() {
           alt=""
           aria-hidden="true"
           loading="lazy"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.12] pointer-events-none select-none mix-blend-soft-light"
+          decoding="async"
+          className="absolute inset-0 w-full h-full object-cover opacity-[0.08] pointer-events-none select-none"
         />
         <div className="max-w-2xl mx-auto space-y-4 relative z-10">
           <h2 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">

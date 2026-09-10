@@ -103,6 +103,7 @@ export function AboutPage() {
             src="/images/raabtanow/family-discussion.jpg"
             alt="Pakistani families building trust through meaningful connections"
             loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover object-[center_20%] sm:object-center"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-navy-800 via-navy-800/40 to-transparent" />
