@@ -124,7 +124,7 @@ export default function HomePage() {
           aria-hidden="true"
           loading="eager"
           decoding="async"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none select-none"
+          className="hidden sm:block absolute inset-0 w-full h-full object-cover opacity-[0.07] pointer-events-none select-none"
         />
         {/* Glow ambient spots - disabled on mobile for 60fps scrolling */}
         <div className="hidden sm:block absolute top-0 right-0 w-96 h-96 bg-magenta-500/15 rounded-full blur-[120px] pointer-events-none will-change-transform" />
@@ -460,7 +460,7 @@ export default function HomePage() {
             aria-hidden="true"
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none"
+            className="hidden sm:block absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none"
           />
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-4 text-left">
@@ -625,7 +625,7 @@ export default function HomePage() {
             aria-hidden="true"
             loading="lazy"
             decoding="async"
-            className="absolute inset-0 w-full h-full object-cover opacity-[0.08] pointer-events-none select-none"
+            className="hidden sm:block absolute inset-0 w-full h-full object-cover opacity-[0.08] pointer-events-none select-none"
           />
           <div className="max-w-2xl mx-auto space-y-4 relative z-10">
             <h2 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
