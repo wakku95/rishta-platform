@@ -8,6 +8,11 @@
         <title>{{ config('app.name', 'Rishta Platform') }} — Privacy-First Pakistani Matrimonial</title>
         <meta name="description" content="A privacy-first, culturally respectful Pakistani matrimonial discovery platform. Search privately. Connect with mutual consent.">
 
+        <!-- Favicon -->
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+        <link rel="alternate icon" href="/favicon.ico">
+        <meta name="theme-color" content="#0B0F19">
+
         <!-- Preconnect Google Fonts for Inter and Playfair -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +22,7 @@
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/main.jsx'])
     </head>
-    <body class="bg-cream-100 text-charcoal-900 min-h-screen antialiased">
+    <body class="bg-navy-900 text-slate-100 min-h-screen antialiased">
         <div id="app"></div>
     </body>
 </html>
