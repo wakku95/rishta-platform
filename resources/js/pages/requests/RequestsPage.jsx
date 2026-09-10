@@ -162,13 +162,13 @@ export default function RequestsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       {/* Header */}
-      <div className="pb-6 border-b border-stone-200">
-        <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900 tracking-tight">
+      <div className="pb-4 border-b border-slate-800">
+        <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
           Rishta Requests
         </h1>
-        <p className="text-sm text-stone-500 font-medium mt-1">
+        <p className="text-sm text-slate-400 font-medium mt-1">
           Manage received formal expressions of interest and track requests you sent to candidate profiles.
         </p>
       </div>
@@ -185,13 +185,13 @@ export default function RequestsPage() {
 
       {/* Navigation Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex rounded-xl bg-stone-100 p-1 border border-stone-200 max-w-xs">
+        <div className="flex rounded-xl bg-navy-850 p-1 border border-slate-750 max-w-xs">
           <button
             onClick={() => { setActiveTab('received'); setPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-extrabold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'received'
-                ? 'bg-white text-burgundy-900 shadow-xs'
-                : 'text-stone-500 hover:text-stone-800'
+                ? 'bg-gradient-to-r from-magenta-500 to-purple-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             <Inbox className="w-4 h-4" />
@@ -199,10 +199,10 @@ export default function RequestsPage() {
           </button>
           <button
             onClick={() => { setActiveTab('sent'); setPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-extrabold transition-all ${
+            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'sent'
-                ? 'bg-white text-burgundy-900 shadow-xs'
-                : 'text-stone-500 hover:text-stone-800'
+                ? 'bg-gradient-to-r from-magenta-500 to-purple-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
             }`}
           >
             <Send className="w-4 h-4" />
@@ -212,11 +212,11 @@ export default function RequestsPage() {
 
         {/* Status Filter */}
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-stone-500">Filter status:</span>
+          <span className="text-xs font-semibold text-slate-400">Filter status:</span>
           <select
             value={statusFilter}
             onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="text-xs font-bold rounded-lg border-stone-300 py-1.5 px-3 bg-white text-charcoal-800 focus:border-burgundy-700 focus:ring-burgundy-700"
+            className="text-xs font-medium rounded-xl border border-slate-700 py-1.5 px-3 bg-navy-750 text-white focus:border-magenta-500 cursor-pointer"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -259,16 +259,16 @@ export default function RequestsPage() {
             return (
               <Card
                 key={req.request_code}
-                className="p-5 sm:p-6 bg-white border border-stone-200 shadow-xs hover:border-burgundy-200 transition-colors rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-5 sm:p-6 bg-navy-800 border border-slate-750 shadow-md hover:border-magenta-500/40 transition-colors rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4"
               >
                 {/* Left: Request info & Candidate summary */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs font-extrabold text-stone-400">
+                    <span className="font-mono text-xs font-bold text-slate-500">
                       {req.request_code}
                     </span>
                     {getStatusBadge(req.status)}
-                    <span className="text-xs text-stone-400">
+                    <span className="text-xs text-slate-400">
                       {req.created_at ? new Date(req.created_at).toLocaleDateString() : ''}
                     </span>
                   </div>
@@ -278,20 +278,20 @@ export default function RequestsPage() {
                       <div className="flex items-baseline gap-2">
                         <Link
                           to={`/profiles/${candidate.profile_code}`}
-                          className="font-serif text-lg font-extrabold text-burgundy-900 hover:underline"
+                          className="font-serif text-lg font-bold text-white hover:text-magenta-400 transition-colors"
                         >
                           Candidate #{candidate.profile_code}
                         </Link>
-                        <span className="text-xs font-bold text-stone-600">
+                        <span className="text-xs font-bold text-slate-400">
                           ({candidate.age} yrs • {candidate.gender} • {candidate.city})
                         </span>
                       </div>
-                      <p className="text-xs text-stone-500 mt-0.5">
+                      <p className="text-xs text-slate-400 mt-0.5">
                         {candidate.education} • {candidate.profession} • {candidate.religion}
                       </p>
                     </div>
                   ) : (
-                    <p className="text-xs text-stone-400 italic">Candidate profile unavailable</p>
+                    <p className="text-xs text-slate-500 italic">Candidate profile unavailable</p>
                   )}
                 </div>
 
@@ -315,7 +315,7 @@ export default function RequestsPage() {
                         setUnlockRequest(req);
                         setUnlockModalOpen(true);
                       }}
-                      className="font-bold shadow-xs"
+                      className="font-bold shadow-md"
                     >
                       Contact Details & Verification
                     </Button>

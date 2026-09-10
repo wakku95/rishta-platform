@@ -16,9 +16,9 @@ export default function Pagination({
 
   return (
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 py-4 ${className}`}>
-      <p className="text-xs text-charcoal-600">
-        Page <span className="font-medium text-charcoal-900">{currentPage}</span> of{' '}
-        <span className="font-medium text-charcoal-900">{lastPage}</span> ({total} total)
+      <p className="text-xs text-slate-400">
+        Page <span className="font-semibold text-white">{currentPage}</span> of{' '}
+        <span className="font-semibold text-white">{lastPage}</span> ({total} total)
       </p>
 
       <div className="flex items-center gap-2">

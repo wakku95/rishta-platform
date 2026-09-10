@@ -146,20 +146,20 @@ export default function SearchProfilesPage() {
   ).length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       {/* Header Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b-2 border-stone-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-burgundy-800 uppercase tracking-widest block">
+            <span className="text-xs font-bold text-magenta-400 uppercase tracking-widest block">
               Discover Matrimonial Matches
             </span>
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900 tracking-tight mt-1">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight mt-1">
             Search Candidate Profiles
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-            Discover verified active profiles based on standardized matrimonial criteria.
+          <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">
+            Browse verified, active matrimonial biodatas based on standardized criteria.
           </p>
         </div>
 
@@ -176,7 +176,7 @@ export default function SearchProfilesPage() {
           </Button>
           {activeFilterCount > 0 && (
             <Button
-              variant="tertiary"
+              variant="outline"
               size="sm"
               icon={RotateCcw}
               onClick={handleClearFilters}
@@ -196,18 +196,18 @@ export default function SearchProfilesPage() {
 
       {/* Filter Section (Responsive: Always visible on desktop, toggleable on mobile) */}
       <Card
-        className={`p-5 sm:p-6 bg-white border-2 border-stone-300 shadow-xs rounded-2xl transition-all duration-200 ${
+        className={`p-5 sm:p-6 bg-navy-800 border border-slate-750 shadow-xl rounded-2xl transition-all duration-200 ${
           filterPanelOpen ? 'block' : 'hidden sm:block'
         }`}
       >
         <form onSubmit={handleSearchSubmit} className="space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-stone-100">
-            <span className="font-serif text-sm font-extrabold text-burgundy-900 flex items-center gap-2">
-              <Filter className="w-4 h-4 text-burgundy-700" />
+          <div className="flex items-center justify-between pb-3 border-b border-slate-750/80">
+            <span className="font-serif text-sm font-bold text-white flex items-center gap-2">
+              <Filter className="w-4 h-4 text-magenta-400" />
               Filter Candidates
             </span>
             {activeFilterCount > 0 && (
-              <span className="text-xs font-bold text-burgundy-800 bg-burgundy-50 px-2 py-0.5 rounded-full border border-burgundy-200">
+              <span className="text-xs font-semibold text-magenta-300 bg-magenta-500/15 px-2.5 py-0.5 rounded-full border border-magenta-500/30">
                 {activeFilterCount} active {activeFilterCount === 1 ? 'filter' : 'filters'}
               </span>
             )}
@@ -229,7 +229,7 @@ export default function SearchProfilesPage() {
 
             {/* Age Range */}
             <div className="space-y-1.5">
-              <label className="block text-sm font-semibold text-charcoal-900">Age Range</label>
+              <label className="block text-sm font-semibold text-slate-200">Age Range</label>
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   name="min_age"
@@ -336,7 +336,7 @@ export default function SearchProfilesPage() {
 
             {/* Height Range (cm) */}
             <div className="space-y-1.5 sm:col-span-2 lg:col-span-2">
-              <label className="block text-sm font-semibold text-charcoal-900">Height Range (cm)</label>
+              <label className="block text-sm font-semibold text-slate-200">Height Range (cm)</label>
               <div className="grid grid-cols-2 gap-2">
                 <Input
                   name="min_height"
@@ -391,8 +391,8 @@ export default function SearchProfilesPage() {
       {/* Results Header: Profiles Count */}
       <div className="flex items-center justify-between pt-2">
         <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-burgundy-700" />
-          <span className="text-sm font-bold text-charcoal-900">
+          <Users className="w-4 h-4 text-magenta-400" />
+          <span className="text-sm font-bold text-white">
             {loading ? 'Searching...' : `${meta.total} ${meta.total === 1 ? 'profile' : 'profiles'} found`}
           </span>
         </div>
@@ -401,7 +401,7 @@ export default function SearchProfilesPage() {
           <button
             type="button"
             onClick={handleClearFilters}
-            className="text-xs font-bold text-burgundy-800 hover:text-burgundy-950 underline cursor-pointer"
+            className="text-xs font-semibold text-magenta-400 hover:text-magenta-300 underline cursor-pointer"
           >
             Reset all filters
           </button>
@@ -420,7 +420,7 @@ export default function SearchProfilesPage() {
           description="Try removing or adjusting some of your search filters to view more suitable candidate profiles."
           actionText="Clear All Filters"
           onAction={handleClearFilters}
-          className="bg-white border-2 border-stone-200"
+          className="bg-navy-800 border border-slate-750"
         />
       ) : (
         <div className="space-y-6">

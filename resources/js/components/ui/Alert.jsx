@@ -22,11 +22,11 @@ export default function Alert({
   const Icon = icons[variant] || Info;
 
   const variantStyles = {
-    info: 'bg-blue-50/80 border-blue-200 text-blue-900 icon-blue-600',
-    success: 'bg-emerald-50/80 border-emerald-200 text-emerald-900 icon-emerald-600',
-    warning: 'bg-amber-50/80 border-amber-200 text-amber-900 icon-amber-600',
-    danger: 'bg-rose-50/80 border-rose-200 text-rose-900 icon-rose-600',
-    burgundy: 'bg-burgundy-50/80 border-burgundy-200 text-burgundy-900 icon-burgundy-700',
+    info: 'bg-blue-950/40 border-blue-800/60 text-blue-200',
+    success: 'bg-emerald-950/40 border-emerald-800/60 text-emerald-200',
+    warning: 'bg-amber-950/40 border-amber-800/60 text-amber-200',
+    danger: 'bg-rose-950/40 border-rose-800/60 text-rose-200',
+    burgundy: 'bg-magenta-950/40 border-magenta-800/60 text-magenta-200',
   };
 
   return (

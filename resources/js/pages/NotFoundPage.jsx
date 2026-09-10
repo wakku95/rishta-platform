@@ -5,14 +5,14 @@ import Button from '../components/ui/Button';
 
 export default function NotFoundPage() {
   return (
-    <div className="flex flex-col items-center justify-center py-16 text-center max-w-md mx-auto">
-      <span className="text-5xl font-serif font-extrabold text-burgundy-700 mb-3">404</span>
-      <h2 className="text-xl font-bold text-charcoal-900 mb-2">Page Not Found</h2>
-      <p className="text-sm text-charcoal-600 mb-6">
-        The page you are looking for does not exist or has been moved.
+    <div className="flex flex-col items-center justify-center py-24 text-center max-w-md mx-auto px-4">
+      <span className="text-6xl font-serif font-extrabold gradient-text mb-3">404</span>
+      <h2 className="text-2xl font-serif font-bold text-white mb-2">Page Not Found</h2>
+      <p className="text-sm text-slate-400 mb-8">
+        The page you are looking for does not exist, has expired, or has been moved.
       </p>
       <Link to="/">
-        <Button variant="primary" icon={Home}>
+        <Button variant="primary" icon={Home} size="lg" className="shadow-lg shadow-magenta-500/25">
           Return to Home
         </Button>
       </Link>

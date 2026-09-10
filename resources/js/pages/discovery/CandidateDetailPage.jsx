@@ -219,11 +219,11 @@ export default function CandidateDetailPage() {
   if (error || !profile) {
     return (
       <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-4">
-        <div className="w-12 h-12 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+        <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
           <AlertCircle className="w-6 h-6" />
         </div>
-        <h2 className="font-serif text-2xl font-extrabold text-burgundy-900">Profile Unavailable</h2>
-        <p className="text-sm text-stone-600 font-medium">{error}</p>
+        <h2 className="font-serif text-2xl font-extrabold text-white">Profile Unavailable</h2>
+        <p className="text-sm text-slate-400 font-medium">{error}</p>
         <div className="pt-2">
           <Link to="/search">
             <Button variant="primary" icon={ArrowLeft}>
@@ -245,7 +245,7 @@ export default function CandidateDetailPage() {
       <div className="flex items-center justify-between">
         <Link
           to="/search"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-burgundy-800 hover:text-burgundy-950"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-magenta-400 hover:text-magenta-300 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Search Results
@@ -263,49 +263,49 @@ export default function CandidateDetailPage() {
       )}
 
       {/* Main Candidate Header Card */}
-      <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b-2 border-stone-100">
+      <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-xl space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-750/80">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-bold text-stone-400 uppercase tracking-widest">
+              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 Matrimonial Biodata
               </span>
               {profile.verifications?.email_verified && (
-                <Badge variant="success" className="inline-flex items-center gap-1 text-[11px]">
+                <Badge variant="success" size="sm" className="inline-flex items-center gap-1 text-[11px]">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   <span>Email Verified</span>
                 </Badge>
               )}
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900 tracking-tight">
-              Profile #{profile.profile_code}
+            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+              Candidate #{profile.profile_code}
             </h1>
-            <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
-              Candidate profile managed by <strong className="text-charcoal-800">{formatManagedBy(profile.managed_by)}</strong>
+            <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">
+              Profile managed by <strong className="text-white">{formatManagedBy(profile.managed_by)}</strong>
             </p>
           </div>
 
           <div className="flex flex-col items-start sm:items-end">
-            <span className="text-2xl sm:text-3xl font-serif font-extrabold text-charcoal-900">
+            <span className="text-2xl sm:text-3xl font-serif font-extrabold text-white">
               {profile.age} years
             </span>
-            <span className="text-xs font-bold text-stone-500 capitalize flex items-center gap-1 mt-0.5">
-              <MapPin className="w-3.5 h-3.5 text-burgundy-700" />
+            <span className="text-xs font-semibold text-magenta-400 capitalize flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
               {profile.city}, Pakistan
             </span>
           </div>
         </div>
 
         {/* Action Bar (Shortlist & Rishta Request) */}
-        <div className="p-4 bg-stone-50 rounded-xl border border-stone-200 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
+        <div className="p-4 bg-navy-850 rounded-2xl border border-slate-700/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant={isShortlisted ? 'secondary' : 'outline'}
               size="sm"
               icon={Bookmark}
               loading={shortlistLoading}
               onClick={handleToggleShortlist}
-              className={isShortlisted ? 'bg-gold-50 border-gold-400 text-gold-800 font-bold' : 'font-bold'}
+              className={isShortlisted ? 'bg-magenta-500/20 border-magenta-500/40 text-magenta-300 font-semibold' : 'font-semibold'}
             >
               {isShortlisted ? 'Shortlisted' : 'Save to Shortlist'}
             </Button>
@@ -319,13 +319,13 @@ export default function CandidateDetailPage() {
                 size="sm"
                 icon={Send}
                 onClick={() => setShowSendModal(true)}
-                className="font-bold w-full sm:w-auto"
+                className="font-bold w-full sm:w-auto shadow-md"
               >
                 Send Rishta Request
               </Button>
             ) : activeRequest.status === 'pending' && activeRequest.is_sender ? (
               <div className="flex items-center gap-2">
-                <Badge variant="warning" className="inline-flex items-center gap-1">
+                <Badge variant="warning" size="sm" className="inline-flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   <span>Request Pending</span>
                 </Badge>
@@ -358,8 +358,8 @@ export default function CandidateDetailPage() {
               </div>
             ) : activeRequest.status === 'accepted' ? (
               <div className="flex items-center gap-2">
-                <Badge variant="success" className="inline-flex items-center gap-1.5 py-1.5 px-3">
-                  <CheckCircle className="w-4 h-4 text-emerald-600" />
+                <Badge variant="success" size="sm" className="inline-flex items-center gap-1.5 py-1.5 px-3">
+                  <CheckCircle className="w-4 h-4 text-emerald-400" />
                   <span className="font-bold">Rishta Request Accepted</span>
                 </Badge>
                 <Button
@@ -367,7 +367,7 @@ export default function CandidateDetailPage() {
                   size="sm"
                   icon={Lock}
                   onClick={() => setShowUnlockModal(true)}
-                  className="font-bold shadow-xs"
+                  className="font-bold shadow-md"
                 >
                   Contact & Verification
                 </Button>
@@ -379,53 +379,53 @@ export default function CandidateDetailPage() {
         {/* Structured Demographics Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
           {/* Faith & Origin */}
-          <div className="p-4 rounded-xl bg-stone-50/80 border border-stone-200 space-y-3">
-            <h3 className="font-serif text-sm font-extrabold text-burgundy-900 uppercase tracking-wider pb-1 border-b border-stone-200">
+          <div className="p-4 rounded-xl bg-navy-850 border border-slate-750 space-y-3">
+            <h3 className="font-serif text-xs font-bold text-magenta-400 uppercase tracking-wider pb-1 border-b border-slate-750">
               1. Demographics & Faith
             </h3>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Gender</span>
-                <span className="font-extrabold text-charcoal-900 capitalize">{profile.gender}</span>
+                <span className="text-slate-400 font-medium">Gender</span>
+                <span className="font-bold text-white capitalize">{profile.gender}</span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Faith & Sect</span>
-                <span className="font-extrabold text-charcoal-900">{faithDisplay}</span>
+                <span className="text-slate-400 font-medium">Faith & Sect</span>
+                <span className="font-bold text-white">{faithDisplay}</span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Current City</span>
-                <span className="font-extrabold text-charcoal-900">{profile.city}</span>
+                <span className="text-slate-400 font-medium">Current City</span>
+                <span className="font-bold text-white">{profile.city}</span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Marital Status</span>
-                <span className="font-extrabold text-charcoal-900">{formatMaritalStatus(profile.marital_status)}</span>
+                <span className="text-slate-400 font-medium">Marital Status</span>
+                <span className="font-bold text-white">{formatMaritalStatus(profile.marital_status)}</span>
               </div>
             </div>
           </div>
 
           {/* Education & Career */}
-          <div className="p-4 rounded-xl bg-stone-50/80 border border-stone-200 space-y-3">
-            <h3 className="font-serif text-sm font-extrabold text-burgundy-900 uppercase tracking-wider pb-1 border-b border-stone-200">
+          <div className="p-4 rounded-xl bg-navy-850 border border-slate-750 space-y-3">
+            <h3 className="font-serif text-xs font-bold text-purple-400 uppercase tracking-wider pb-1 border-b border-slate-750">
               2. Education & Vocation
             </h3>
             <div className="space-y-2 text-xs">
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Education</span>
-                <span className="font-extrabold text-charcoal-900">{profile.education}</span>
+                <span className="text-slate-400 font-medium">Education</span>
+                <span className="font-bold text-white">{profile.education}</span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Profession</span>
-                <span className="font-extrabold text-charcoal-900">{profile.profession}</span>
+                <span className="text-slate-400 font-medium">Profession</span>
+                <span className="font-bold text-white">{profile.profession}</span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Height</span>
-                <span className="font-extrabold text-charcoal-900">
+                <span className="text-slate-400 font-medium">Height</span>
+                <span className="font-bold text-white">
                   {profile.height_formatted || `${profile.height} cm`}
                 </span>
               </div>
               <div className="flex justify-between py-0.5">
-                <span className="text-stone-500 font-medium">Listing Status</span>
-                <span className="font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md">
+                <span className="text-slate-400 font-medium">Listing Status</span>
+                <span className="font-semibold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-md">
                   Active for Matrimonial
                 </span>
               </div>
@@ -435,21 +435,21 @@ export default function CandidateDetailPage() {
       </Card>
 
       {/* Private Information Protection Notice Card */}
-      <Card className="p-6 sm:p-8 bg-cream-50 border-2 border-gold-300/60 shadow-xs rounded-2xl space-y-4">
+      <Card className="p-6 sm:p-8 bg-navy-850 border border-slate-750 shadow-md rounded-2xl space-y-4">
         <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gold-100 border border-gold-300 flex items-center justify-center text-burgundy-900 shrink-0 mt-0.5">
-            <Lock className="w-5 h-5 text-burgundy-800" />
+          <div className="w-10 h-10 rounded-xl bg-navy-800 border border-slate-700 flex items-center justify-center text-magenta-400 shrink-0 mt-0.5">
+            <Lock className="w-5 h-5" />
           </div>
           <div className="space-y-1.5">
-            <h3 className="font-serif text-base font-extrabold text-burgundy-900">
+            <h3 className="font-serif text-base font-bold text-white">
               Private Information Strictly Protected
             </h3>
-            <p className="text-xs sm:text-sm text-charcoal-700 leading-relaxed font-medium">
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
               To protect the honor, safety, and privacy of all candidates and their families,
               confidential personal statements, family backgrounds, phone numbers, and emails are
               never publicly displayed.
             </p>
-            <p className="text-xs text-stone-500 font-medium">
+            <p className="text-xs text-slate-400 font-normal">
               Private information is released only after mutual rishta expression of interest,
               recipient acceptance, and verified authorization by both parties.
             </p>
@@ -464,17 +464,17 @@ export default function CandidateDetailPage() {
         title="Send Formal Rishta Request"
       >
         <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-burgundy-50 border border-burgundy-200 rounded-xl">
-            <Heart className="w-6 h-6 text-burgundy-700 shrink-0" />
-            <div className="text-xs text-charcoal-800">
-              <span className="font-bold block text-sm text-burgundy-900 mb-0.5">Candidate #{profile.profile_code}</span>
+          <div className="flex items-center gap-3 p-3 bg-navy-850 border border-slate-750 rounded-xl">
+            <Heart className="w-6 h-6 text-magenta-400 shrink-0" />
+            <div className="text-xs text-slate-300">
+              <span className="font-bold block text-sm text-white mb-0.5">Candidate #{profile.profile_code}</span>
               You are initiating a formal Rishta expression of interest. The candidate will be notified of your interest.
             </div>
           </div>
 
-          <div className="text-xs text-stone-600 space-y-1.5 bg-stone-50 p-3 rounded-lg border border-stone-200">
-            <p className="font-semibold text-charcoal-900">Important Terms:</p>
-            <ul className="list-disc pl-4 space-y-1 text-stone-600">
+          <div className="text-xs text-slate-300 space-y-1.5 bg-navy-900/60 p-3 rounded-lg border border-slate-750">
+            <p className="font-semibold text-white">Important Terms:</p>
+            <ul className="list-disc pl-4 space-y-1 text-slate-300">
               <li>Your public biodata will be shared with this candidate.</li>
               <li>This request will remain active for <strong>14 days</strong>.</li>
               <li>If the candidate declines, re-requesting is permanently disabled in this direction.</li>

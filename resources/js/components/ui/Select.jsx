@@ -23,10 +23,10 @@ const Select = forwardRef(function Select({
       {label && (
         <label
           htmlFor={selectId}
-          className="block text-sm font-semibold text-charcoal-900"
+          className="block text-sm font-semibold text-slate-200"
         >
           {label}
-          {required && <span className="text-burgundy-700 ml-1" aria-hidden="true">*</span>}
+          {required && <span className="text-magenta-400 ml-1" aria-hidden="true">*</span>}
         </label>
       )}
 
@@ -39,13 +39,13 @@ const Select = forwardRef(function Select({
           aria-invalid={Boolean(error)}
           aria-describedby={error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined}
           className={`
-            w-full appearance-none px-4 py-2.5 pr-10 min-h-[44px] text-sm font-medium text-charcoal-900 bg-white
-            border-2 rounded-xl transition-all duration-150 cursor-pointer
-            focus:outline-none focus:ring-4 focus:ring-burgundy-700/15 focus:border-burgundy-700
-            disabled:bg-stone-100 disabled:text-stone-500 disabled:border-stone-200 disabled:cursor-not-allowed
+            w-full appearance-none px-4 py-2.5 pr-10 min-h-[44px] text-sm font-medium text-white bg-navy-750
+            border rounded-xl transition-all duration-150 cursor-pointer
+            focus:outline-none focus:ring-2 focus:ring-magenta-500/30 focus:border-magenta-500
+            disabled:bg-navy-850 disabled:text-slate-600 disabled:border-slate-800 disabled:cursor-not-allowed
             ${error
-              ? 'border-rose-600 bg-rose-50/20 text-rose-950 focus:ring-rose-500/20 focus:border-rose-600'
-              : 'border-stone-300 hover:border-stone-400'}
+              ? 'border-rose-500 bg-rose-500/10 text-rose-200 focus:ring-rose-500/20 focus:border-rose-500'
+              : 'border-slate-700 hover:border-slate-600'}
             ${className}
           `}
           {...props}

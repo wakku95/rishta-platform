@@ -67,29 +67,29 @@ export default function VerifyEmailPage() {
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <div
-            className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-md border-2 ${
+            className={`mx-auto w-14 h-14 rounded-2xl flex items-center justify-center text-white shadow-xl border ${
               isFullyVerified
-                ? 'bg-emerald-600 border-emerald-700/40'
-                : 'bg-burgundy-700 border-burgundy-900/30'
+                ? 'bg-gradient-to-tr from-emerald-500 to-teal-600 shadow-emerald-500/20 border-emerald-400/30'
+                : 'bg-gradient-to-tr from-magenta-500 to-purple-600 shadow-magenta-500/20 border-white/20'
             }`}
           >
             {isFullyVerified ? (
               <CheckCircle2 className="w-8 h-8 text-white" />
             ) : (
-              <MailCheck className="w-8 h-8 text-gold-300" />
+              <MailCheck className="w-8 h-8 text-white" />
             )}
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             {isFullyVerified ? 'Email Verified' : 'Verify Your Email'}
           </h1>
-          <p className="text-sm font-medium text-stone-600">
+          <p className="text-sm font-normal text-slate-400">
             {isFullyVerified
               ? 'Your account identity is verified and in good standing.'
               : 'Please confirm your email address to unlock full matrimonial features.'}
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-2xl space-y-5">
           {hasError && (
             <Alert variant="danger" title="Verification Issue">
               {hasError === 'expired'
@@ -110,7 +110,7 @@ export default function VerifyEmailPage() {
                   size="lg"
                   icon={ArrowRight}
                   iconPosition="right"
-                  className="w-full justify-center text-base font-bold shadow-md"
+                  className="w-full justify-center text-base font-bold shadow-lg shadow-magenta-500/25"
                 >
                   Continue to Dashboard
                 </Button>
@@ -118,11 +118,11 @@ export default function VerifyEmailPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-stone-50 border-2 border-stone-200 text-sm text-stone-800 leading-relaxed">
-                <span className="text-xs font-semibold text-stone-500 uppercase tracking-wider block mb-1">
+              <div className="p-4 rounded-xl bg-navy-750 border border-slate-700 text-sm text-slate-300 leading-relaxed">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider block mb-1">
                   Registered Email Address
                 </span>
-                <strong className="text-charcoal-900 break-all text-base">
+                <strong className="text-white break-all text-base">
                   {user?.email || 'your registered email'}
                 </strong>
               </div>
@@ -140,10 +140,10 @@ export default function VerifyEmailPage() {
               )}
 
               {/* Development Testing Hint */}
-              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 leading-relaxed space-y-1">
-                <p className="font-bold">Development Testing Note:</p>
+              <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-xs text-amber-200 leading-relaxed space-y-1">
+                <p className="font-bold text-amber-300">Development Testing Note:</p>
                 <p>Since mail is configured to the log driver in development, the verification link is saved in:</p>
-                <code className="block bg-amber-100/70 p-1.5 rounded font-mono text-[11px] text-amber-950 break-all">
+                <code className="block bg-navy-900/80 border border-amber-900/50 p-1.5 rounded font-mono text-[11px] text-amber-300 break-all">
                   storage/logs/laravel.log
                 </code>
               </div>
@@ -156,7 +156,7 @@ export default function VerifyEmailPage() {
                   isLoading={resendStatus.loading}
                   icon={Send}
                   onClick={handleResend}
-                  className="w-full justify-center text-sm font-bold shadow-md"
+                  className="w-full justify-center text-sm font-bold shadow-lg shadow-magenta-500/25"
                 >
                   Resend Verification Email
                 </Button>
@@ -177,12 +177,12 @@ export default function VerifyEmailPage() {
           )}
 
           {user && (
-            <div className="pt-4 border-t-2 border-stone-100 flex items-center justify-between text-xs text-stone-600">
-              <span>Signed in: <strong>{user.name}</strong></span>
+            <div className="pt-4 border-t border-slate-750 flex items-center justify-between text-xs text-slate-400">
+              <span>Signed in: <strong className="text-slate-200">{user.name}</strong></span>
               <button
                 type="button"
                 onClick={logout}
-                className="inline-flex items-center gap-1.5 font-bold text-burgundy-700 hover:text-burgundy-900 underline hover:no-underline cursor-pointer"
+                className="inline-flex items-center gap-1.5 font-bold text-magenta-400 hover:text-magenta-300 underline hover:no-underline cursor-pointer transition-colors"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Log Out</span>

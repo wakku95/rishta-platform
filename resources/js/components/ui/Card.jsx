@@ -15,14 +15,14 @@ export default function Card({
 }) {
   return (
     <div
-      className={`bg-white border-2 border-stone-200 rounded-2xl shadow-xs overflow-hidden transition-all duration-150 ${className}`}
+      className={`bg-navy-800 border border-slate-750/80 rounded-2xl shadow-lg shadow-black/25 overflow-hidden transition-all duration-200 ${className}`}
       {...props}
     >
       {(title || subtitle || action) && (
-        <div className="px-6 py-4 border-b-2 border-stone-100 bg-stone-50/75 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-b border-slate-750/70 bg-navy-850/50 flex items-center justify-between gap-3">
           <div>
-            {title && <h3 className="font-bold text-charcoal-900 text-base">{title}</h3>}
-            {subtitle && <p className="text-xs text-stone-600 mt-0.5">{subtitle}</p>}
+            {title && <h3 className="font-bold text-white text-base tracking-tight">{title}</h3>}
+            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           {action && <div className="shrink-0">{action}</div>}
         </div>
@@ -33,7 +33,7 @@ export default function Card({
       </div>
 
       {footer && (
-        <div className="px-6 py-4 bg-stone-50/75 border-t-2 border-stone-100">
+        <div className="px-6 py-4 bg-navy-850/50 border-t border-slate-750/70">
           {footer}
         </div>
       )}

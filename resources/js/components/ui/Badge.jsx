@@ -17,12 +17,14 @@ export default function Badge({
   };
 
   const variantStyles = {
-    default: 'bg-cream-200 text-charcoal-700 border border-cream-300',
-    burgundy: 'bg-burgundy-50 text-burgundy-700 border border-burgundy-200',
-    gold: 'bg-gold-50 text-gold-700 border border-gold-200',
-    success: 'bg-emerald-50 text-emerald-700 border border-emerald-200',
-    warning: 'bg-amber-50 text-amber-700 border border-amber-200',
-    danger: 'bg-rose-50 text-rose-700 border border-rose-200',
+    default: 'bg-navy-750 text-slate-300 border border-slate-700/80',
+    burgundy: 'bg-magenta-500/15 text-magenta-400 border border-magenta-500/30',
+    magenta: 'bg-magenta-500/15 text-magenta-400 border border-magenta-500/30',
+    purple: 'bg-purple-500/15 text-purple-300 border border-purple-500/30',
+    gold: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+    success: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
+    warning: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+    danger: 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
   };
 
   return (

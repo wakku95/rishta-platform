@@ -65,18 +65,18 @@ export default function LoginPage() {
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md border-2 border-burgundy-900/30">
-            <HeartHandshake className="w-8 h-8 text-gold-300" />
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-magenta-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-magenta-500/20 border border-white/20">
+            <HeartHandshake className="w-8 h-8 text-white" />
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Account Sign In
           </h1>
-          <p className="text-sm font-medium text-stone-600">
+          <p className="text-sm font-normal text-slate-400">
             Enter your credentials to access your matrimonial dashboard.
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-2xl">
           {generalError && (
             <div className="mb-6">
               <Alert variant="danger" onClose={() => setGeneralError('')}>
@@ -104,13 +104,13 @@ export default function LoginPage() {
               <div className="flex items-center justify-between mb-1.5">
                 <label
                   htmlFor="password"
-                  className="block text-sm font-semibold text-charcoal-900"
+                  className="block text-sm font-semibold text-slate-200"
                 >
-                  Password <span className="text-burgundy-700">*</span>
+                  Password <span className="text-magenta-400">*</span>
                 </label>
                 <Link
                   to="/forgot-password"
-                  className="text-xs font-bold text-burgundy-700 hover:text-burgundy-900 underline hover:no-underline"
+                  className="text-xs font-semibold text-magenta-400 hover:text-magenta-300 transition-colors"
                 >
                   Forgot password?
                 </Link>
@@ -129,13 +129,13 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between py-1">
-              <label className="flex items-center gap-2.5 cursor-pointer select-none text-sm font-medium text-charcoal-800">
+              <label className="flex items-center gap-2.5 cursor-pointer select-none text-sm font-medium text-slate-300">
                 <input
                   type="checkbox"
                   name="remember"
                   checked={formData.remember}
                   onChange={handleChange}
-                  className="w-4 h-4 rounded border-2 border-stone-300 text-burgundy-700 focus:ring-burgundy-700 cursor-pointer"
+                  className="w-4 h-4 rounded border border-slate-700 bg-navy-750 text-magenta-500 focus:ring-magenta-500 cursor-pointer"
                 />
                 <span>Remember me on this browser</span>
               </label>
@@ -147,17 +147,17 @@ export default function LoginPage() {
               size="lg"
               isLoading={isLoading}
               icon={LogIn}
-              className="w-full justify-center text-base font-bold shadow-md"
+              className="w-full justify-center text-base font-bold shadow-lg"
             >
               Sign In to Account
             </Button>
           </form>
 
-          <div className="mt-6 pt-5 border-t-2 border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-stone-600">
+          <div className="mt-6 pt-5 border-t border-slate-750/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-400">
             <span>Don't have an account yet?</span>
             <Link
               to="/register"
-              className="font-bold text-burgundy-700 hover:text-burgundy-900 underline hover:no-underline"
+              className="font-semibold text-magenta-400 hover:text-magenta-300 transition-colors"
             >
               Register Free Profile →
             </Link>

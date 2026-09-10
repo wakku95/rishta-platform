@@ -56,10 +56,10 @@ export default function ConfirmDialog({
       }
     >
       <div className="flex items-start gap-3.5">
-        <div className={`p-2.5 rounded-xl shrink-0 ${modalVariant === 'danger' ? 'bg-rose-50 text-rose-600' : 'bg-burgundy-50 text-burgundy-700'}`}>
+        <div className={`p-2.5 rounded-xl shrink-0 ${modalVariant === 'danger' ? 'bg-rose-950/60 text-rose-400 border border-rose-800/60' : 'bg-magenta-950/60 text-magenta-400 border border-magenta-800/60'}`}>
           <TriangleAlert className="w-5 h-5" />
         </div>
-        <div className="text-sm text-charcoal-700 leading-relaxed pt-1">
+        <div className="text-sm text-slate-300 leading-relaxed pt-1">
           {modalDescription}
         </div>
       </div>

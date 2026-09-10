@@ -226,18 +226,18 @@ export default function EditPreferencesPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
       {/* Header */}
-      <div className="pb-2 border-b-2 border-stone-200">
+      <div className="pb-2 border-b border-slate-750">
         <Link
           to="/profile"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-burgundy-800 hover:text-burgundy-900 mb-1"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-magenta-400 hover:text-magenta-300 mb-1 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Profile
         </Link>
-        <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900 tracking-tight">
+        <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
           Partner Preferences
         </h1>
-        <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
+        <p className="text-xs sm:text-sm text-slate-400 font-normal mt-1">
           Specify what you look for in a compatible matrimonial match. These criteria use standardized options.
         </p>
       </div>
@@ -250,8 +250,8 @@ export default function EditPreferencesPage() {
 
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Card 1: Age and Gender */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+          <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
             1. Gender & Age Range
           </h2>
 
@@ -296,11 +296,11 @@ export default function EditPreferencesPage() {
         </Card>
 
         {/* Card 2: Preferred Cities */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-4">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-4">
+          <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
             2. Preferred Cities
           </h2>
-          <p className="text-xs text-stone-500 font-medium">Select one or more cities you would consider:</p>
+          <p className="text-xs text-slate-400 font-normal">Select one or more cities you would consider:</p>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 pt-1">
             {options.cities.map((cityOpt) => {
@@ -311,16 +311,16 @@ export default function EditPreferencesPage() {
                   key={cityVal}
                   type="button"
                   onClick={() => handleCityToggle(cityVal)}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors cursor-pointer text-left ${
+                  className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-left ${
                     selected
-                      ? 'bg-burgundy-50 border-burgundy-700 text-burgundy-950'
-                      : 'bg-white border-stone-300 text-charcoal-800 hover:border-stone-400'
+                      ? 'bg-magenta-950/40 border-magenta-500 text-white shadow-xs'
+                      : 'bg-navy-750 border-slate-700 text-slate-300 hover:border-slate-600'
                   }`}
                 >
                   {selected ? (
-                    <CheckSquare className="w-4 h-4 text-burgundy-700 shrink-0" />
+                    <CheckSquare className="w-4 h-4 text-magenta-400 shrink-0" />
                   ) : (
-                    <Square className="w-4 h-4 text-stone-400 shrink-0" />
+                    <Square className="w-4 h-4 text-slate-500 shrink-0" />
                   )}
                   <span>{cityOpt.label}</span>
                 </button>
@@ -330,8 +330,8 @@ export default function EditPreferencesPage() {
         </Card>
 
         {/* Card 3: Religion & Education */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+          <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
             3. Faith & Education Expectations
           </h2>
 
@@ -379,8 +379,8 @@ export default function EditPreferencesPage() {
         </Card>
 
         {/* Card 4: Height Bounds & Marital Status */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+          <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
             4. Height Range & Marital Status
           </h2>
 
@@ -404,8 +404,8 @@ export default function EditPreferencesPage() {
             />
           </div>
 
-          <div className="space-y-2 pt-2 border-t border-stone-200">
-            <label className="block text-sm font-semibold text-charcoal-900">
+          <div className="space-y-2 pt-2 border-t border-slate-750">
+            <label className="block text-sm font-semibold text-slate-200">
               Acceptable Marital Status
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-1">
@@ -416,16 +416,16 @@ export default function EditPreferencesPage() {
                     key={opt.value}
                     type="button"
                     onClick={() => handleMaritalStatusToggle(opt.value)}
-                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold border-2 transition-colors cursor-pointer text-left ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold border transition-all cursor-pointer text-left ${
                       selected
-                        ? 'bg-burgundy-50 border-burgundy-700 text-burgundy-950'
-                        : 'bg-white border-stone-300 text-charcoal-800 hover:border-stone-400'
+                        ? 'bg-magenta-950/40 border-magenta-500 text-white shadow-xs'
+                        : 'bg-navy-750 border-slate-700 text-slate-300 hover:border-slate-600'
                     }`}
                   >
                     {selected ? (
-                      <CheckSquare className="w-4 h-4 text-burgundy-700 shrink-0" />
+                      <CheckSquare className="w-4 h-4 text-magenta-400 shrink-0" />
                     ) : (
-                      <Square className="w-4 h-4 text-stone-400 shrink-0" />
+                      <Square className="w-4 h-4 text-slate-500 shrink-0" />
                     )}
                     <span>{opt.label}</span>
                   </button>
@@ -442,7 +442,7 @@ export default function EditPreferencesPage() {
               type="button"
               variant="secondary"
               size="lg"
-              className="w-full sm:w-auto font-bold border-stone-300"
+              className="w-full sm:w-auto font-bold"
             >
               Cancel
             </Button>
@@ -454,7 +454,7 @@ export default function EditPreferencesPage() {
             size="lg"
             icon={Save}
             loading={submitting}
-            className="w-full sm:w-auto font-bold px-8 shadow-md"
+            className="w-full sm:w-auto font-bold px-8 shadow-lg shadow-magenta-500/25"
           >
             Save Preferences
           </Button>

@@ -248,46 +248,46 @@ export default function ContactUnlockModal({
              STAGE 3: MUTUAL UNLOCK COMPLETE (DISPLAY CONTACT DETAILS)
              ========================================================================= */
           <div className="space-y-4">
-            <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-2xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+            <div className="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-2xl flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
                 <Unlock className="w-5 h-5" />
               </div>
               <div>
-                <h4 className="font-bold text-sm text-emerald-900">Mutual Verification Complete!</h4>
-                <p className="text-xs text-emerald-700">
+                <h4 className="font-bold text-sm text-white">Mutual Verification Complete!</h4>
+                <p className="text-xs text-emerald-300">
                   Both candidate profiles have completed phone verification. Direct contact information is unlocked below.
                 </p>
               </div>
             </div>
 
-            <div className="bg-stone-50 border-2 border-stone-200 rounded-2xl p-5 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+            <div className="bg-navy-850 border border-slate-750 rounded-2xl p-5 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-750/80">
                 <div>
-                  <span className="text-[11px] font-bold text-stone-400 uppercase tracking-wider">Candidate Contact</span>
-                  <h3 className="font-serif text-lg font-extrabold text-burgundy-900">{contactData.name}</h3>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Candidate Contact</span>
+                  <h3 className="font-serif text-lg font-bold text-white">{contactData.name}</h3>
                 </div>
-                <Badge variant="success" className="font-bold text-xs">
+                <Badge variant="success" size="sm" className="font-bold text-xs">
                   Verified Contact
                 </Badge>
               </div>
 
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-stone-500 font-medium flex items-center gap-2">
-                    <Phone className="w-4 h-4 text-stone-400" /> Mobile / WhatsApp:
+                  <span className="text-slate-400 font-medium flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-slate-500" /> Mobile / WhatsApp:
                   </span>
-                  <span className="font-mono font-bold text-charcoal-900">{contactData.phone}</span>
+                  <span className="font-mono font-bold text-white">{contactData.phone}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-stone-500 font-medium flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-stone-400" /> Direct WhatsApp:
+                  <span className="text-slate-400 font-medium flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4 text-slate-500" /> Direct WhatsApp:
                   </span>
                   <a
                     href={contactData.whatsapp_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 hover:text-emerald-900 bg-emerald-100/60 px-2.5 py-1 rounded-lg hover:bg-emerald-100 transition-colors"
+                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-xl hover:bg-emerald-500/25 transition-colors"
                   >
                     <span>Open WhatsApp Chat</span>
                     <ExternalLink className="w-3.5 h-3.5" />
@@ -295,13 +295,13 @@ export default function ContactUnlockModal({
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-stone-500 font-medium">Registered Email:</span>
-                  <span className="font-mono text-xs font-bold text-stone-700">{contactData.email}</span>
+                  <span className="text-slate-400 font-medium">Registered Email:</span>
+                  <span className="font-mono text-xs font-semibold text-slate-300">{contactData.email}</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-[11px] text-stone-500 italic text-center">
+            <p className="text-[11px] text-slate-400 italic text-center">
               Please communicate with mutual respect, modesty, and genuine matrimonial intent.
             </p>
           </div>
@@ -315,14 +315,14 @@ export default function ContactUnlockModal({
               <div
                 className={`p-3 rounded-xl border flex items-center gap-2 ${
                   status?.is_paid
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                    : 'bg-amber-50 border-amber-300 text-amber-900'
+                    ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
+                    : 'bg-navy-750 border-magenta-500/40 text-magenta-300'
                 }`}
               >
                 {status?.is_paid ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                 ) : (
-                  <CreditCard className="w-4 h-4 text-amber-600 shrink-0" />
+                  <CreditCard className="w-4 h-4 text-magenta-400 shrink-0" />
                 )}
                 <span>1. Unlock Fee (Rs. 300)</span>
               </div>
@@ -330,14 +330,14 @@ export default function ContactUnlockModal({
               <div
                 className={`p-3 rounded-xl border flex items-center gap-2 ${
                   status?.my_verified
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-900'
-                    : 'bg-stone-50 border-stone-200 text-stone-600'
+                    ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
+                    : 'bg-navy-850 border-slate-750 text-slate-400'
                 }`}
               >
                 {status?.my_verified ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                 ) : (
-                  <Phone className="w-4 h-4 text-stone-400 shrink-0" />
+                  <Phone className="w-4 h-4 text-slate-500 shrink-0" />
                 )}
                 <span>2. SMS OTP Verification</span>
               </div>
@@ -345,17 +345,17 @@ export default function ContactUnlockModal({
 
             {/* STEP 1: PAYMENT (Sender Pays, Receiver Waits) */}
             {!status?.is_paid && (
-              <div className="p-5 bg-stone-50 border border-stone-200 rounded-2xl space-y-4">
+              <div className="p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-full bg-burgundy-100 text-burgundy-800 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-9 h-9 rounded-xl bg-magenta-500/15 border border-magenta-500/30 text-magenta-400 flex items-center justify-center shrink-0 mt-0.5">
                     <Lock className="w-4 h-4" />
                   </div>
                   <div>
-                    <h4 className="font-serif font-extrabold text-base text-burgundy-900">
+                    <h4 className="font-serif font-bold text-base text-white">
                       Contact Unlock Fee Required
                     </h4>
-                    <p className="text-xs text-stone-600 mt-1 leading-relaxed">
-                      A nominal fee of <strong>Rs. 300 PKR</strong> is required to unlock direct contact numbers
+                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+                      A nominal fee of <strong className="text-white">Rs. 300 PKR</strong> is required to unlock direct contact numbers
                       and initiate two-way phone SMS verification.
                     </p>
                   </div>
@@ -363,14 +363,14 @@ export default function ContactUnlockModal({
 
                 {isSender ? (
                   <div className="pt-2 space-y-3">
-                    <div className="flex items-center justify-between text-xs bg-white p-3 rounded-xl border border-stone-200">
-                      <span className="text-stone-500 font-bold">Initiator (You):</span>
-                      <span className="font-extrabold text-charcoal-900">Rs. 300.00 PKR</span>
+                    <div className="flex items-center justify-between text-xs bg-navy-800 p-3 rounded-xl border border-slate-700">
+                      <span className="text-slate-400 font-semibold">Initiator (You):</span>
+                      <span className="font-extrabold text-amber-300 text-sm">Rs. 300.00 PKR</span>
                     </div>
 
                     <Button
                       variant="primary"
-                      className="w-full font-bold shadow-sm"
+                      className="w-full font-bold shadow-md"
                       loading={paying}
                       onClick={handleInitiateAndVerifyPayment}
                       icon={CreditCard}
@@ -379,8 +379,8 @@ export default function ContactUnlockModal({
                     </Button>
                   </div>
                 ) : (
-                  <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center gap-2.5 text-xs text-amber-900">
-                    <Clock className="w-4 h-4 text-amber-600 shrink-0" />
+                  <div className="p-3 bg-navy-800 border border-slate-700 rounded-xl flex items-center gap-2.5 text-xs text-slate-300">
+                    <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                     <span>
                       The request sender is responsible for the unlock fee. Once they complete payment, you will be invited to verify your mobile phone.
                     </span>
@@ -391,18 +391,18 @@ export default function ContactUnlockModal({
 
             {/* STEP 2: SMS OTP VERIFICATION (Only active after payment is paid) */}
             {status?.is_paid && (
-              <div className="p-5 bg-stone-50 border border-stone-200 rounded-2xl space-y-4">
+              <div className="p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="font-serif font-extrabold text-base text-burgundy-900">
+                    <h4 className="font-serif font-bold text-base text-white">
                       Mutual Mobile Phone Verification
                     </h4>
-                    <p className="text-xs text-stone-600 mt-0.5">
+                    <p className="text-xs text-slate-400 mt-0.5">
                       Enter your Pakistani mobile number to receive a 6-digit SMS verification code.
                     </p>
                   </div>
                   {status?.my_verified && (
-                    <Badge variant="success" className="font-bold text-xs shrink-0">
+                    <Badge variant="success" size="sm" className="font-bold text-xs shrink-0">
                       Your Phone Verified
                     </Badge>
                   )}
@@ -410,16 +410,16 @@ export default function ContactUnlockModal({
 
                 {status?.my_verified ? (
                   <div className="space-y-3">
-                    <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-xs text-emerald-900">
-                      <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl flex items-center gap-2.5 text-xs text-emerald-300">
+                      <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                       <div>
-                        Your phone number (<strong>{status.my_phone}</strong>) is verified!
+                        Your phone number (<strong className="text-white">{status.my_phone}</strong>) is verified!
                       </div>
                     </div>
 
                     {!status.other_verified && (
-                      <div className="p-3 bg-stone-100 border border-stone-200 rounded-xl flex items-center gap-2 text-xs text-stone-600">
-                        <Clock className="w-4 h-4 text-stone-400 shrink-0" />
+                      <div className="p-3 bg-navy-800 border border-slate-750 rounded-xl flex items-center gap-2 text-xs text-slate-400">
+                        <Clock className="w-4 h-4 text-amber-400 shrink-0" />
                         <span>
                           Waiting for the other candidate to complete their phone verification. You will receive an email confirmation once both are verified.
                         </span>
@@ -436,7 +436,7 @@ export default function ContactUnlockModal({
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           disabled={sendingOtp}
-                          helpText="A 6-digit code will be sent to this number via SMS."
+                          helperText="A 6-digit code will be sent to this number via SMS."
                           required
                         />
 
@@ -454,11 +454,11 @@ export default function ContactUnlockModal({
                       <form onSubmit={handleVerifyOtp} className="space-y-3">
                         <div>
                           <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="font-bold text-charcoal-700">Enter 6-Digit Code</span>
+                            <span className="font-bold text-slate-300">Enter 6-Digit Code</span>
                             <button
                               type="button"
                               onClick={() => setOtpStep('input_phone')}
-                              className="text-burgundy-700 hover:underline font-bold"
+                              className="text-magenta-400 hover:underline font-semibold cursor-pointer"
                             >
                               Change Number ({phoneNumber})
                             </button>
@@ -481,7 +481,7 @@ export default function ContactUnlockModal({
                             size="sm"
                             disabled={cooldown > 0 || sendingOtp}
                             onClick={handleSendOtp}
-                            className="text-xs font-bold"
+                            className="text-xs font-semibold"
                           >
                             {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend SMS Code'}
                           </Button>

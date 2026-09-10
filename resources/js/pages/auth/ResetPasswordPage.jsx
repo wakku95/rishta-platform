@@ -60,18 +60,18 @@ export default function ResetPasswordPage() {
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md border-2 border-burgundy-900/30">
-            <Lock className="w-8 h-8 text-gold-300" />
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-magenta-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-magenta-500/20 border border-white/20">
+            <Lock className="w-8 h-8 text-white" />
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Set New Password
           </h1>
-          <p className="text-sm font-medium text-stone-600">
+          <p className="text-sm font-normal text-slate-400">
             Choose a new strong password to regain access to your account.
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-2xl">
           {!token && (
             <div className="mb-5">
               <Alert variant="warning" title="Missing Reset Token">
@@ -82,19 +82,19 @@ export default function ResetPasswordPage() {
 
           {isSuccess ? (
             <div className="space-y-6 text-center">
-              <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center text-emerald-700 border-2 border-emerald-300">
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shadow-xl shadow-emerald-500/10">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-charcoal-900">
+                <h2 className="text-xl font-bold text-white">
                   Password Updated Successfully
                 </h2>
-                <p className="text-sm text-stone-600 mt-1">
+                <p className="text-sm text-slate-400 mt-1">
                   Your new password is saved. You can now sign in with your updated credentials.
                 </p>
               </div>
               <Link to="/login" className="block w-full">
-                <Button variant="primary" size="lg" className="w-full justify-center text-base font-bold shadow-md">
+                <Button variant="primary" size="lg" className="w-full justify-center text-base font-bold shadow-lg shadow-magenta-500/25">
                   Proceed to Sign In
                 </Button>
               </Link>
@@ -150,7 +150,7 @@ export default function ResetPasswordPage() {
                 size="lg"
                 isLoading={isLoading}
                 icon={KeyRound}
-                className="w-full justify-center text-base font-bold shadow-md mt-2"
+                className="w-full justify-center text-base font-bold shadow-lg shadow-magenta-500/25 mt-2"
               >
                 Update Password & Save
               </Button>

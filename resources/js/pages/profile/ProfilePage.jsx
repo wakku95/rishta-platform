@@ -146,16 +146,16 @@ export default function ProfilePage() {
   if (!profile) {
     return (
       <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <Card className="p-8 sm:p-12 text-center space-y-6 bg-white border-2 border-stone-300 shadow-md">
-          <div className="w-16 h-16 mx-auto rounded-2xl bg-burgundy-50 border-2 border-burgundy-200 flex items-center justify-center text-burgundy-800 shadow-sm">
-            <HeartHandshake className="w-8 h-8 text-burgundy-700" />
+        <Card className="p-8 sm:p-12 text-center space-y-6 bg-navy-800 border border-slate-750 shadow-2xl">
+          <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-tr from-magenta-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-magenta-500/20 border border-white/20">
+            <HeartHandshake className="w-8 h-8 text-white" />
           </div>
 
           <div className="space-y-2 max-w-md mx-auto">
-            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900">
+            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white">
               Create Your Matrimonial Profile
             </h1>
-            <p className="text-sm sm:text-base text-stone-600 font-medium leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-400 font-normal leading-relaxed">
               Create your profile using structured options. Your personal contact details and private introduction remain strictly protected.
             </p>
           </div>
@@ -167,7 +167,7 @@ export default function ProfilePage() {
                 size="lg"
                 icon={Sparkles}
                 iconPosition="right"
-                className="font-bold text-base px-8 py-3.5 shadow-md hover:shadow-lg"
+                className="font-bold text-base px-8 py-3.5 shadow-lg shadow-magenta-500/25 hover:shadow-magenta-500/40"
               >
                 Create My Profile
               </Button>
@@ -239,30 +239,30 @@ export default function ProfilePage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
       {/* Feedback Alerts */}
       {actionSuccess && (
-        <Alert variant="success" title="Success" className="border-2 border-emerald-300 shadow-xs">
+        <Alert variant="success" title="Success" className="border border-emerald-500/40 shadow-xs">
           {actionSuccess}
         </Alert>
       )}
 
       {error && (
-        <Alert variant="danger" title="Notice" className="border-2 border-rose-300 shadow-xs">
+        <Alert variant="danger" title="Notice" className="border border-rose-500/40 shadow-xs">
           {error}
         </Alert>
       )}
 
       {/* Header Banner */}
-      <div className="bg-gradient-to-r from-burgundy-900 to-burgundy-800 rounded-3xl p-6 sm:p-8 text-white shadow-md border-2 border-burgundy-950 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <div className="bg-gradient-to-r from-navy-800 via-navy-750 to-navy-800 rounded-3xl p-6 sm:p-8 text-white shadow-2xl border border-slate-750 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-xs uppercase tracking-wider bg-burgundy-950/80 text-gold-300 px-3 py-1 rounded-lg border border-burgundy-700 font-bold">
+            <span className="font-mono text-xs uppercase tracking-wider bg-navy-900/90 text-magenta-300 px-3 py-1 rounded-lg border border-slate-700 font-bold">
               {profile.profile_code}
             </span>
             {getStatusBadge(profile.profile_status)}
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             {profile.profession} ({profile.age} yrs)
           </h1>
-          <p className="text-sm text-stone-200 font-medium">
+          <p className="text-sm text-slate-300 font-normal">
             {profile.city}, Pakistan • Managed by {getManagedByLabel(profile.managed_by)}
           </p>
         </div>
@@ -274,13 +274,13 @@ export default function ProfilePage() {
             size="md"
             icon={Eye}
             onClick={handleOpenPreview}
-            className="bg-white hover:bg-stone-50 text-burgundy-900 font-bold shadow-sm"
+            className="font-bold shadow-sm"
           >
             Public Preview
           </Button>
 
           <Link to="/profile/edit">
-            <Button variant="secondary" size="md" icon={Edit} className="bg-white hover:bg-stone-50 text-burgundy-900 font-bold shadow-sm">
+            <Button variant="secondary" size="md" icon={Edit} className="font-bold shadow-sm">
               Edit Biodata
             </Button>
           </Link>
@@ -348,83 +348,83 @@ export default function ProfilePage() {
 
       {/* Activation Requirements Checklist Card (Shown when Draft or Hidden) */}
       {profile.profile_status !== 'active' && (
-        <Card className="p-6 bg-white border-2 border-stone-300 shadow-sm space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-stone-200">
-            <h2 className="text-base font-serif font-extrabold text-burgundy-900 flex items-center gap-2">
-              <ShieldAlert className="w-5 h-5 text-burgundy-700" />
+        <Card className="p-6 bg-navy-800 border border-slate-750 shadow-md space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-700">
+            <h2 className="text-base font-serif font-extrabold text-white flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5 text-magenta-400" />
               Profile Activation Requirements
             </h2>
-            <span className="text-xs font-bold text-stone-500">
+            <span className="text-xs font-bold text-slate-400">
               {canActivate ? 'All Requirements Met ✓' : 'Incomplete'}
             </span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs font-medium">
-            <div className={`p-3.5 rounded-xl border-2 flex items-start gap-2.5 ${
-              isEmailOk ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'
+            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
+              isEmailOk ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
             }`}>
-              {isEmailOk ? <Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />}
+              {isEmailOk ? <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />}
               <div>
-                <span className="font-bold block">1. Verified Email</span>
+                <span className="font-bold block text-white">1. Verified Email</span>
                 <span>{isEmailOk ? 'Email address verified' : 'Email verification required'}</span>
               </div>
             </div>
 
-            <div className={`p-3.5 rounded-xl border-2 flex items-start gap-2.5 ${
-              isBasicComplete ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'
+            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
+              isBasicComplete ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
             }`}>
-              {isBasicComplete ? <Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />}
+              {isBasicComplete ? <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />}
               <div>
-                <span className="font-bold block">2. Basic Biodata (60%)</span>
+                <span className="font-bold block text-white">2. Basic Biodata (60%)</span>
                 <span>{isBasicComplete ? 'All 10 core fields filled' : 'Complete all 10 core fields'}</span>
               </div>
             </div>
 
-            <div className={`p-3.5 rounded-xl border-2 flex items-start gap-2.5 ${
-              isPreferencesSet ? 'bg-emerald-50 border-emerald-200 text-emerald-950' : 'bg-rose-50 border-rose-200 text-rose-950'
+            <div className={`p-3.5 rounded-xl border flex items-start gap-2.5 ${
+              isPreferencesSet ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300' : 'bg-rose-950/30 border-rose-500/40 text-rose-300'
             }`}>
-              {isPreferencesSet ? <Check className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-700 shrink-0 mt-0.5" />}
+              {isPreferencesSet ? <Check className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" /> : <X className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />}
               <div>
-                <span className="font-bold block">3. Partner Preferences (30%)</span>
+                <span className="font-bold block text-white">3. Partner Preferences (30%)</span>
                 <span>{isPreferencesSet ? 'Preferences configured' : 'Set partner preferences'}</span>
               </div>
             </div>
           </div>
 
-          <p className="text-xs text-stone-500 font-medium">
+          <p className="text-xs text-slate-400 font-normal">
             💡 <em>Note:</em> "About Candidate" and "Family Background" (10%) are optional and not required to activate your profile.
           </p>
         </Card>
       )}
 
       {/* Completion Meter Card */}
-      <Card className="p-6 bg-white border-2 border-stone-300 shadow-sm space-y-3">
+      <Card className="p-6 bg-navy-800 border border-slate-750 shadow-md space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-burgundy-700" />
-            <h2 className="text-base font-bold text-charcoal-900">Profile Completion Score</h2>
+            <Sparkles className="w-5 h-5 text-magenta-400" />
+            <h2 className="text-base font-bold text-white">Profile Completion Score</h2>
           </div>
-          <span className="text-sm font-extrabold text-burgundy-800">{completion}% / 100%</span>
+          <span className="text-sm font-extrabold text-magenta-300">{completion}% / 100%</span>
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full h-3 bg-stone-100 rounded-full overflow-hidden border border-stone-200">
+        <div className="w-full h-3 bg-navy-900 rounded-full overflow-hidden border border-slate-700">
           <div
             className={`h-full transition-all duration-300 rounded-full ${
               completion >= 90
-                ? 'bg-emerald-600'
+                ? 'bg-emerald-500'
                 : completion >= 60
-                ? 'bg-amber-600'
-                : 'bg-burgundy-700'
+                ? 'bg-amber-500'
+                : 'bg-gradient-to-r from-magenta-500 to-purple-600'
             }`}
             style={{ width: `${completion}%` }}
           />
         </div>
 
-        <div className="flex flex-wrap gap-4 text-xs text-stone-500 pt-1 font-medium">
-          <span>• <strong>Basic Biodata:</strong> 60% (10 fields @ 6% each)</span>
-          <span>• <strong>Private Info:</strong> 10% (About & Family Background)</span>
-          <span>• <strong>Partner Preferences:</strong> 30% (8 match criteria)</span>
+        <div className="flex flex-wrap gap-4 text-xs text-slate-400 pt-1 font-normal">
+          <span>• <strong className="text-slate-300">Basic Biodata:</strong> 60% (10 fields @ 6% each)</span>
+          <span>• <strong className="text-slate-300">Private Info:</strong> 10% (About & Family Background)</span>
+          <span>• <strong className="text-slate-300">Partner Preferences:</strong> 30% (8 match criteria)</span>
         </div>
       </Card>
 
@@ -433,91 +433,91 @@ export default function ProfilePage() {
         {/* Main Biodata Column */}
         <div className="lg:col-span-2 space-y-6">
           {/* Card: Public Matrimonial Biodata */}
-          <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-6">
-            <div className="flex items-center justify-between pb-4 border-b-2 border-stone-100">
+          <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-750">
               <div>
-                <h2 className="text-lg font-serif font-extrabold text-burgundy-900">
+                <h2 className="text-lg font-serif font-extrabold text-white">
                   Public Matrimonial Biodata
                 </h2>
-                <p className="text-xs text-stone-500 font-medium">
+                <p className="text-xs text-slate-400 font-normal">
                   Standardized fields visible during prospective match discovery.
                 </p>
               </div>
               <Link to="/profile/edit">
-                <Button variant="ghost" size="sm" icon={Edit} className="text-burgundy-800 font-bold">
+                <Button variant="ghost" size="sm" icon={Edit} className="text-magenta-400 hover:text-magenta-300 font-bold">
                   Edit
                 </Button>
               </Link>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <User className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <User className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Gender</span>
-                  <span className="text-sm font-bold text-charcoal-900 capitalize">{profile.gender}</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">Gender</span>
+                  <span className="text-sm font-bold text-white capitalize">{profile.gender}</span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <Calendar className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <Calendar className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Age</span>
-                  <span className="text-sm font-bold text-charcoal-900">
-                    {profile.age} years old <span className="text-xs text-stone-400 font-normal">(DOB: {profile.date_of_birth})</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">Age</span>
+                  <span className="text-sm font-bold text-white">
+                    {profile.age} years old <span className="text-xs text-slate-400 font-normal">(DOB: {profile.date_of_birth})</span>
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <Ruler className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <Ruler className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Height</span>
-                  <span className="text-sm font-bold text-charcoal-900">{profile.height_formatted}</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">Height</span>
+                  <span className="text-sm font-bold text-white">{profile.height_formatted}</span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <MapPin className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <MapPin className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">City & Location</span>
-                  <span className="text-sm font-bold text-charcoal-900">{profile.city}, Pakistan</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">City & Location</span>
+                  <span className="text-sm font-bold text-white">{profile.city}, Pakistan</span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <GraduationCap className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <GraduationCap className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Highest Education</span>
-                  <span className="text-sm font-bold text-charcoal-900">{profile.education}</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">Highest Education</span>
+                  <span className="text-sm font-bold text-white">{profile.education}</span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <Briefcase className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <Briefcase className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Profession</span>
-                  <span className="text-sm font-bold text-charcoal-900">{profile.profession}</span>
+                  <span className="text-xs font-bold text-slate-400 block uppercase">Profession</span>
+                  <span className="text-sm font-bold text-white">{profile.profession}</span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <Users className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <Users className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">
+                  <span className="text-xs font-bold text-slate-400 block uppercase">
                     {profile.religion === 'Islam' ? 'Religion & Sect' : 'Religion'}
                   </span>
-                  <span className="text-sm font-bold text-charcoal-900">
+                  <span className="text-sm font-bold text-white">
                     {profile.religion}{profile.religion === 'Islam' && profile.sect ? ` (${profile.sect})` : ''}
                   </span>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-stone-50 border border-stone-200">
-                <HeartHandshake className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3 p-3.5 rounded-xl bg-navy-750 border border-slate-700">
+                <HeartHandshake className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
                 <div>
-                  <span className="text-xs font-bold text-stone-500 block uppercase">Marital Status</span>
-                  <span className="text-sm font-bold text-charcoal-900">
+                  <span className="text-xs font-bold text-slate-400 block uppercase">Marital Status</span>
+                  <span className="text-sm font-bold text-white">
                     {getMaritalStatusLabel(profile.marital_status)}
                   </span>
                 </div>
@@ -526,41 +526,41 @@ export default function ProfilePage() {
           </Card>
 
           {/* Card: Private Information (Strictly Confidential) */}
-          <Card className="p-6 sm:p-8 bg-stone-50/60 border-2 border-stone-300 shadow-md space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-stone-200">
+          <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-750">
               <div className="flex items-center gap-2">
-                <Lock className="w-5 h-5 text-burgundy-800" />
-                <h2 className="text-lg font-serif font-extrabold text-burgundy-900">
+                <Lock className="w-5 h-5 text-magenta-400" />
+                <h2 className="text-lg font-serif font-extrabold text-white">
                   Private Information (Protected)
                 </h2>
               </div>
-              <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300 inline-flex items-center gap-1">
+              <span className="text-xs font-bold text-emerald-300 bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-500/30 inline-flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Confidential
               </span>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-burgundy-50 border border-burgundy-200 text-xs text-burgundy-950 font-medium">
-              🔒 <strong>Privacy Assurance:</strong> About and Family Background are never visible publicly or during search.
+            <div className="p-3.5 rounded-xl bg-magenta-950/30 border border-magenta-500/30 text-xs text-magenta-200 font-normal">
+              🔒 <strong className="text-white font-semibold">Privacy Assurance:</strong> About and Family Background are never visible publicly or during search.
               They are only released after mutual rishta acceptance, unlock fee payment, and dual OTP mobile verification.
             </div>
 
             <div className="space-y-4">
-              <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-1.5">
-                <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block">
+              <div className="bg-navy-750 p-4 rounded-xl border border-slate-700 space-y-1.5">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   About Candidate
                 </span>
-                <p className="text-sm text-charcoal-800 leading-relaxed font-medium whitespace-pre-line">
-                  {profile.about || <em className="text-stone-400">No personal statement entered yet.</em>}
+                <p className="text-sm text-slate-200 leading-relaxed font-normal whitespace-pre-line">
+                  {profile.about || <em className="text-slate-500">No personal statement entered yet.</em>}
                 </p>
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-stone-200 space-y-1.5">
-                <span className="text-xs font-bold text-stone-500 uppercase tracking-wider block">
+              <div className="bg-navy-750 p-4 rounded-xl border border-slate-700 space-y-1.5">
+                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
                   Family Background
                 </span>
-                <p className="text-sm text-charcoal-800 leading-relaxed font-medium whitespace-pre-line">
-                  {profile.family_background || <em className="text-stone-400">No family background details entered yet.</em>}
+                <p className="text-sm text-slate-200 leading-relaxed font-normal whitespace-pre-line">
+                  {profile.family_background || <em className="text-slate-500">No family background details entered yet.</em>}
                 </p>
               </div>
             </div>
@@ -570,34 +570,34 @@ export default function ProfilePage() {
         {/* Sidebar Column: Partner Preferences & Management */}
         <div className="space-y-6">
           {/* Profile Management Info */}
-          <Card className="p-6 bg-white border-2 border-stone-300 shadow-md space-y-4">
-            <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+          <Card className="p-6 bg-navy-800 border border-slate-750 shadow-md space-y-4">
+            <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
               Profile Management
             </h2>
             <div className="space-y-3">
               <div>
-                <span className="text-xs font-bold text-stone-500 uppercase block">Managed By</span>
-                <span className="text-sm font-extrabold text-charcoal-900">
+                <span className="text-xs font-bold text-slate-400 uppercase block">Managed By</span>
+                <span className="text-sm font-extrabold text-white">
                   {getManagedByLabel(profile.managed_by)}
                 </span>
               </div>
-              <p className="text-xs text-stone-500 font-medium leading-relaxed">
+              <p className="text-xs text-slate-400 font-normal leading-relaxed">
                 Indicates whether proposals are handled by the candidate directly or family elders.
               </p>
             </div>
           </Card>
 
           {/* Partner Preferences Card */}
-          <Card className="p-6 bg-white border-2 border-stone-300 shadow-md space-y-5">
-            <div className="flex items-center justify-between pb-3 border-b-2 border-stone-100">
+          <Card className="p-6 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-750">
               <div className="flex items-center gap-2">
-                <Sliders className="w-4 h-4 text-burgundy-700" />
-                <h2 className="text-base font-serif font-extrabold text-burgundy-900">
+                <Sliders className="w-4 h-4 text-magenta-400" />
+                <h2 className="text-base font-serif font-extrabold text-white">
                   Partner Preferences
                 </h2>
               </div>
               <Link to="/profile/preferences">
-                <Button variant="ghost" size="sm" icon={Edit} className="text-burgundy-800 font-bold">
+                <Button variant="ghost" size="sm" icon={Edit} className="text-magenta-400 hover:text-magenta-300 font-bold">
                   {preferences ? 'Edit' : 'Add'}
                 </Button>
               </Link>
@@ -606,25 +606,25 @@ export default function ProfilePage() {
             {preferences ? (
               <div className="space-y-3 text-sm">
                 <div>
-                  <span className="text-xs font-bold text-stone-500 uppercase block">Looking For</span>
-                  <span className="font-bold text-charcoal-900 capitalize">
+                  <span className="text-xs font-bold text-slate-400 uppercase block">Looking For</span>
+                  <span className="font-bold text-white capitalize">
                     {preferences.preferred_gender === 'female' ? 'Bride (Female)' : 'Groom (Male)'}
                   </span>
                 </div>
 
                 <div>
-                  <span className="text-xs font-bold text-stone-500 uppercase block">Age Range</span>
-                  <span className="font-bold text-charcoal-900">
+                  <span className="text-xs font-bold text-slate-400 uppercase block">Age Range</span>
+                  <span className="font-bold text-white">
                     {preferences.min_age} to {preferences.max_age} years
                   </span>
                 </div>
 
                 {preferences.preferred_cities?.length > 0 && (
                   <div>
-                    <span className="text-xs font-bold text-stone-500 uppercase block">Preferred Cities</span>
-                    <div className="flex flex-wrap gap-1 mt-1">
+                    <span className="text-xs font-bold text-slate-400 uppercase block">Preferred Cities</span>
+                    <div className="flex flex-wrap gap-1.5 mt-1">
                       {preferences.preferred_cities.map((city) => (
-                        <span key={city} className="text-xs bg-stone-100 text-stone-800 font-semibold px-2 py-0.5 rounded-md border border-stone-300">
+                        <span key={city} className="text-xs bg-navy-750 text-slate-200 font-medium px-2.5 py-0.5 rounded-lg border border-slate-700">
                           {city}
                         </span>
                       ))}
@@ -634,29 +634,29 @@ export default function ProfilePage() {
 
                 {preferences.preferred_religion && (
                   <div>
-                    <span className="text-xs font-bold text-stone-500 uppercase block">Preferred Religion</span>
-                    <span className="font-bold text-charcoal-900">{preferences.preferred_religion}</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase block">Preferred Religion</span>
+                    <span className="font-bold text-white">{preferences.preferred_religion}</span>
                   </div>
                 )}
 
                 {preferences.preferred_religion === 'Islam' && preferences.preferred_sect && (
                   <div>
-                    <span className="text-xs font-bold text-stone-500 uppercase block">Preferred Sect</span>
-                    <span className="font-bold text-charcoal-900">{preferences.preferred_sect}</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase block">Preferred Sect</span>
+                    <span className="font-bold text-white">{preferences.preferred_sect}</span>
                   </div>
                 )}
 
                 {preferences.preferred_education && (
                   <div>
-                    <span className="text-xs font-bold text-stone-500 uppercase block">Preferred Education</span>
-                    <span className="font-bold text-charcoal-900">{preferences.preferred_education}</span>
+                    <span className="text-xs font-bold text-slate-400 uppercase block">Preferred Education</span>
+                    <span className="font-bold text-white">{preferences.preferred_education}</span>
                   </div>
                 )}
 
                 {preferences.preferred_marital_status?.length > 0 && (
                   <div>
-                    <span className="text-xs font-bold text-stone-500 uppercase block">Marital Status</span>
-                    <span className="font-bold text-charcoal-900">
+                    <span className="text-xs font-bold text-slate-400 uppercase block">Marital Status</span>
+                    <span className="font-bold text-white">
                       {preferences.preferred_marital_status.map(getMaritalStatusLabel).join(', ')}
                     </span>
                   </div>
@@ -664,8 +664,8 @@ export default function ProfilePage() {
 
                 {(preferences.min_height || preferences.max_height) && (
                   <div>
-                    <span className="text-xs font-bold text-stone-500 uppercase block">Height Range</span>
-                    <span className="font-bold text-charcoal-900">
+                    <span className="text-xs font-bold text-slate-400 uppercase block">Height Range</span>
+                    <span className="font-bold text-white">
                       {preferences.min_height ? `${preferences.min_height} cm` : 'Any'} – {preferences.max_height ? `${preferences.max_height} cm` : 'Any'}
                     </span>
                   </div>
@@ -673,7 +673,7 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="py-4 text-center space-y-3">
-                <p className="text-xs text-stone-500 font-medium">
+                <p className="text-xs text-slate-400 font-normal">
                   You have not configured your partner preferences yet.
                 </p>
                 <Link to="/profile/preferences">
@@ -716,7 +716,7 @@ export default function ProfilePage() {
             variant="primary"
             size="md"
             onClick={() => setPreviewModalOpen(false)}
-            className="font-bold"
+            className="font-bold shadow-lg shadow-magenta-500/25"
           >
             Close Preview
           </Button>
@@ -729,9 +729,9 @@ export default function ProfilePage() {
         ) : previewData ? (
           <div className="space-y-5">
             {/* Privacy Notice Banner */}
-            <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-300 text-xs text-emerald-950 font-medium space-y-1">
-              <p className="font-bold flex items-center gap-1.5 text-emerald-900">
-                <ShieldCheck className="w-4 h-4 text-emerald-700" />
+            <div className="p-3.5 rounded-xl bg-emerald-950/30 border border-emerald-500/40 text-xs text-emerald-300 font-normal space-y-1">
+              <p className="font-bold flex items-center gap-1.5 text-white">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 Privacy Protection Active
               </p>
               <p className="leading-relaxed">
@@ -740,13 +740,13 @@ export default function ProfilePage() {
             </div>
 
             {/* Simulated Public Profile Card */}
-            <div className="rounded-2xl border-2 border-burgundy-900/20 bg-stone-50 p-5 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-stone-200">
+            <div className="rounded-2xl border border-slate-750 bg-navy-750 p-5 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-700">
                 <div>
-                  <span className="font-mono text-xs uppercase tracking-wider bg-burgundy-900 text-gold-300 px-2.5 py-1 rounded font-bold">
+                  <span className="font-mono text-xs uppercase tracking-wider bg-navy-900 text-magenta-300 px-2.5 py-1 rounded border border-slate-700 font-bold">
                     {previewData.profile_code}
                   </span>
-                  <h3 className="font-serif text-xl font-extrabold text-burgundy-950 mt-2">
+                  <h3 className="font-serif text-xl font-extrabold text-white mt-2">
                     {previewData.profession} • {previewData.age} years old
                   </h3>
                 </div>
@@ -755,36 +755,36 @@ export default function ProfilePage() {
 
               <div className="grid grid-cols-2 gap-3 text-xs">
                 <div>
-                  <span className="text-stone-500 font-bold block uppercase">Gender</span>
-                  <span className="font-extrabold text-charcoal-900 capitalize">{previewData.gender}</span>
+                  <span className="text-slate-400 font-bold block uppercase">Gender</span>
+                  <span className="font-extrabold text-white capitalize">{previewData.gender}</span>
                 </div>
                 <div>
-                  <span className="text-stone-500 font-bold block uppercase">Location</span>
-                  <span className="font-extrabold text-charcoal-900">{previewData.city}, Pakistan</span>
+                  <span className="text-slate-400 font-bold block uppercase">Location</span>
+                  <span className="font-extrabold text-white">{previewData.city}, Pakistan</span>
                 </div>
                 <div>
-                  <span className="text-stone-500 font-bold block uppercase">Height</span>
-                  <span className="font-extrabold text-charcoal-900">{previewData.height_formatted}</span>
+                  <span className="text-slate-400 font-bold block uppercase">Height</span>
+                  <span className="font-extrabold text-white">{previewData.height_formatted}</span>
                 </div>
                 <div>
-                  <span className="text-stone-500 font-bold block uppercase">Education</span>
-                  <span className="font-extrabold text-charcoal-900">{previewData.education}</span>
+                  <span className="text-slate-400 font-bold block uppercase">Education</span>
+                  <span className="font-extrabold text-white">{previewData.education}</span>
                 </div>
                 <div>
-                  <span className="text-stone-500 font-bold block uppercase">
+                  <span className="text-slate-400 font-bold block uppercase">
                     {previewData.religion === 'Islam' ? 'Faith & Sect' : 'Religion'}
                   </span>
-                  <span className="font-extrabold text-charcoal-900">
+                  <span className="font-extrabold text-white">
                     {previewData.religion}{previewData.religion === 'Islam' && previewData.sect ? ` (${previewData.sect})` : ''}
                   </span>
                 </div>
                 <div>
-                  <span className="text-stone-500 font-bold block uppercase">Marital Status</span>
-                  <span className="font-extrabold text-charcoal-900">{getMaritalStatusLabel(previewData.marital_status)}</span>
+                  <span className="text-slate-400 font-bold block uppercase">Marital Status</span>
+                  <span className="font-extrabold text-white">{getMaritalStatusLabel(previewData.marital_status)}</span>
                 </div>
-                <div className="col-span-2 pt-1 border-t border-stone-200">
-                  <span className="text-stone-500 font-bold block uppercase">Managed By</span>
-                  <span className="font-extrabold text-charcoal-900">{getManagedByLabel(previewData.managed_by)}</span>
+                <div className="col-span-2 pt-1 border-t border-slate-750">
+                  <span className="text-slate-400 font-bold block uppercase">Managed By</span>
+                  <span className="font-extrabold text-white">{getManagedByLabel(previewData.managed_by)}</span>
                 </div>
               </div>
             </div>

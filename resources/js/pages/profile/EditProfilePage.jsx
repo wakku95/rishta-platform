@@ -228,19 +228,19 @@ export default function EditProfilePage() {
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
       {/* Back button & page heading */}
-      <div className="flex items-center justify-between pb-2 border-b-2 border-stone-200">
+      <div className="flex items-center justify-between pb-2 border-b border-slate-750">
         <div>
           <Link
             to="/profile"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-burgundy-800 hover:text-burgundy-900 mb-1"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-magenta-400 hover:text-magenta-300 mb-1 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
             Back to Profile
           </Link>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900 tracking-tight">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
             Edit Matrimonial Profile
           </h1>
-          <p className="text-xs sm:text-sm text-stone-500 font-medium mt-1">
+          <p className="text-xs sm:text-sm text-slate-400 font-normal mt-1">
             Information is structured using standardized options to maintain privacy and searchability.
           </p>
         </div>
@@ -252,10 +252,24 @@ export default function EditProfilePage() {
         </Alert>
       )}
 
+
       <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Privacy Notice Banner */}
+        <div className="flex items-start gap-3.5 p-4 rounded-2xl bg-magenta-950/30 border border-magenta-500/30 text-xs text-slate-300">
+          <ShieldCheck className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
+          <div className="space-y-1">
+            <strong className="text-white block font-semibold">Strict Matrimonial Privacy Rules Apply:</strong>
+            <p className="leading-relaxed text-slate-400">
+              RaabtaNow does not publish photos, exact house addresses, phone numbers, or email addresses publicly.
+              Structured fields (age, height, city, education, profession) are visible to prospective matches.
+              "About" and "Family Background" are released ONLY after mutual proposal acceptance and phone verification.
+            </p>
+          </div>
+        </div>
+
         {/* Card 1: Core Demographics */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+          <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
             1. Basic Demographics
           </h2>
 
@@ -304,8 +318,8 @@ export default function EditProfilePage() {
         </Card>
 
         {/* Card 2: Location & Faith */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+          <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
             2. Location & Religious Background
           </h2>
 
@@ -355,8 +369,8 @@ export default function EditProfilePage() {
         </Card>
 
         {/* Card 3: Education & Profession */}
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md space-y-5">
-          <h2 className="text-base font-serif font-extrabold text-burgundy-900 pb-2 border-b-2 border-stone-100">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+          <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
             3. Education & Career
           </h2>
 
@@ -384,29 +398,29 @@ export default function EditProfilePage() {
         </Card>
 
         {/* Card 4: Private Information (Strictly Protected) */}
-        <Card className="p-6 sm:p-8 bg-stone-50/70 border-2 border-stone-300 shadow-md space-y-5">
-          <div className="flex items-center justify-between pb-2 border-b-2 border-stone-200">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-md space-y-5">
+          <div className="flex items-center justify-between pb-2 border-b border-slate-750">
             <div className="flex items-center gap-2">
-              <Lock className="w-5 h-5 text-burgundy-800" />
-              <h2 className="text-base font-serif font-extrabold text-burgundy-900">
+              <Lock className="w-5 h-5 text-magenta-400" />
+              <h2 className="text-base font-serif font-extrabold text-white">
                 4. Private Information (Protected)
               </h2>
             </div>
-            <span className="text-xs font-bold text-emerald-800 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300 inline-flex items-center gap-1">
+            <span className="text-xs font-bold text-emerald-300 bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-500/30 inline-flex items-center gap-1">
               <ShieldCheck className="w-3.5 h-3.5" />
               Protected
             </span>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-burgundy-50 border border-burgundy-200 text-xs text-burgundy-950 font-medium space-y-1">
-            <p className="font-bold flex items-center gap-1.5">
+          <div className="p-3.5 rounded-xl bg-magenta-950/30 border border-magenta-500/30 text-xs text-magenta-200 font-normal space-y-1">
+            <p className="font-bold flex items-center gap-1.5 text-white">
               🔒 Privacy Protection Guarantee
             </p>
-            <p className="leading-relaxed">
+            <p className="leading-relaxed text-slate-300">
               These details are <strong>never</strong> shown on public profile discovery or search results.
               They are only shared after a mutual rishta request is accepted, contact unlock fee is paid, and dual OTP verification is completed.
             </p>
-            <p className="text-burgundy-900 font-bold pt-1">
+            <p className="text-rose-400 font-bold pt-1">
               ⚠️ Strict Rule: Do NOT write phone numbers, email addresses, social handles, or street addresses here.
             </p>
           </div>
@@ -445,7 +459,7 @@ export default function EditProfilePage() {
               type="button"
               variant="secondary"
               size="lg"
-              className="w-full sm:w-auto font-bold border-stone-300"
+              className="w-full sm:w-auto font-bold"
             >
               Cancel
             </Button>
@@ -457,7 +471,7 @@ export default function EditProfilePage() {
             size="lg"
             icon={Save}
             loading={submitting}
-            className="w-full sm:w-auto font-bold px-8 shadow-md"
+            className="w-full sm:w-auto font-bold px-8 shadow-lg shadow-magenta-500/25"
           >
             Save Profile
           </Button>

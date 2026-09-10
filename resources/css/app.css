@@ -8,48 +8,119 @@
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
   --font-serif: 'Cinzel', 'Playfair Display', Georgia, Cambria, 'Times New Roman', Times, serif;
 
-  /* Primary Brand - Royal Burgundy */
-  --color-burgundy-50: #fdf2f4;
-  --color-burgundy-100: #fce7ea;
-  --color-burgundy-200: #fad2d8;
-  --color-burgundy-300: #f5a9b6;
-  --color-burgundy-400: #ed7389;
-  --color-burgundy-500: #e04261;
-  --color-burgundy-600: #c92244;
-  --color-burgundy-700: #700f2d;
-  --color-burgundy-800: #580c23;
-  --color-burgundy-900: #3f0819;
+  /* Primary Deep Navy Canvas & Surfaces */
+  --color-navy-950: #070B14;
+  --color-navy-900: #0B0F19;
+  --color-navy-850: #0F1626;
+  --color-navy-800: #121829;
+  --color-navy-750: #182238;
+  --color-navy-700: #1E2B47;
+  --color-navy-600: #29385C;
+  --color-navy-500: #3B4D78;
 
-  /* Subtle Warm Gold */
-  --color-gold-50: #fffbeb;
-  --color-gold-100: #fef3c7;
-  --color-gold-200: #fde68a;
-  --color-gold-300: #fcd34d;
-  --color-gold-400: #fbbf24;
-  --color-gold-500: #d97706;
-  --color-gold-600: #b45309;
-  --color-gold-700: #92400e;
+  /* Vibrant Magenta/Pink Brand Gradient Colors */
+  --color-magenta-400: #F43F5E;
+  --color-magenta-500: #E11D74;
+  --color-magenta-600: #BE185D;
+  --color-magenta-700: #9D174D;
 
-  /* Surface - Warm Cream */
-  --color-cream-50: #ffffff;
-  --color-cream-100: #fcfaf8;
-  --color-cream-200: #f7f3ee;
-  --color-cream-300: #efe8e0;
-  --color-cream-400: #e2d9cd;
+  /* Deep Violet / Purple Gradient End */
+  --color-purple-400: #A78BFA;
+  --color-purple-500: #8B5CF6;
+  --color-purple-600: #7C3AED;
+  --color-purple-700: #6D28D9;
 
-  /* Primary Typography - Dark Charcoal */
-  --color-charcoal-900: #1c1917;
-  --color-charcoal-800: #292524;
-  --color-charcoal-700: #44403c;
-  --color-charcoal-600: #57534e;
-  --color-charcoal-500: #78716c;
+  /* Warm Peach / Coral */
+  --color-peach-400: #FB7185;
+  --color-peach-500: #F43F5E;
+
+  /* Warm Gold / Amber Accent */
+  --color-gold-400: #FBBF24;
+  --color-gold-500: #F59E0B;
+  --color-gold-600: #D97706;
+
+  /* Emerald Verification Accent */
+  --color-emerald-400: #34D399;
+  --color-emerald-500: #10B981;
+  --color-emerald-600: #059669;
+
+  /* Text & Border Hierarchy */
+  --color-slate-100: #F1F5F9;
+  --color-slate-200: #E2E8F0;
+  --color-slate-300: #CBD5E1;
+  --color-slate-400: #94A3B8;
+  --color-slate-500: #64748B;
+  --color-slate-600: #475569;
+  --color-slate-700: #334155;
+  --color-slate-800: #1E293B;
+
+  /* Compatibility mappings so existing components render seamlessly */
+  --color-burgundy-50: #182238;
+  --color-burgundy-100: #1E2B47;
+  --color-burgundy-200: #29385C;
+  --color-burgundy-700: #E11D74;
+  --color-burgundy-800: #BE185D;
+  --color-burgundy-900: #0F1626;
+
+  --color-cream-100: #0B0F19;
+  --color-cream-200: #121829;
+  --color-cream-300: #182238;
+
+  --color-charcoal-900: #F8FAFC;
+  --color-charcoal-800: #F1F5F9;
+  --color-charcoal-700: #CBD5E1;
+  --color-charcoal-600: #94A3B8;
+  --color-charcoal-500: #64748B;
 }
 
 body {
-  background-color: var(--color-cream-100);
-  color: var(--color-charcoal-900);
+  background-color: var(--color-navy-900);
+  color: var(--color-slate-200);
   font-family: var(--font-sans);
   min-height: 100vh;
   margin: 0;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar for sleek modern feel */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0B0F19;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E2B47;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #29385C;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #FF6584 0%, #E11D74 45%, #8B5CF6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-btn {
+  background: linear-gradient(135deg, #E11D74 0%, #8B5CF6 100%);
+  transition: all 0.2s ease-in-out;
+}
+
+.gradient-btn:hover {
+  background: linear-gradient(135deg, #F43F5E 0%, #9333EA 100%);
+  box-shadow: 0 4px 20px -2px rgba(225, 29, 116, 0.45);
+}
+
+.glass-surface {
+  background: rgba(18, 24, 41, 0.75);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }

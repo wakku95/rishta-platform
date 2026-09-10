@@ -58,23 +58,23 @@ export default function RegisterPage() {
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-burgundy-700 flex items-center justify-center text-white shadow-md border-2 border-burgundy-900/30">
-            <HeartHandshake className="w-8 h-8 text-gold-300" />
+          <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-magenta-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-magenta-500/20 border border-white/20">
+            <HeartHandshake className="w-8 h-8 text-white" />
           </div>
-          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-burgundy-900">
+          <h1 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
             Create Free Account
           </h1>
-          <p className="text-sm font-medium text-stone-600">
+          <p className="text-sm font-normal text-slate-400">
             Register to search or create private matrimonial profiles.
           </p>
         </div>
 
-        <Card className="p-6 sm:p-8 bg-white border-2 border-stone-300 shadow-md">
+        <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-2xl">
           {/* Privacy Guarantee Pill */}
-          <div className="mb-6 flex items-start gap-3 p-3.5 rounded-xl bg-burgundy-50 border-2 border-burgundy-200 text-xs text-burgundy-900 leading-relaxed font-medium">
-            <ShieldCheck className="w-5 h-5 text-burgundy-700 shrink-0 mt-0.5" />
+          <div className="mb-6 flex items-start gap-3 p-3.5 rounded-xl bg-magenta-950/40 border border-magenta-500/30 text-xs text-magenta-200 leading-relaxed font-medium">
+            <ShieldCheck className="w-5 h-5 text-magenta-400 shrink-0 mt-0.5" />
             <span>
-              <strong>Privacy Guaranteed:</strong> Phone numbers and personal contacts are never published publicly. Contact exchange requires mutual acceptance and verified OTP.
+              <strong className="text-white font-semibold">Privacy Guaranteed:</strong> Phone numbers and personal contacts are never published publicly. Contact exchange requires mutual acceptance and verified OTP.
             </span>
           </div>
 
@@ -148,17 +148,17 @@ export default function RegisterPage() {
               size="lg"
               isLoading={isLoading}
               icon={UserPlus}
-              className="w-full justify-center text-base font-bold shadow-md mt-2"
+              className="w-full justify-center text-base font-bold shadow-lg shadow-magenta-500/25 mt-2"
             >
               Create & Register Account
             </Button>
           </form>
 
-          <div className="mt-6 pt-5 border-t-2 border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-stone-600">
+          <div className="mt-6 pt-5 border-t border-slate-750 flex flex-col sm:flex-row items-center justify-between gap-2 text-sm text-slate-400">
             <span>Already registered?</span>
             <Link
               to="/login"
-              className="font-bold text-burgundy-700 hover:text-burgundy-900 underline hover:no-underline"
+              className="font-bold text-magenta-400 hover:text-magenta-300 underline hover:no-underline transition-colors"
             >
               Sign In to Account →
             </Link>

@@ -41,17 +41,17 @@ export default function ShortlistPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-stone-200">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-750">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-burgundy-50 text-burgundy-800">
+            <span className="p-2 rounded-xl bg-magenta-950/60 text-magenta-400 border border-magenta-500/30">
               <Bookmark className="w-5 h-5" />
             </span>
-            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-burgundy-900 tracking-tight">
+            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
               My Saved Shortlist
             </h1>
           </div>
-          <p className="text-sm text-stone-500 font-medium mt-1">
+          <p className="text-sm text-slate-400 font-normal mt-1">
             Private bookmarks of candidate profiles you are considering. Candidates are never notified.
           </p>
         </div>

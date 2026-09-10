@@ -30,21 +30,21 @@ export default function Button({
   };
 
   const variantStyles = {
-    // Primary: Rich Burgundy with clear border and drop shadow
-    primary: 'bg-burgundy-700 text-white hover:bg-burgundy-800 active:bg-burgundy-900 border border-burgundy-900/30 shadow-sm focus:ring-burgundy-700',
-    // Secondary: High-contrast white card button with prominent stone border
-    secondary: 'bg-white text-charcoal-900 hover:bg-stone-50 active:bg-stone-100 hover:text-burgundy-800 border-2 border-stone-300 hover:border-burgundy-700 shadow-xs focus:ring-burgundy-700',
-    // Gold: Warm Pakistani subtle gold button
-    gold: 'bg-gold-500 text-white hover:bg-gold-600 active:bg-gold-700 border border-gold-600/40 shadow-sm focus:ring-gold-500',
-    // Danger: High-contrast Red for destructive actions
-    danger: 'bg-rose-700 text-white hover:bg-rose-800 active:bg-rose-900 border border-rose-900/30 shadow-sm focus:ring-rose-600',
-    // Outline: Transparent with explicit burgundy border
-    outline: 'bg-transparent text-burgundy-800 hover:bg-burgundy-50 border-2 border-burgundy-700 focus:ring-burgundy-700',
-    // Ghost: Subtle stone button with visible border
-    ghost: 'bg-stone-100 text-charcoal-800 hover:bg-stone-200 active:bg-stone-300 border border-stone-200 hover:border-stone-300 focus:ring-burgundy-600',
+    // Primary: Vibrant Magenta-to-Purple gradient with hover glow
+    primary: 'gradient-btn text-white font-bold border border-white/20 shadow-md focus:ring-magenta-500',
+    // Secondary: Elevated Navy surface with crisp border
+    secondary: 'bg-navy-800 text-slate-100 hover:bg-navy-750 active:bg-navy-700 hover:text-white border border-slate-700/80 hover:border-magenta-500/50 shadow-xs focus:ring-purple-500',
+    // Gold: Warm amber accent button
+    gold: 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold hover:from-amber-400 hover:to-amber-500 border border-amber-400/40 shadow-sm focus:ring-amber-400',
+    // Danger: High-contrast Rose/Red
+    danger: 'bg-rose-600 text-white hover:bg-rose-700 active:bg-rose-800 border border-rose-500/40 shadow-sm focus:ring-rose-500',
+    // Outline: Glass transparent with subtle magenta/purple border
+    outline: 'bg-transparent text-slate-200 hover:text-white hover:bg-navy-800 border border-slate-700 hover:border-magenta-500 focus:ring-magenta-500',
+    // Ghost: Low-profile dark navy button
+    ghost: 'bg-transparent text-slate-300 hover:text-white hover:bg-navy-800/80 border border-transparent hover:border-slate-800 focus:ring-purple-500',
   };
 
-  const disabledStyles = 'opacity-50 cursor-not-allowed bg-stone-200! text-stone-500! border-stone-300! shadow-none! pointer-events-none';
+  const disabledStyles = 'opacity-40 cursor-not-allowed bg-navy-800! text-slate-500! border-slate-800! shadow-none! pointer-events-none';
 
   return (
     <button

@@ -46,27 +46,29 @@ export default function Modal({
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-charcoal-900/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-navy-950/80 backdrop-blur-md transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Modal Card */}
-      <div className={`relative w-full ${maxWidth} bg-white rounded-2xl shadow-xl border border-cream-300 z-10 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150`}>
+      <div className={`relative w-full ${maxWidth} bg-navy-800 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/80 z-10 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150`}>
         {/* Header */}
-        <div className="px-6 py-4 border-b border-cream-200 flex items-center justify-between">
+        <div className="px-6 py-4 border-b border-slate-750/70 bg-navy-850/50 flex items-center justify-between">
           <div>
-            {title && <h3 className="text-lg font-semibold text-charcoal-900">{title}</h3>}
-            {subtitle && <p className="text-xs text-charcoal-600 mt-0.5">{subtitle}</p>}
+            {title && <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>}
+            {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close modal"
-            className="p-1.5 rounded-lg text-charcoal-500 hover:text-charcoal-900 hover:bg-cream-200 transition-colors focus:outline-none focus:ring-2 focus:ring-burgundy-700"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-navy-750 transition-colors cursor-pointer"
+              aria-label="Close modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -76,7 +78,7 @@ export default function Modal({
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-3.5 bg-cream-100/60 border-t border-cream-200 flex items-center justify-end gap-3">
+          <div className="px-6 py-3.5 bg-navy-850/50 border-t border-slate-750/70 flex items-center justify-end gap-3">
             {footer}
           </div>
         )}
