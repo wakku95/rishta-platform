@@ -73,6 +73,11 @@
   --color-charcoal-500: #64748B;
 }
 
+html {
+  overflow-x: clip;
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--color-navy-900);
   color: var(--color-slate-200);
@@ -80,7 +85,8 @@ body {
   min-height: 100vh;
   margin: 0;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow-x: clip;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Custom Scrollbar for sleek modern feel */

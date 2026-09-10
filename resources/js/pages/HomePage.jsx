@@ -22,6 +22,7 @@ import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Alert from '../components/ui/Alert';
+import ScrollReveal from '../components/ui/ScrollReveal';
 import api from '../api/client';
 import useAuth from '../hooks/useAuth';
 
@@ -348,61 +349,64 @@ export default function HomePage() {
           ========================================================================= */}
       <section className="space-y-6">
         {/* Success stories hero image banner */}
-        <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[200px] sm:min-h-[220px] md:h-56 shadow-xl flex items-center">
-          <img
-            src="/images/raabtanow/success-connection.jpg"
-            alt="Families finding happiness through meaningful connections"
-            loading="lazy"
-            decoding="async"
-            className="absolute inset-0 w-full h-full object-cover object-[center_30%] sm:object-center"
-          />
-          {/* Dual-layer responsive overlay & shadow for mobile readability */}
-          <div className="absolute inset-0 bg-navy-950/50 sm:bg-navy-950/20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/80 to-navy-900/50 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/75 sm:to-transparent" />
+        <ScrollReveal animation="fade-up" duration={600}>
+          <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden min-h-[200px] sm:min-h-[220px] md:h-56 shadow-xl flex items-center">
+            <img
+              src="/images/raabtanow/success-connection.jpg"
+              alt="Families finding happiness through meaningful connections"
+              loading="lazy"
+              decoding="async"
+              className="absolute inset-0 w-full h-full object-cover object-[center_30%] sm:object-center"
+            />
+            {/* Dual-layer responsive overlay & shadow for mobile readability */}
+            <div className="absolute inset-0 bg-navy-950/50 sm:bg-navy-950/20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/80 to-navy-900/50 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/75 sm:to-transparent" />
 
-          <div className="relative z-10 p-5 sm:p-8 md:p-10 max-w-lg">
-            <div className="space-y-2">
-              <span className="text-xs font-bold text-magenta-400 uppercase tracking-wider block drop-shadow-sm">
-                Heartfelt Journeys
-              </span>
-              <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-                Success Stories
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-200 mt-1 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
-                Real families who connected with mutual respect and solemn marriage intentions.
-              </p>
+            <div className="relative z-10 p-5 sm:p-8 md:p-10 max-w-lg">
+              <div className="space-y-2">
+                <span className="text-xs font-bold text-magenta-400 uppercase tracking-wider block drop-shadow-sm">
+                  Heartfelt Journeys
+                </span>
+                <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                  Success Stories
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-200 mt-1 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">
+                  Real families who connected with mutual respect and solemn marriage intentions.
+                </p>
+              </div>
             </div>
           </div>
-        </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {stories.map((story, i) => (
-            <Card
-              key={i}
-              className="bg-navy-800/80 border-slate-750 hover:border-magenta-500/40 transition-all p-6 space-y-4 shadow-lg flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-magenta-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                    {story.couple.split(' ')[0][0]}&{story.couple.split('& ')[1][0]}
+            <ScrollReveal key={i} animation="fade-up" delay={i * 90} duration={550}>
+              <Card
+                className="bg-navy-800/80 border-slate-750 hover:border-magenta-500/40 transition-all p-6 space-y-4 shadow-lg flex flex-col justify-between h-full"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-magenta-600 to-purple-600 flex items-center justify-center text-white font-bold text-sm shadow-sm">
+                      {story.couple.split(' ')[0][0]}&{story.couple.split('& ')[1][0]}
+                    </div>
+                    <div>
+                      <h3 className="text-sm font-bold text-white">{story.couple}</h3>
+                      <p className="text-xs text-slate-400">{story.tagline} • {story.location}</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-sm font-bold text-white">{story.couple}</h3>
-                    <p className="text-xs text-slate-400">{story.tagline} • {story.location}</p>
+                  <div className="relative">
+                    <Quote className="w-5 h-5 text-magenta-500/20 absolute -top-1 -left-1 -z-0" />
+                    <p className="text-xs sm:text-sm text-slate-300 leading-relaxed relative z-10 pl-2">
+                      "{story.quote}"
+                    </p>
                   </div>
                 </div>
-                <div className="relative">
-                  <Quote className="w-5 h-5 text-magenta-500/20 absolute -top-1 -left-1 -z-0" />
-                  <p className="text-xs sm:text-sm text-slate-300 leading-relaxed relative z-10 pl-2">
-                    "{story.quote}"
-                  </p>
+                <div className="pt-3 border-t border-slate-750/70 flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Verified Matchmaking Union</span>
                 </div>
-              </div>
-              <div className="pt-3 border-t border-slate-750/70 flex items-center gap-1.5 text-[11px] text-slate-400">
-                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Verified Matchmaking Union</span>
-              </div>
-            </Card>
+              </Card>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -410,153 +414,161 @@ export default function HomePage() {
       {/* =========================================================================
           FAMILY TRUST BANNER (Visual interlude)
           ========================================================================= */}
-      <section className="relative rounded-3xl overflow-hidden shadow-2xl min-h-[340px] sm:min-h-[290px] md:h-72 flex items-center">
-        <img
-          src="/images/raabtanow/family-discussion.jpg"
-          alt="Pakistani family discussing rishta in a warm, supportive environment"
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover object-[center_20%] sm:object-center"
-        />
-        {/* Responsive dark scrim + directional gradient */}
-        <div className="absolute inset-0 bg-navy-950/60 sm:bg-navy-950/25" />
-        <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/90 to-navy-900/60 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/80 sm:to-transparent" />
+      <ScrollReveal animation="fade-up" duration={650}>
+        <section className="relative rounded-3xl overflow-hidden shadow-2xl min-h-[340px] sm:min-h-[290px] md:h-72 flex items-center">
+          <img
+            src="/images/raabtanow/family-discussion.jpg"
+            alt="Pakistani family discussing rishta in a warm, supportive environment"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover object-[center_20%] sm:object-center"
+          />
+          {/* Responsive dark scrim + directional gradient */}
+          <div className="absolute inset-0 bg-navy-950/60 sm:bg-navy-950/25" />
+          <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/90 to-navy-900/60 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/80 sm:to-transparent" />
 
-        <div className="relative z-10 w-full p-6 sm:p-10 md:p-12">
-          <div className="space-y-3 max-w-lg">
-            <Badge variant="magenta" size="md" className="shadow-md">Family Involvement</Badge>
-            <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
-              Where Families Find Trust
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] max-w-md">
-              Every rishta journey begins at home. RaabtaNow is built for families who value privacy, respect, and genuine matrimonial intentions.
-            </p>
-            <div className="pt-1">
-              <Link to={authenticated ? "/search" : "/register"}>
-                <Button variant="primary" size="sm" icon={ArrowRight} iconPosition="right" className="shadow-lg">
-                  {authenticated ? "Start Searching" : "Join as a Family"}
-                </Button>
-              </Link>
+          <div className="relative z-10 w-full p-6 sm:p-10 md:p-12">
+            <div className="space-y-3 max-w-lg">
+              <Badge variant="magenta" size="md" className="shadow-md">Family Involvement</Badge>
+              <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
+                Where Families Find Trust
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-200 leading-relaxed drop-shadow-[0_1px_2px_rgba(0,0,0,0.85)] max-w-md">
+                Every rishta journey begins at home. RaabtaNow is built for families who value privacy, respect, and genuine matrimonial intentions.
+              </p>
+              <div className="pt-1">
+                <Link to={authenticated ? "/search" : "/register"}>
+                  <Button variant="primary" size="sm" icon={ArrowRight} iconPosition="right" className="shadow-lg">
+                    {authenticated ? "Start Searching" : "Join as a Family"}
+                  </Button>
+                </Link>
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollReveal>
 
       {/* =========================================================================
           PAKISTAN-WIDE MATRIMONIAL HORIZONS (Matching Reference Section)
           ========================================================================= */}
-      <section className="relative rounded-3xl bg-gradient-to-r from-navy-850 to-navy-800 border border-slate-750/80 p-6 sm:p-10 lg:p-12 overflow-hidden shadow-xl">
-        {/* Pakistan map background */}
-        <img
-          src="/images/raabtanow/pakistan-nationwide.jpg"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none"
-        />
-        <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-          <div className="lg:col-span-7 space-y-4 text-left">
-            <Badge variant="purple" size="md">Nationwide Reach</Badge>
-            <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-              Bringing Hearts Closer Across Pakistan
-            </h2>
-            <p className="text-sm text-slate-300 leading-relaxed max-w-xl drop-shadow-sm">
-              From Karachi to Lahore, Islamabad to Peshawar — and overseas Pakistani communities worldwide. Find compatible proposals from respected families with complete dignity.
-            </p>
-            <div className="pt-2">
-              <Link to="/search">
-                <Button variant="primary" size="md" icon={ArrowRight} iconPosition="right">
-                  Explore Matches Across Pakistan
-                </Button>
-              </Link>
+      <ScrollReveal animation="fade-up" duration={650}>
+        <section className="relative rounded-3xl bg-gradient-to-r from-navy-850 to-navy-800 border border-slate-750/80 p-6 sm:p-10 lg:p-12 overflow-hidden shadow-xl">
+          {/* Pakistan map background */}
+          <img
+            src="/images/raabtanow/pakistan-nationwide.jpg"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover opacity-20 pointer-events-none select-none"
+          />
+          <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            <div className="lg:col-span-7 space-y-4 text-left">
+              <Badge variant="purple" size="md">Nationwide Reach</Badge>
+              <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+                Bringing Hearts Closer Across Pakistan
+              </h2>
+              <p className="text-sm text-slate-300 leading-relaxed max-w-xl drop-shadow-sm">
+                From Karachi to Lahore, Islamabad to Peshawar — and overseas Pakistani communities worldwide. Find compatible proposals from respected families with complete dignity.
+              </p>
+              <div className="pt-2">
+                <Link to="/search">
+                  <Button variant="primary" size="md" icon={ArrowRight} iconPosition="right">
+                    Explore Matches Across Pakistan
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            <div className="lg:col-span-5 grid grid-cols-2 gap-3.5">
+              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+                <div className="w-9 h-9 rounded-xl bg-magenta-500/15 text-magenta-400 flex items-center justify-center mx-auto">
+                  <Users className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-bold text-white">For Families</h4>
+                <p className="text-[11px] text-slate-400">Respectful & secure</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+                <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center mx-auto">
+                  <Shield className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-bold text-white">For Individuals</h4>
+                <p className="text-[11px] text-slate-400">Find your life partner</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+                <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center mx-auto">
+                  <HeartHandshake className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-bold text-white">For Parents</h4>
+                <p className="text-[11px] text-slate-400">Peace of mind & trust</p>
+              </div>
+
+              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h4 className="text-xs font-bold text-white">For Everyone</h4>
+                <p className="text-[11px] text-slate-400">A better tomorrow</p>
+              </div>
             </div>
           </div>
-
-          <div className="lg:col-span-5 grid grid-cols-2 gap-3.5">
-            <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
-              <div className="w-9 h-9 rounded-xl bg-magenta-500/15 text-magenta-400 flex items-center justify-center mx-auto">
-                <Users className="w-5 h-5" />
-              </div>
-              <h4 className="text-xs font-bold text-white">For Families</h4>
-              <p className="text-[11px] text-slate-400">Respectful & secure</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
-              <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center mx-auto">
-                <Shield className="w-5 h-5" />
-              </div>
-              <h4 className="text-xs font-bold text-white">For Individuals</h4>
-              <p className="text-[11px] text-slate-400">Find your life partner</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
-              <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center mx-auto">
-                <HeartHandshake className="w-5 h-5" />
-              </div>
-              <h4 className="text-xs font-bold text-white">For Parents</h4>
-              <p className="text-[11px] text-slate-400">Peace of mind & trust</p>
-            </div>
-
-            <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
-                <Sparkles className="w-5 h-5" />
-              </div>
-              <h4 className="text-xs font-bold text-white">For Everyone</h4>
-              <p className="text-[11px] text-slate-400">A better tomorrow</p>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
+      </ScrollReveal>
 
       {/* =========================================================================
           HOW IT WORKS (4 Step Simplified Flow)
           ========================================================================= */}
       <section className="space-y-6">
-        <div className="text-center max-w-xl mx-auto space-y-2">
-          <Badge variant="magenta" size="md">Simple & Transparent</Badge>
-          <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white">
-            How RaabtaNow Works
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-400">
-            Engineered for solemnity, privacy protection, and mutual consent.
-          </p>
-        </div>
-
-        {/* Privacy Trust Visual Showcase */}
-        <div className="flex flex-col items-center justify-center my-6 sm:my-8">
-          <div className="relative rounded-3xl overflow-hidden border border-slate-750 bg-navy-850/90 shadow-2xl shadow-black/70 max-w-[280px] sm:max-w-[360px] md:max-w-[420px] w-full p-2.5 sm:p-3 transition-transform hover:scale-[1.01]">
-            {/* Ambient glow */}
-            <div className="absolute -inset-2 bg-gradient-to-r from-magenta-500/15 via-purple-600/15 to-magenta-500/15 rounded-3xl blur-2xl pointer-events-none" />
-
-            <img
-              src="/images/raabtanow/privacy-trust.jpg"
-              alt="RaabtaNow Privacy, Trust and Security Architecture"
-              loading="lazy"
-              decoding="async"
-              className="relative z-10 w-full h-auto aspect-square rounded-2xl object-cover shadow-lg"
-            />
+        <ScrollReveal animation="fade-up" duration={600}>
+          <div className="text-center max-w-xl mx-auto space-y-2">
+            <Badge variant="magenta" size="md">Simple & Transparent</Badge>
+            <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white">
+              How RaabtaNow Works
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Engineered for solemnity, privacy protection, and mutual consent.
+            </p>
           </div>
-        </div>
+
+          {/* Privacy Trust Visual Showcase */}
+          <div className="flex flex-col items-center justify-center my-6 sm:my-8">
+            <div className="relative rounded-3xl overflow-hidden border border-slate-750 bg-navy-850/90 shadow-2xl shadow-black/70 max-w-[280px] sm:max-w-[360px] md:max-w-[420px] w-full p-2.5 sm:p-3 transition-transform hover:scale-[1.01]">
+              {/* Ambient glow - desktop only to preserve mobile 60fps scroll */}
+              <div className="hidden sm:block absolute -inset-2 bg-gradient-to-r from-magenta-500/15 via-purple-600/15 to-magenta-500/15 rounded-3xl blur-xl pointer-events-none will-change-transform" />
+
+              <img
+                src="/images/raabtanow/privacy-trust.jpg"
+                alt="RaabtaNow Privacy, Trust and Security Architecture"
+                loading="lazy"
+                decoding="async"
+                className="relative z-10 w-full h-auto aspect-square rounded-2xl object-cover shadow-lg"
+              />
+            </div>
+          </div>
+        </ScrollReveal>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
           {flowSteps.map((step) => (
-            <Card key={step.num} className="bg-navy-800 border-slate-750 hover:border-magenta-500/40 transition-all">
-              <div className="flex items-center justify-between mb-3">
-                <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
-                  {step.num}
-                </span>
-                <Badge variant={step.badge.includes('Rs') ? 'gold' : step.badge === 'Free' ? 'success' : 'magenta'} size="sm">
-                  {step.badge}
-                </Badge>
-              </div>
-              <h3 className="font-bold text-white text-base mb-1.5">
-                {step.title}
-              </h3>
-              <p className="text-xs text-slate-400 leading-relaxed">
-                {step.desc}
-              </p>
-            </Card>
+            <ScrollReveal key={step.num} animation="fade-up" delay={step.num * 80} duration={500}>
+              <Card className="bg-navy-800 border-slate-750 hover:border-magenta-500/40 transition-all h-full">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
+                    {step.num}
+                  </span>
+                  <Badge variant={step.badge.includes('Rs') ? 'gold' : step.badge === 'Free' ? 'success' : 'magenta'} size="sm">
+                    {step.badge}
+                  </Badge>
+                </div>
+                <h3 className="font-bold text-white text-base mb-1.5">
+                  {step.title}
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  {step.desc}
+                </p>
+              </Card>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -565,69 +577,73 @@ export default function HomePage() {
           SYSTEM STATUS & ENVIRONMENT (Preserving backend verification)
           ========================================================================= */}
       {healthData && (
-        <section className="max-w-2xl mx-auto">
-          <Card
-            title="System & API Environment"
-            subtitle="Real-time Laravel 12 API status and Phase 1-5 service drivers"
-            action={
-              <Badge variant={healthData.status === 'healthy' ? 'success' : 'warning'} size="md">
-                {healthData.status === 'healthy' ? 'API Online' : 'API Connecting'}
-              </Badge>
-            }
-          >
-            <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-navy-850 p-4 rounded-xl border border-slate-800">
-                <div>
-                  <span className="text-slate-400 font-bold block uppercase text-[10px]">Framework</span>
-                  <span className="font-bold text-white">Laravel 12 ({healthData.version})</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 font-bold block uppercase text-[10px]">Unlock Fee</span>
-                  <span className="font-bold text-amber-300">Rs. {healthData.services?.unlock_fee} {healthData.services?.currency}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 font-bold block uppercase text-[10px]">Payment</span>
-                  <span className="font-mono text-slate-300">{healthData.services?.payment_driver}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400 font-bold block uppercase text-[10px]">SMS Driver</span>
-                  <span className="font-mono text-slate-300">{healthData.services?.sms_driver}</span>
+        <ScrollReveal animation="fade-up" duration={500}>
+          <section className="max-w-2xl mx-auto">
+            <Card
+              title="System & API Environment"
+              subtitle="Real-time Laravel 12 API status and Phase 1-5 service drivers"
+              action={
+                <Badge variant={healthData.status === 'healthy' ? 'success' : 'warning'} size="md">
+                  {healthData.status === 'healthy' ? 'API Online' : 'API Connecting'}
+                </Badge>
+              }
+            >
+              <div className="space-y-4 text-xs">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-navy-850 p-4 rounded-xl border border-slate-800">
+                  <div>
+                    <span className="text-slate-400 font-bold block uppercase text-[10px]">Framework</span>
+                    <span className="font-bold text-white">Laravel 12 ({healthData.version})</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-bold block uppercase text-[10px]">Unlock Fee</span>
+                    <span className="font-bold text-amber-300">Rs. {healthData.services?.unlock_fee} {healthData.services?.currency}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-bold block uppercase text-[10px]">Payment</span>
+                    <span className="font-mono text-slate-300">{healthData.services?.payment_driver}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-bold block uppercase text-[10px]">SMS Driver</span>
+                    <span className="font-mono text-slate-300">{healthData.services?.sms_driver}</span>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        </section>
+            </Card>
+          </section>
+        </ScrollReveal>
       )}
 
       {/* =========================================================================
           CALL TO ACTION FOOTER BANNER
           ========================================================================= */}
-      <section className="rounded-3xl bg-gradient-to-r from-magenta-950 via-purple-950 to-navy-900 border border-magenta-500/30 p-6 sm:p-10 lg:p-12 text-center text-white shadow-2xl relative overflow-hidden">
-        {/* Decorative background overlay */}
-        <img
-          src="/images/raabtanow/decorative-background.jpg"
-          alt=""
-          aria-hidden="true"
-          loading="lazy"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover opacity-[0.08] pointer-events-none select-none"
-        />
-        <div className="max-w-2xl mx-auto space-y-4 relative z-10">
-          <h2 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
-            Ready to Begin Your Sacred Journey?
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl mx-auto drop-shadow-sm">
-            Create your confidential matrimonial biodata today. It is 100% free to search, send requests, and accept connections.
-          </p>
-          <div className="pt-3">
-            <Link to={authenticated ? "/dashboard" : "/register"}>
-              <Button variant="primary" size="lg" className="font-bold shadow-lg">
-                {authenticated ? "Open Dashboard" : "Register Free Profile Now"}
-              </Button>
-            </Link>
+      <ScrollReveal animation="fade-up" duration={650}>
+        <section className="rounded-3xl bg-gradient-to-r from-magenta-950 via-purple-950 to-navy-900 border border-magenta-500/30 p-6 sm:p-10 lg:p-12 text-center text-white shadow-2xl relative overflow-hidden">
+          {/* Decorative background overlay */}
+          <img
+            src="/images/raabtanow/decorative-background.jpg"
+            alt=""
+            aria-hidden="true"
+            loading="lazy"
+            decoding="async"
+            className="absolute inset-0 w-full h-full object-cover opacity-[0.08] pointer-events-none select-none"
+          />
+          <div className="max-w-2xl mx-auto space-y-4 relative z-10">
+            <h2 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              Ready to Begin Your Sacred Journey?
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-200 leading-relaxed max-w-xl mx-auto drop-shadow-sm">
+              Create your confidential matrimonial biodata today. It is 100% free to search, send requests, and accept connections.
+            </p>
+            <div className="pt-3">
+              <Link to={authenticated ? "/dashboard" : "/register"}>
+                <Button variant="primary" size="lg" className="font-bold shadow-lg">
+                  {authenticated ? "Open Dashboard" : "Register Free Profile Now"}
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </ScrollReveal>
 
     </div>
   );
