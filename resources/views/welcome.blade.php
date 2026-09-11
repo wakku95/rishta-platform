@@ -40,7 +40,7 @@
                     "url": "https://raabtanow.com",
                     "logo": {
                         "&#64;type": "ImageObject",
-                        "url": "https://raabtanow.com/favicon.svg"
+                        "url": "https://raabtanow.com/favicon-192x192.png"
                     },
                     "contactPoint": {
                         "&#64;type": "ContactPoint",
@@ -124,7 +124,11 @@
         <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
         @endif
 
-        <!-- Favicon -->
+        <!-- Favicon (Google Search & Multi-device compliant) -->
+        <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png">
+        <link rel="icon" type="image/png" sizes="96x96" href="/favicon-96x96.png">
+        <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="alternate icon" href="/favicon.ico">
         <meta name="theme-color" content="#0B0F19">
