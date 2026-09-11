@@ -33,5 +33,6 @@
         <env name="TELESCOPE_ENABLED" value="false"/>
         <env name="NIGHTWATCH_ENABLED" value="false"/>
         <env name="PAYMENT_DEFAULT_GATEWAY" value="fake"/>
+        <env name="SMS_DEFAULT_PROVIDER" value="mock"/>
     </php>
 </phpunit>

@@ -32,9 +32,8 @@ class AppServiceProvider extends ServiceProvider
             $driver = config('sms.default', 'mock');
 
             return match ($driver) {
+                'veevotech' => $app->make(\App\Services\Sms\VeevotechSmsService::class),
                 'mock' => $app->make(MockSmsService::class),
-                // When Pakistan SMS is implemented in Phase 6:
-                // 'pakistan_sms' => $app->make(PakistanSmsService::class),
                 default => $app->make(MockSmsService::class),
             };
         });

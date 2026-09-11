@@ -5,56 +5,133 @@ import { ShieldCheck, Lock, CheckCircle2, HeartHandshake, PhoneCall, Mail, Clock
 import SEOHead from '../components/seo/SEOHead';
 
 export function HowItWorksPage() {
+  const steps = [
+    {
+      num: '1',
+      badge: 'Free Registration',
+      badgeVariant: 'success',
+      title: 'Dignified Private Profile Creation',
+      image: '/images/raabtanow/step-profile-creation.jpg',
+      alt: 'Pakistani woman thoughtfully creating a dignified matrimonial biodata on a tablet',
+      desc: 'Create an account and fill in your comprehensive matrimonial biodata—education, profession, religious sect, family background, and partner preferences. No public photos, phone numbers, or residential addresses are ever exposed to the public or searchable on search engines.',
+    },
+    {
+      num: '2',
+      badge: 'Smart Discovery',
+      badgeVariant: 'magenta',
+      title: 'Demographic Filtering & Compatibility Search',
+      image: '/images/raabtanow/step-search-discovery.jpg',
+      alt: 'Father and son reviewing filtered matrimonial candidate profiles together',
+      desc: 'Filter verified candidates by age, city, education, profession, sect, marital status, and height. Shortlist compatible profiles privately and consult with your family in a comfortable, respectful home setting.',
+    },
+    {
+      num: '3',
+      badge: 'Mutual Consent',
+      badgeVariant: 'magenta',
+      title: 'Formal Rishta Proposal with Full Dignity',
+      image: '/images/raabtanow/step-mutual-proposal.jpg',
+      alt: 'Formal matrimonial proposal with gold seal representing mutual honor and consent',
+      desc: 'Send a formal expression of matrimonial interest. The candidate and their family review your biodata and can accept or decline freely without awkwardness. No contact details are exchanged without explicit two-way acceptance.',
+    },
+    {
+      num: '4',
+      badge: 'Rs. 300 Unlock Fee',
+      badgeVariant: 'gold',
+      title: 'SMS OTP Verification & Direct Contact Unlock',
+      image: '/images/raabtanow/step-contact-unlock.jpg',
+      alt: 'Smartphone showing verified SMS code and unlocked direct WhatsApp connection',
+      desc: 'Upon mutual acceptance, the initiator pays a nominal Rs. 300 fee via Safepay. Both parties complete two-way SMS OTP phone verification. Verified mobile numbers and a direct WhatsApp connection are instantly unlocked for families to communicate.',
+    },
+  ];
+
   return (
-    <div className="max-w-3xl mx-auto space-y-8 py-6 px-4">
+    <div className="max-w-4xl mx-auto space-y-10 py-6 px-4">
       <SEOHead
         title="How Online Rishta Works | Safe & Private Pakistani Matrimonial | RaabtaNow"
         description="Learn how RaabtaNow's dignified Pakistani matrimonial discovery process works: private biodata, mutual consent proposals, and secure SMS OTP contact verification."
         canonicalPath="/how-it-works"
         isIndexable={true}
       />
-      <div className="text-center space-y-2">
 
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
         <Badge variant="magenta" size="md">Step-by-Step Guide</Badge>
-        <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">How RaabtaNow Works</h1>
-        <p className="text-sm text-slate-400">The transparent, dignified matrimonial discovery process designed for Pakistani families.</p>
+        <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
+          How RaabtaNow Works
+        </h1>
+        <p className="text-sm sm:text-base text-slate-400 font-normal leading-relaxed">
+          A transparent, family-centric matrimonial process built on privacy, mutual consent, and verified contact exchange.
+        </p>
       </div>
 
-      <Card className="space-y-6 bg-navy-800 border border-slate-750 p-6 sm:p-8">
-        <div className="space-y-5 text-sm text-slate-300 leading-relaxed">
-          <div className="p-4 rounded-xl bg-navy-750 border border-slate-700">
-            <h3 className="font-bold text-base text-white mb-1">1. Registration & Email Verification (Free)</h3>
-            <p className="text-slate-400">Create an account with your email and verify your address. Only verified email accounts can participate in matrimonial matchmaking.</p>
-          </div>
+      {/* 4 Visual Step Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {steps.map((step) => (
+          <div
+            key={step.num}
+            className="bg-navy-800 border border-slate-750 rounded-2xl shadow-xl hover:border-magenta-500/50 transition-all overflow-hidden flex flex-col group"
+          >
+            <div className="relative h-52 sm:h-56 w-full overflow-hidden bg-navy-900 shrink-0">
+              <img
+                src={step.image}
+                alt={step.alt}
+                loading="lazy"
+                decoding="async"
+                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
 
-          <div className="p-4 rounded-xl bg-navy-750 border border-slate-700">
-            <h3 className="font-bold text-base text-white mb-1">2. Profile Creation (Free)</h3>
-            <p className="text-slate-400">Enter your biodata, education, profession, city, and partner preferences. No public photos, exact home address, or phone numbers are ever exposed.</p>
-          </div>
+              <div className="absolute top-3 left-3 z-10">
+                <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 text-white font-extrabold text-sm flex items-center justify-center shadow-lg border border-white/25">
+                  {step.num}
+                </span>
+              </div>
 
-          <div className="p-4 rounded-xl bg-navy-750 border border-slate-700">
-            <h3 className="font-bold text-base text-white mb-1">3. Search & Discovery (Free)</h3>
-            <p className="text-slate-400">Browse through filtered profiles based on your family preferences. Shortlisting profiles is completely private and free.</p>
-          </div>
+              <div className="absolute top-3 right-3 z-10">
+                <Badge variant={step.badgeVariant} size="sm" className="shadow-md font-bold">
+                  {step.badge}
+                </Badge>
+              </div>
+            </div>
 
-          <div className="p-4 rounded-xl bg-navy-750 border border-slate-700">
-            <h3 className="font-bold text-base text-white mb-1">4. Send Rishta Request (Free)</h3>
-            <p className="text-slate-400">Send a formal Rishta Request to express interest. The recipient receives a polite notification and can review your biodata.</p>
+            <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-2 bg-navy-800">
+              <div>
+                <h3 className="font-serif font-bold text-white text-lg tracking-tight mb-2 group-hover:text-magenta-400 transition-colors">
+                  {step.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
+                  {step.desc}
+                </p>
+              </div>
+            </div>
           </div>
+        ))}
+      </div>
 
-          <div className="p-4 rounded-xl bg-navy-750 border border-slate-700">
-            <h3 className="font-bold text-base text-white mb-1">5. Recipient Accepts or Declines (Free)</h3>
-            <p className="text-slate-400">The recipient can accept or decline without fee. Mutual interest is only confirmed if the recipient explicitly accepts.</p>
+      {/* Trust & Privacy Architecture Card */}
+      <Card className="p-6 sm:p-8 bg-navy-850 border border-slate-750 shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 border border-slate-700 shadow-lg">
+            <img
+              src="/images/raabtanow/privacy-trust.jpg"
+              alt="Privacy & Trust Architecture"
+              className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
+            />
           </div>
-
-          <div className="p-4 rounded-xl bg-navy-750 border border-slate-700">
-            <h3 className="font-bold text-base text-white mb-1">6. Paid Contact Unlock (Rs. 300)</h3>
-            <p className="text-slate-400">Only the person who originally sent the proposal is asked to pay Rs. 300 via PayFast to unlock contact details. The recipient never pays.</p>
-          </div>
-
-          <div className="p-4 rounded-xl bg-navy-750 border border-slate-700">
-            <h3 className="font-bold text-base text-white mb-1">7. SMS OTP & Verified Contact Reveal</h3>
-            <p className="text-slate-400">Both candidates verify their active mobile number via a 6-digit SMS OTP code. Once both are verified, mutual phone numbers are unlocked so communication can continue outside the platform via phone call or WhatsApp.</p>
+          <div className="space-y-2 text-center sm:text-left">
+            <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+              <h3 className="font-serif font-bold text-white text-lg">
+                Privacy Protection as a Core Guarantee
+              </h3>
+              <Badge variant="success" size="sm" className="inline-flex items-center gap-1 font-semibold">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                <span>Verified Process</span>
+              </Badge>
+            </div>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+              RaabtaNow strictly prohibits arbitrary photo sharing, public phone scraping, or automated algorithmic matching. Every match inquiry is intentional, mutual, and authenticated through PTA-compliant cellular SMS verification.
+            </p>
           </div>
         </div>
       </Card>

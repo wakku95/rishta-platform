@@ -95,24 +95,32 @@ export default function HomePage() {
       title: 'Dignified Private Profile',
       desc: 'Register free and create your verified matrimonial biodata without exposing private contacts.',
       badge: 'Free',
+      image: '/images/raabtanow/step-profile-creation.jpg',
+      alt: 'Pakistani woman thoughtfully creating a dignified matrimonial biodata on a tablet',
     },
     {
       num: '2',
       title: 'Filter & Shortlist',
       desc: 'Browse serious candidates by city, education, profession, and religious compatibility.',
       badge: 'Free',
+      image: '/images/raabtanow/step-search-discovery.jpg',
+      alt: 'Father and son reviewing filtered matrimonial candidate profiles together',
     },
     {
       num: '3',
       title: 'Two-Way Mutual Consent',
       desc: 'Send a respectful rishta proposal. No contact information is ever shared without mutual consent.',
       badge: 'Consent',
+      image: '/images/raabtanow/step-mutual-proposal.jpg',
+      alt: 'Formal matrimonial proposal with gold seal representing mutual honor and consent',
     },
     {
       num: '4',
       title: 'Verified SMS Unlock',
       desc: 'Once mutually accepted, initiator pays Rs. 300 to unlock verified mobile contacts via SMS OTP.',
       badge: 'Rs. 300 Fee',
+      image: '/images/raabtanow/step-contact-unlock.jpg',
+      alt: 'Smartphone showing verified SMS code and unlocked direct WhatsApp connection',
     },
   ];
 
@@ -553,7 +561,7 @@ export default function HomePage() {
       {/* =========================================================================
           HOW IT WORKS (4 Step Simplified Flow)
           ========================================================================= */}
-      <section className="space-y-6">
+      <section className="space-y-8">
         <ScrollReveal animation="fade-up" duration={600}>
           <div className="text-center max-w-xl mx-auto space-y-2">
             <Badge variant="magenta" size="md">Simple & Transparent</Badge>
@@ -561,49 +569,91 @@ export default function HomePage() {
               How RaabtaNow Works
             </h2>
             <p className="text-xs sm:text-sm text-slate-400">
-              Engineered for solemnity, privacy protection, and mutual consent.
+              A dignified 4-step matrimonial discovery flow engineered for privacy and mutual consent.
             </p>
-          </div>
-
-          {/* Privacy Trust Visual Showcase */}
-          <div className="flex flex-col items-center justify-center my-6 sm:my-8">
-            <div className="relative rounded-3xl overflow-hidden border border-slate-750 bg-navy-850/90 shadow-2xl shadow-black/70 max-w-[280px] sm:max-w-[360px] md:max-w-[420px] w-full p-2.5 sm:p-3 transition-transform hover:scale-[1.01]">
-              {/* Ambient glow - desktop only to preserve mobile 60fps scroll */}
-              <div className="hidden sm:block absolute -inset-2 bg-gradient-to-r from-magenta-500/15 via-purple-600/15 to-magenta-500/15 rounded-3xl blur-xl pointer-events-none will-change-transform" />
-
-              <img
-                src="/images/raabtanow/privacy-trust.jpg"
-                alt="RaabtaNow Privacy, Trust and Security Architecture"
-                loading="lazy"
-                decoding="async"
-                className="relative z-10 w-full h-auto aspect-square rounded-2xl object-cover shadow-lg"
-              />
-            </div>
           </div>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {/* 4 Illustrated Step Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
           {flowSteps.map((step) => (
-            <ScrollReveal key={step.num} animation="fade-up" delay={step.num * 80} duration={500}>
-              <Card className="bg-navy-800 border-slate-750 hover:border-magenta-500/40 transition-all h-full">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 text-white font-extrabold text-sm flex items-center justify-center shadow-xs">
-                    {step.num}
-                  </span>
-                  <Badge variant={step.badge.includes('Rs') ? 'gold' : step.badge === 'Free' ? 'success' : 'magenta'} size="sm">
-                    {step.badge}
-                  </Badge>
+            <ScrollReveal key={step.num} animation="fade-up" delay={step.num * 90} duration={500}>
+              <div className="bg-navy-800 border border-slate-750 rounded-2xl shadow-xl hover:border-magenta-500/50 hover:shadow-2xl hover:shadow-magenta-500/10 transition-all duration-300 h-full overflow-hidden flex flex-col group">
+                {/* Step Photographic Illustration */}
+                <div className="relative h-48 sm:h-44 md:h-48 w-full overflow-hidden bg-navy-900 shrink-0">
+                  <img
+                    src={step.image}
+                    alt={step.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+                  />
+                  {/* Subtle dark gradient overlay for depth */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20" />
+
+                  {/* Step Number Floating Badge */}
+                  <div className="absolute top-3 left-3 z-10">
+                    <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 text-white font-extrabold text-sm flex items-center justify-center shadow-lg border border-white/25">
+                      {step.num}
+                    </span>
+                  </div>
+
+                  {/* Step Fee / Consent Badge */}
+                  <div className="absolute top-3 right-3 z-10">
+                    <Badge
+                      variant={step.badge.includes('Rs') ? 'gold' : step.badge === 'Free' ? 'success' : 'magenta'}
+                      size="sm"
+                      className="shadow-md font-bold"
+                    >
+                      {step.badge}
+                    </Badge>
+                  </div>
                 </div>
-                <h3 className="font-bold text-white text-base mb-1.5">
-                  {step.title}
-                </h3>
-                <p className="text-xs text-slate-400 leading-relaxed">
-                  {step.desc}
-                </p>
-              </Card>
+
+                {/* Step Details */}
+                <div className="p-5 flex-1 flex flex-col justify-between space-y-2 bg-navy-800">
+                  <div>
+                    <h3 className="font-serif font-bold text-white text-base tracking-tight mb-1.5 group-hover:text-magenta-400 transition-colors">
+                      {step.title}
+                    </h3>
+                    <p className="text-xs sm:text-[13px] text-slate-400 leading-relaxed font-normal">
+                      {step.desc}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </ScrollReveal>
           ))}
         </div>
+
+        {/* Privacy & Trust Architecture Assurance Banner */}
+        <ScrollReveal animation="fade-up" duration={500}>
+          <div className="p-5 sm:p-6 rounded-2xl bg-navy-850/80 border border-slate-750 flex flex-col sm:flex-row items-center gap-5 shadow-lg">
+            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden shrink-0 border border-slate-700 shadow-md">
+              <img
+                src="/images/raabtanow/privacy-trust.jpg"
+                alt="Privacy & Trust Architecture"
+                className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
+              />
+            </div>
+            <div className="flex-1 space-y-1 text-center sm:text-left">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                <h3 className="font-serif font-bold text-white text-sm sm:text-base">
+                  Strict Privacy Guarantee for Every Family
+                </h3>
+                <Badge variant="success" size="sm" className="inline-flex items-center gap-1 font-semibold">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span>100% Protected</span>
+                </Badge>
+              </div>
+              <p className="text-xs text-slate-400 leading-relaxed font-normal">
+                No public photos, zero public phone numbers, and no unsolicited contact. Phone details are only unlocked after mutual proposal acceptance, payment verification, and two-way SMS OTP confirmation.
+              </p>
+            </div>
+          </div>
+        </ScrollReveal>
       </section>
 
       {/* =========================================================================
