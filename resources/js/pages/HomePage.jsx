@@ -362,7 +362,7 @@ export default function HomePage() {
             <div className="absolute inset-0 bg-navy-950/50 sm:bg-navy-950/20" />
             <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/80 to-navy-900/50 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/75 sm:to-transparent" />
 
-            <div className="relative z-10 p-5 sm:p-8 md:p-10 max-w-lg">
+            <div className="relative z-10 p-5 sm:p-8 md:p-10 max-w-lg" data-keep-white>
               <div className="space-y-2">
                 <span className="text-xs font-bold text-magenta-400 uppercase tracking-wider block drop-shadow-sm">
                   Heartfelt Journeys
@@ -427,7 +427,7 @@ export default function HomePage() {
           <div className="absolute inset-0 bg-navy-950/60 sm:bg-navy-950/25" />
           <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/90 to-navy-900/60 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/80 sm:to-transparent" />
 
-          <div className="relative z-10 w-full p-6 sm:p-10 md:p-12">
+          <div className="relative z-10 w-full p-6 sm:p-10 md:p-12" data-keep-white>
             <div className="space-y-3 max-w-lg">
               <Badge variant="magenta" size="md" className="shadow-md">Family Involvement</Badge>
               <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white leading-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
@@ -627,7 +627,7 @@ export default function HomePage() {
             decoding="async"
             className="hidden sm:block absolute inset-0 w-full h-full object-cover opacity-[0.08] pointer-events-none select-none"
           />
-          <div className="max-w-2xl mx-auto space-y-4 relative z-10">
+          <div className="max-w-2xl mx-auto space-y-4 relative z-10" data-keep-white>
             <h2 className="font-serif text-2xl sm:text-3xl font-extrabold tracking-tight drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
               Ready to Begin Your Sacred Journey?
             </h2>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
+import ThemeToggle from '../ui/ThemeToggle';
 
 /**
  * Mobile-First Root Layout Shell.
@@ -21,6 +22,9 @@ export default function AppLayout() {
       </main>
 
       <Footer />
+
+      {/* Floating Theme Switcher at bottom-right */}
+      <ThemeToggle />
     </div>
   );
 }

@@ -170,3 +170,128 @@ body {
     transition: none !important;
   }
 }
+
+/* =========================================================================
+   LIGHT THEME OVERRIDES (Luxury Ivory & Pearl White Palette)
+   ========================================================================= */
+html.light,
+[data-theme="light"] {
+  /* Surfaces & Backgrounds */
+  --color-navy-950: #F1F5F9;
+  --color-navy-900: #F8FAFC;
+  --color-navy-850: #FFFFFF;
+  --color-navy-800: #FFFFFF;
+  --color-navy-750: #F1F5F9;
+  --color-navy-700: #E2E8F0;
+  --color-navy-600: #CBD5E1;
+  --color-navy-500: #94A3B8;
+
+  /* Text & Border Hierarchy */
+  --color-slate-100: #0F172A;
+  --color-slate-200: #1E293B;
+  --color-slate-300: #334155;
+  --color-slate-400: #64748B;
+  --color-slate-500: #94A3B8;
+  --color-slate-600: #CBD5E1;
+  --color-slate-700: #E2E8F0;
+  --color-slate-800: #F1F5F9;
+  --color-slate-750: #E2E8F0;
+
+  /* Compatibility mappings */
+  --color-burgundy-50: #FDF2F8;
+  --color-burgundy-100: #FCE7F3;
+  --color-burgundy-200: #FBCFE8;
+  --color-burgundy-900: #FFFFFF;
+  --color-cream-100: #F8FAFC;
+  --color-cream-200: #FFFFFF;
+  --color-cream-300: #F1F5F9;
+
+  --color-charcoal-900: #0F172A;
+  --color-charcoal-800: #1E293B;
+  --color-charcoal-700: #334155;
+  --color-charcoal-600: #64748B;
+  --color-charcoal-500: #94A3B8;
+}
+
+html.light {
+  color-scheme: light;
+}
+
+html.light body {
+  background-color: var(--color-navy-900);
+  color: var(--color-slate-200);
+}
+
+/* Headings and titles that used text-white now render in rich deep slate in light mode */
+html.light .text-white:not(.gradient-btn):not(.gradient-btn *):not([class*="bg-magenta"]):not([class*="bg-purple"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-amber"]):not([data-keep-white]):not([data-keep-white] *) {
+  color: #0F172A;
+}
+
+/* Card and container borders and shadows in light mode */
+html.light .bg-navy-800,
+html.light .bg-navy-850 {
+  border-color: #E2E8F0;
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
+}
+
+html.light .bg-navy-850\/50,
+html.light .bg-navy-850\/60 {
+  background-color: #F8FAFC !important;
+}
+
+/* Sticky Header in Light Mode */
+html.light header {
+  background-color: rgba(255, 255, 255, 0.92) !important;
+  border-bottom-color: #E2E8F0 !important;
+  box-shadow: 0 2px 14px -2px rgba(15, 23, 42, 0.06) !important;
+}
+
+/* Footer in Light Mode */
+html.light footer {
+  background-color: #FFFFFF !important;
+  border-top-color: #E2E8F0 !important;
+}
+
+html.light footer .bg-navy-900\/60 {
+  background-color: #F8FAFC !important;
+  border-bottom-color: #E2E8F0 !important;
+}
+
+/* Inputs, Textareas, Selects in Light Mode */
+html.light input:not([type="checkbox"]):not([type="radio"]),
+html.light select,
+html.light textarea {
+  background-color: #FFFFFF !important;
+  border-color: #CBD5E1 !important;
+  color: #0F172A !important;
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #94A3B8 !important;
+}
+
+/* Glass surface in Light Mode */
+html.light .glass-surface {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(226, 232, 240, 0.8);
+}
+
+/* Light Mode Custom Scrollbar */
+html.light ::-webkit-scrollbar-track {
+  background: #F1F5F9;
+}
+
+html.light ::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+}
+
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Photo banners with dark scrim overlays retain crisp white text */
+[data-keep-white],
+[data-keep-white] * {
+  color: #FFFFFF !important;
+}

@@ -18,6 +18,22 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
+        <!-- Early Theme Initialization Script (Prevent Flash) -->
+        <script>
+            (function() {
+                try {
+                    var theme = localStorage.getItem('raabtanow_theme');
+                    if (theme === 'light') {
+                        document.documentElement.classList.add('light');
+                        document.documentElement.setAttribute('data-theme', 'light');
+                    } else {
+                        document.documentElement.classList.remove('light');
+                        document.documentElement.setAttribute('data-theme', 'dark');
+                    }
+                } catch (e) {}
+            })();
+        </script>
+
         <!-- Vite Scripts & Styles -->
         @viteReactRefresh
         @vite(['resources/css/app.css', 'resources/js/main.jsx'])
