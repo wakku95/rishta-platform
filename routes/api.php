@@ -116,3 +116,6 @@ Route::middleware('auth:sanctum')->prefix('requests')->group(function () {
 Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
     Route::post('/{payment_uuid}/verify', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'verify']);
 });
+
+// Safepay Asynchronous Server Webhook
+Route::post('/payments/safepay/webhook', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'safepayWebhook']);

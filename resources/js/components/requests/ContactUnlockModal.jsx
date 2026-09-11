@@ -131,12 +131,24 @@ export default function ContactUnlockModal({
       // 1. Initiate payment attempt
       const initRes = await initiatePayment(requestCode);
       const paymentUuid = initRes.data?.payment_uuid;
+      const gateway = initRes.data?.gateway;
+      const redirectUrl = initRes.data?.redirect_url;
 
       if (!paymentUuid) {
         throw new Error('Payment initialization failed.');
       }
 
-      // 2. Simulate gateway verification (Fake gateway)
+      // If gateway provides a hosted checkout redirect URL (Safepay)
+      if (gateway === 'safepay' && redirectUrl) {
+        setFeedback({
+          type: 'info',
+          message: 'Connecting to Safepay secure checkout...',
+        });
+        window.location.href = redirectUrl;
+        return;
+      }
+
+      // 2. Simulated gateway verification (Fake gateway)
       const verifyRes = await verifyPayment(paymentUuid, {
         status: 'PAID',
         transaction_reference: initRes.data?.transaction_reference,

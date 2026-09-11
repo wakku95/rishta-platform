@@ -21,9 +21,8 @@ class AppServiceProvider extends ServiceProvider
             $gateway = config('payment.default', 'fake');
 
             return match ($gateway) {
+                'safepay' => $app->make(\App\Services\Payments\SafepayPaymentService::class),
                 'fake' => $app->make(FakePaymentService::class),
-                // When PayFast is implemented in Phase 5:
-                // 'payfast' => $app->make(PayFastPaymentService::class),
                 default => $app->make(FakePaymentService::class),
             };
         });

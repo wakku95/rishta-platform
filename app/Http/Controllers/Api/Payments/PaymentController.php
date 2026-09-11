@@ -162,6 +162,10 @@ class PaymentController extends Controller
         }
 
         // 2. Server-side Gateway Verification
+        if (!$request->has('tracker') && !empty($payment->transaction_reference)) {
+            $request->merge(['tracker' => $payment->transaction_reference]);
+        }
+
         $result = $this->gateway->verifyWebhook($request);
 
         if (!$result->isSuccessful) {
@@ -262,5 +266,130 @@ class PaymentController extends Controller
             'paid_at' => $freshPayment->paid_at?->toIso8601String(),
             'already_verified' => (bool) $alreadyHandled,
         ], 'Payment successfully verified. You may now proceed to phone verification.');
+    }
+
+    /**
+     * Safepay Webhook endpoint.
+     * Receives asynchronous server-to-server notifications from Safepay.
+     */
+    public function safepayWebhook(Request $request): JsonResponse
+    {
+        $tracker = $request->input('tracker')
+            ?? $request->input('beacon')
+            ?? $request->input('token')
+            ?? $request->input('data.token')
+            ?? '';
+
+        $orderId = $request->input('order_id')
+            ?? $request->input('data.metadata.order_id')
+            ?? '';
+
+        $payment = null;
+        if ($orderId) {
+            $payment = Payment::where('payment_uuid', $orderId)->first();
+        }
+        if (!$payment && $tracker) {
+            $payment = Payment::where('transaction_reference', $tracker)->first();
+        }
+
+        if (!$payment) {
+            return $this->errorResponse('Payment record not found for webhook notification.', [], Response::HTTP_NOT_FOUND, 'PAYMENT_NOT_FOUND');
+        }
+
+        if ($payment->isPaid()) {
+            return response()->json(['status' => 'success', 'message' => 'Payment already marked paid.']);
+        }
+
+        $result = $this->gateway->verifyWebhook($request);
+
+        if (!$result->isSuccessful) {
+            $payment->update([
+                'status' => Payment::STATUS_FAILED,
+                'gateway_response' => $result->rawResponse,
+            ]);
+
+            return $this->errorResponse('Safepay webhook signature or status verification failed.', [], Response::HTTP_UNPROCESSABLE_ENTITY, 'VERIFICATION_FAILED');
+        }
+
+        DB::transaction(function () use ($payment, $result) {
+            $lockedPayment = Payment::where('id', $payment->id)->lockForUpdate()->first();
+            if ($lockedPayment->isPaid()) {
+                return;
+            }
+
+            $lockedPayment->update([
+                'status' => Payment::STATUS_PAID,
+                'paid_at' => now(),
+                'transaction_reference' => $result->transactionReference ?: $lockedPayment->transaction_reference,
+                'gateway_response' => $result->rawResponse,
+            ]);
+
+            ContactUnlock::updateOrCreate(
+                ['rishta_request_id' => $lockedPayment->rishta_request_id],
+                ['payment_id' => $lockedPayment->id]
+            );
+        });
+
+        return response()->json(['status' => 'success', 'message' => 'Payment verified and marked paid via webhook.']);
+    }
+
+    /**
+     * Safepay Browser Redirect Callback.
+     * Safepay returns user to this web endpoint after checkout completion.
+     */
+    public function safepayCallback(Request $request, string $payment_uuid)
+    {
+        $payment = Payment::query()
+            ->where('payment_uuid', $payment_uuid)
+            ->with('rishtaRequest')
+            ->first();
+
+        $frontendUrl = rtrim(config('app.frontend_url', config('app.url', 'https://raabtanow.com')), '/');
+
+        if (!$payment) {
+            return redirect("{$frontendUrl}/dashboard/requests?payment=not_found");
+        }
+
+        $requestCode = $payment->rishtaRequest?->request_code ?? '';
+
+        if ($payment->isPaid()) {
+            return redirect("{$frontendUrl}/dashboard/requests?request={$requestCode}&payment=success");
+        }
+
+        if (!$request->has('tracker') && !empty($payment->transaction_reference)) {
+            $request->merge(['tracker' => $payment->transaction_reference]);
+        }
+
+        $result = $this->gateway->verifyWebhook($request);
+
+        if (!$result->isSuccessful) {
+            $payment->update([
+                'status' => Payment::STATUS_FAILED,
+                'gateway_response' => $result->rawResponse,
+            ]);
+
+            return redirect("{$frontendUrl}/dashboard/requests?request={$requestCode}&payment=failed");
+        }
+
+        DB::transaction(function () use ($payment, $result) {
+            $lockedPayment = Payment::where('id', $payment->id)->lockForUpdate()->first();
+            if ($lockedPayment->isPaid()) {
+                return;
+            }
+
+            $lockedPayment->update([
+                'status' => Payment::STATUS_PAID,
+                'paid_at' => now(),
+                'transaction_reference' => $result->transactionReference ?: $lockedPayment->transaction_reference,
+                'gateway_response' => $result->rawResponse,
+            ]);
+
+            ContactUnlock::updateOrCreate(
+                ['rishta_request_id' => $lockedPayment->rishta_request_id],
+                ['payment_id' => $lockedPayment->id]
+            );
+        });
+
+        return redirect("{$frontendUrl}/dashboard/requests?request={$requestCode}&payment=success");
     }
 }

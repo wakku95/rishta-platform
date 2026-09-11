@@ -52,6 +52,37 @@ export default function RequestsPage() {
     fetchRequests(activeTab, page, statusFilter);
   }, [activeTab, page, statusFilter]);
 
+  // Handle returning from Safepay Checkout redirect
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    const paymentStatus = searchParams.get('payment');
+    const reqCode = searchParams.get('request');
+
+    if (paymentStatus === 'success') {
+      setActionFeedback({
+        type: 'success',
+        message: 'Payment completed successfully via Safepay! Please complete phone SMS verification below.',
+      });
+      if (reqCode) {
+        setUnlockRequest({ request_code: reqCode });
+        setUnlockModalOpen(true);
+      }
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (paymentStatus === 'failed') {
+      setActionFeedback({
+        type: 'error',
+        message: 'Safepay payment could not be completed or was rejected. Please try again.',
+      });
+      window.history.replaceState({}, document.title, window.location.pathname);
+    } else if (paymentStatus === 'cancelled') {
+      setActionFeedback({
+        type: 'info',
+        message: 'Safepay payment process was cancelled.',
+      });
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }, []);
+
   const fetchRequests = async (tab, targetPage = 1, status = '') => {
     setLoading(true);
     try {

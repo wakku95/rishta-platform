@@ -141,6 +141,10 @@ Route::get('/', function (Request $request) {
     return view('welcome', ['seo' => $seo]);
 });
 
+// Safepay Hosted Checkout Browser Redirect Callback
+Route::match(['get', 'post'], '/payments/{payment_uuid}/safepay/callback', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'safepayCallback'])
+    ->name('payments.safepay.callback');
+
 Route::get('/{any}', function (Request $request, string $any) {
     // If accessed from an API host, non-API web paths must NOT render Blade/Vite; return 404 JSON
     if (str_starts_with($request->getHost(), 'api.')) {

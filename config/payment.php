@@ -29,6 +29,15 @@ return [
     |--------------------------------------------------------------------------
     */
     'gateways' => [
+        'safepay' => [
+            'public_key' => env('SAFEPAY_PUBLIC_KEY', ''),
+            'secret_key' => env('SAFEPAY_SECRET_KEY', ''),
+            'environment' => env('SAFEPAY_ENV', 'sandbox'), // sandbox | production
+            'base_url' => env('SAFEPAY_BASE_URL', 'https://sandbox.api.getsafepay.com'),
+            'checkout_url' => env('SAFEPAY_CHECKOUT_URL', 'https://sandbox.api.getsafepay.com/checkout/pay'),
+            'webhook_secret' => env('SAFEPAY_WEBHOOK_SECRET', env('SAFEPAY_SECRET_KEY', '')),
+        ],
+
         'payfast' => [
             'merchant_id' => env('PAYFAST_MERCHANT_ID', ''),
             'secured_key' => env('PAYFAST_SECURED_KEY', ''),
