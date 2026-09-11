@@ -68,6 +68,13 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-3">
             {authenticated ? (
               <>
+                {user?.role === 'admin' && (
+                  <Link to="/admin">
+                    <Button variant="gold" size="sm" icon={ShieldCheck}>
+                      Admin Portal
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/dashboard">
                   <Button variant="secondary" size="sm" icon={User}>
                     Dashboard ({user?.name ? user.name.split(' ')[0] : 'User'})
@@ -133,6 +140,13 @@ export default function Navbar() {
           <div className="pt-3 border-t border-slate-800 flex flex-col gap-2.5">
             {authenticated ? (
               <>
+                {user?.role === 'admin' && (
+                  <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="gold" className="w-full justify-center" icon={ShieldCheck}>
+                      Admin Control Portal
+                    </Button>
+                  </Link>
+                )}
                 <Link to="/dashboard" onClick={() => setMobileMenuOpen(false)}>
                   <Button variant="primary" className="w-full justify-center" icon={User}>
                     Go to My Dashboard

@@ -41,7 +41,12 @@ import RequestsPage from './pages/requests/RequestsPage';
 import GuestRoute from './components/auth/GuestRoute';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import VerifiedRoute from './components/auth/VerifiedRoute';
+import AdminRoute from './components/auth/AdminRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
+
+// Admin Pages
+import AdminPage from './pages/admin/AdminPage';
+
 
 export default function App() {
   return (
@@ -87,6 +92,11 @@ export default function App() {
               <Route path="profiles/:profileCode" element={<CandidateDetailPage />} />
               <Route path="shortlist" element={<ShortlistPage />} />
               <Route path="requests" element={<RequestsPage />} />
+            </Route>
+
+            {/* Admin Control Portal */}
+            <Route element={<AdminRoute />}>
+              <Route path="admin" element={<AdminPage />} />
             </Route>
 
             {/* 404 fallback */}

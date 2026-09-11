@@ -119,3 +119,36 @@ Route::middleware('auth:sanctum')->prefix('payments')->group(function () {
 
 // Safepay Asynchronous Server Webhook
 Route::post('/payments/safepay/webhook', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'safepayWebhook']);
+
+/*
+|--------------------------------------------------------------------------
+| Admin Portal Routes (/api/admin)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function () {
+    // Analytics & Metrics
+    Route::get('/metrics', [\App\Http\Controllers\Api\Admin\AdminDashboardController::class, 'metrics']);
+
+    // User Management & Moderation
+    Route::get('/users', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'index']);
+    Route::get('/users/{id}', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'show']);
+    Route::post('/users/{id}/suspend', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'suspend']);
+    Route::post('/users/{id}/activate', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'activate']);
+    Route::post('/users/{id}/role', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'updateRole']);
+    Route::delete('/users/{id}', [\App\Http\Controllers\Api\Admin\AdminUserController::class, 'destroy']);
+
+    // Profile Moderation
+    Route::get('/profiles', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'index']);
+    Route::get('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'show']);
+    Route::post('/profiles/{id}/status', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateStatus']);
+    Route::delete('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'destroy']);
+
+    // Requests Oversight & Intervention
+    Route::get('/requests', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'requests']);
+    Route::post('/requests/{id}/cancel', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'cancelRequest']);
+
+    // Financial & Contact Unlock Logs
+    Route::get('/payments', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'payments']);
+    Route::get('/unlocks', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'unlocks']);
+});
+
