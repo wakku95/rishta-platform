@@ -145,7 +145,7 @@ export default function HomePage() {
                 <span className="gradient-text">Meaningful Rishtas.</span> <br />
                 Trusted Platform.
               </h1>
-              <p className="text-xs sm:text-sm font-serif text-peach-400/90 italic pt-1">
+              <p className="hero-couplet text-xs sm:text-sm font-serif text-peach-400/90 italic pt-1">
                 "رشتہ صرف دو دلوں کے نہیں، دو خاندانوں کے ہوتے ہیں"
               </p>
             </div>
