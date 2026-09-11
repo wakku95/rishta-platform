@@ -4,6 +4,7 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="google-site-verification" content="miUxYxjTRQVdZLAJfYZnXM3qhkgMEBf2O4iOa1EczYs" />
 
         <title>{{ $seo['title'] ?? 'RaabtaNow — Privacy-First Pakistani Matrimonial' }}</title>
         <meta name="description" content="{{ $seo['description'] ?? 'RaabtaNow is a privacy-first Pakistani matrimonial platform to discover compatible rishtas online with complete family respect.' }}">
