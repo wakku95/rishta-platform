@@ -59,7 +59,7 @@ class AdminProfileController extends Controller
      */
     public function show(int $id): JsonResponse
     {
-        $profile = Profile::with(['user', 'partnerPreference'])->find($id);
+        $profile = Profile::with(['user', 'preferences'])->find($id);
 
         if (!$profile) {
             return $this->errorResponse('Profile not found.', [], Response::HTTP_NOT_FOUND, 'PROFILE_NOT_FOUND');

@@ -74,14 +74,21 @@ export default function AdminProfilesTab() {
     }
   };
 
+  const [inspectingId, setInspectingId] = useState(null);
+
   const handleInspect = async (id) => {
+    setInspectingId(id);
+    setMessage(null);
     try {
       const data = await adminApi.getProfile(id);
       setSelectedProfile(data);
     } catch (err) {
-      console.error(err);
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to load profile details.' });
+    } finally {
+      setInspectingId(null);
     }
   };
+
 
   return (
     <div className="space-y-6">
@@ -186,10 +193,15 @@ export default function AdminProfilesTab() {
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         onClick={() => handleInspect(p.id)}
+                        disabled={inspectingId === p.id}
                         title="View Full Profile Details"
-                        className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-navy-700 transition"
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-navy-700 transition disabled:opacity-50"
                       >
-                        <Eye className="w-4 h-4" />
+                        {inspectingId === p.id ? (
+                          <RefreshCw className="w-4 h-4 animate-spin text-magenta-400" />
+                        ) : (
+                          <Eye className="w-4 h-4" />
+                        )}
                       </button>
                       <button
                         onClick={() => handleDeleteProfile(p.id)}
@@ -293,6 +305,18 @@ export default function AdminProfilesTab() {
               <div className="p-4 bg-navy-800/50 rounded-xl border border-white/5 space-y-1 text-xs">
                 <span className="font-bold text-slate-300 block uppercase tracking-wider">Family Background</span>
                 <p className="text-slate-200 leading-relaxed">{selectedProfile.family_background}</p>
+              </div>
+            )}
+
+            {selectedProfile.preferences && (
+              <div className="p-4 bg-navy-800/50 rounded-xl border border-white/5 space-y-2 text-xs">
+                <span className="font-bold text-purple-400 block uppercase tracking-wider">Partner Preferences</span>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-300">
+                  <div>Age Range: <strong className="text-white">{selectedProfile.preferences.min_age || 'Any'} - {selectedProfile.preferences.max_age || 'Any'} yrs</strong></div>
+                  <div>Preferred City: <strong className="text-white capitalize">{selectedProfile.preferences.preferred_city || 'Any'}</strong></div>
+                  <div>Preferred Religion: <strong className="text-white capitalize">{selectedProfile.preferences.preferred_religion || 'Any'}</strong></div>
+                  <div>Preferred Marital: <strong className="text-white capitalize">{selectedProfile.preferences.preferred_marital_status || 'Any'}</strong></div>
+                </div>
               </div>
             )}
           </div>
