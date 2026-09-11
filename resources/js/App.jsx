@@ -41,12 +41,14 @@ import RequestsPage from './pages/requests/RequestsPage';
 import GuestRoute from './components/auth/GuestRoute';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import VerifiedRoute from './components/auth/VerifiedRoute';
+import ScrollToTop from './components/layout/ScrollToTop';
 
 export default function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <BrowserRouter>
+          <ScrollToTop />
           <Routes>
             <Route path="/" element={<AppLayout />}>
             {/* Public informational pages */}

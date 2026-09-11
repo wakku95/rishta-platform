@@ -106,7 +106,7 @@ export function AboutPage() {
             decoding="async"
             className="w-full h-full object-cover object-[center_20%] sm:object-center"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-800 via-navy-800/40 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
         </div>
         <div className="p-6 sm:p-8 space-y-6">
         <p>

@@ -226,9 +226,9 @@ html.light body {
   color: #1E293B;
 }
 
-/* Image Treatment: slightly deepen contrast so photographs have visual weight on light surfaces */
+/* Image Treatment: enhance contrast, saturation, and rich tone so photographs never look faded on light surfaces */
 html.light img:not([alt=""]):not([aria-hidden="true"]) {
-  filter: contrast(1.03) brightness(0.98);
+  filter: contrast(1.07) saturate(1.05) brightness(0.96);
 }
 
 /* Brand Gradient Text: Deepen saturation for vibrant presence on light backgrounds */

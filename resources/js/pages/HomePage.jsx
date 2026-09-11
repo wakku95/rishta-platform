@@ -278,9 +278,9 @@ export default function HomePage() {
                 decoding="async"
                 className="w-full h-48 object-cover object-top"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-navy-850 via-navy-850/40 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
               <div className="absolute bottom-3 left-4 right-4 text-center">
-                <p className="text-xs font-semibold text-slate-200 drop-shadow-md">
+                <p className="text-xs font-semibold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                   Meaningful connections start with the right introduction
                 </p>
               </div>
@@ -358,9 +358,9 @@ export default function HomePage() {
               decoding="async"
               className="absolute inset-0 w-full h-full object-cover object-[center_30%] sm:object-center"
             />
-            {/* Dual-layer responsive overlay & shadow for mobile readability */}
-            <div className="absolute inset-0 bg-navy-950/50 sm:bg-navy-950/20" />
-            <div className="absolute inset-0 bg-gradient-to-t from-navy-950/95 via-navy-950/80 to-navy-900/50 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/75 sm:to-transparent" />
+            {/* Dual-layer responsive dark scrim for rich photo contrast in both themes */}
+            <div className="absolute inset-0 bg-black/50 sm:bg-black/25" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/80 to-black/30 sm:bg-gradient-to-r sm:from-black/95 sm:via-black/75 sm:to-transparent" />
 
             <div className="relative z-10 p-5 sm:p-8 md:p-10 max-w-lg" data-keep-white>
               <div className="space-y-2">
@@ -424,8 +424,8 @@ export default function HomePage() {
             className="absolute inset-0 w-full h-full object-cover object-[center_20%] sm:object-center"
           />
           {/* Responsive dark scrim + directional gradient */}
-          <div className="absolute inset-0 bg-navy-950/60 sm:bg-navy-950/25" />
-          <div className="absolute inset-0 bg-gradient-to-t from-navy-950 via-navy-950/90 to-navy-900/60 sm:bg-gradient-to-r sm:from-navy-950/95 sm:via-navy-900/80 sm:to-transparent" />
+          <div className="absolute inset-0 bg-black/55 sm:bg-black/30" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/80 to-black/30 sm:bg-gradient-to-r sm:from-black/95 sm:via-black/75 sm:to-transparent" />
 
           <div className="relative z-10 w-full p-6 sm:p-10 md:p-12" data-keep-white>
             <div className="space-y-3 max-w-lg">
