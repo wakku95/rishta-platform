@@ -180,4 +180,56 @@ class FoundationTest extends TestCase
         app()->usePublicPath($originalPath);
         $this->assertEquals($originalPath, app()->publicPath());
     }
+
+    /**
+     * Test that sitemap.xml returns 200 with valid XML and all 9 public URLs.
+     */
+    public function test_sitemap_xml_endpoint_returns_valid_xml(): void
+    {
+        $response = $this->get('http://raabtanow.com/sitemap.xml');
+
+        $response->assertStatus(200)
+            ->assertHeader('Content-Type', 'application/xml; charset=utf-8')
+            ->assertSee('<urlset', false)
+            ->assertSee('https://raabtanow.com/', false)
+            ->assertSee('https://raabtanow.com/how-it-works', false)
+            ->assertSee('https://raabtanow.com/pricing', false)
+            ->assertSee('https://raabtanow.com/about', false)
+            ->assertSee('https://raabtanow.com/contact', false)
+            ->assertSee('https://raabtanow.com/privacy-policy', false)
+            ->assertSee('https://raabtanow.com/terms', false)
+            ->assertSee('https://raabtanow.com/refund-policy', false)
+            ->assertSee('https://raabtanow.com/delivery-policy', false)
+            ->assertDontSee('/dashboard')
+            ->assertDontSee('/search')
+            ->assertDontSee('/login')
+            ->assertDontSee('/api/');
+    }
+
+    /**
+     * Test that public marketing routes render indexable SEO meta tags and canonical URLs.
+     */
+    public function test_public_pages_render_indexable_seo_metadata(): void
+    {
+        $response = $this->get('http://raabtanow.com/');
+
+        $response->assertStatus(200)
+            ->assertSee('<meta name="robots" content="index, follow', false)
+            ->assertSee('<link rel="canonical" href="https://raabtanow.com">', false)
+            ->assertSee('Online Rishta in Pakistan | Pakistani Matrimonial Website | RaabtaNow', false)
+            ->assertSee('https://schema.org', false)
+            ->assertSee('FAQPage', false);
+    }
+
+    /**
+     * Test that private authenticated or sensitive routes render noindex meta tags.
+     */
+    public function test_private_routes_render_noindex_metadata(): void
+    {
+        $response = $this->get('http://raabtanow.com/dashboard');
+
+        $response->assertStatus(200)
+            ->assertSee('<meta name="robots" content="noindex, nofollow, noarchive, nosnippet">', false)
+            ->assertDontSee('<link rel="canonical"');
+    }
 }

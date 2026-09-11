@@ -2,11 +2,19 @@ import React from 'react';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import { ShieldCheck, Lock, CheckCircle2, HeartHandshake, PhoneCall, Mail, Clock, MapPin } from 'lucide-react';
+import SEOHead from '../components/seo/SEOHead';
 
 export function HowItWorksPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 py-6 px-4">
+      <SEOHead
+        title="How Online Rishta Works | Safe & Private Pakistani Matrimonial | RaabtaNow"
+        description="Learn how RaabtaNow's dignified Pakistani matrimonial discovery process works: private biodata, mutual consent proposals, and secure SMS OTP contact verification."
+        canonicalPath="/how-it-works"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2">
+
         <Badge variant="magenta" size="md">Step-by-Step Guide</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">How RaabtaNow Works</h1>
         <p className="text-sm text-slate-400">The transparent, dignified matrimonial discovery process designed for Pakistani families.</p>
@@ -57,6 +65,12 @@ export function HowItWorksPage() {
 export function PricingPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-8 py-6 px-4">
+      <SEOHead
+        title="RaabtaNow Pricing | Transparent Pakistani Online Rishta & Matrimonial Service"
+        description="Completely free registration, browsing, and proposals. Transparent Rs. 300 PKR micro-fee charged only upon mutual acceptance to unlock verified contacts."
+        canonicalPath="/pricing"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2">
         <Badge variant="gold" size="md">Transparent Pricing</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Simple, Honest Pricing</h1>
@@ -90,6 +104,12 @@ export function PricingPage() {
 export function AboutPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-8 py-6 px-4">
+      <SEOHead
+        title="About RaabtaNow | Privacy-First Pakistani Matrimonial Platform"
+        description="Discover the mission behind RaabtaNow: restoring honor, privacy, and family dignity to Pakistani rishta matchmaking through modern technology."
+        canonicalPath="/about"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2">
         <Badge variant="magenta" size="md">Our Mission</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">About RaabtaNow</h1>
@@ -140,6 +160,12 @@ export function AboutPage() {
 export function PrivacyPolicyPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6 px-4">
+      <SEOHead
+        title="Privacy Policy | Confidential Pakistani Matrimonial Platform | RaabtaNow"
+        description="Read RaabtaNow's rigorous data protection protocols. Zero public candidate photo exposure, no public phone numbers, and strict mutual consent requirements."
+        canonicalPath="/privacy-policy"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2 pb-4 border-b border-slate-750">
         <Badge variant="magenta" size="md">Privacy & Data Protection</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Privacy Policy</h1>
@@ -202,6 +228,12 @@ export function PrivacyPolicyPage() {
 export function TermsPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6 px-4">
+      <SEOHead
+        title="Terms & Conditions | Halal Pakistani Matrimonial Service | RaabtaNow"
+        description="Review user agreement and guidelines for RaabtaNow. Solely dedicated to serious matrimonial proposals (Nikah) for Pakistani individuals and families."
+        canonicalPath="/terms"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2 pb-4 border-b border-slate-750">
         <Badge variant="magenta" size="md">User Agreement</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Terms & Conditions</h1>
@@ -255,6 +287,12 @@ export function TermsPage() {
 export function RefundPolicyPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6 px-4">
+      <SEOHead
+        title="Return & Refund Policy | RaabtaNow Matrimonial Services"
+        description="Clear terms regarding our digital contact unlock micro-fee, duplicate transaction refunds, and customer support escalation timelines."
+        canonicalPath="/refund-policy"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2 pb-4 border-b border-slate-750">
         <Badge variant="gold" size="md">Refund & Cancellation</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Return & Refund Policy</h1>
@@ -305,6 +343,12 @@ export function RefundPolicyPage() {
 export function DeliveryPolicyPage() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 py-6 px-4">
+      <SEOHead
+        title="Service Delivery Policy | Instant Digital Contact Unlock | RaabtaNow"
+        description="Instant electronic fulfillment for contact verification and mutual phone release upon successful mutual consent and payment confirmation."
+        canonicalPath="/delivery-policy"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2 pb-4 border-b border-slate-750">
         <Badge variant="magenta" size="md">Fulfillment & Delivery</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Service Delivery Policy</h1>
@@ -352,6 +396,12 @@ export function DeliveryPolicyPage() {
 export function ContactUsPage() {
   return (
     <div className="max-w-3xl mx-auto space-y-6 py-6 px-4">
+      <SEOHead
+        title="Contact RaabtaNow | Online Rishta Pakistan & Matrimonial Support"
+        description="Get in touch with RaabtaNow customer care. Head office in Karachi, dedicated support helpline (+92 323 9225450), and respectful family assistance."
+        canonicalPath="/contact"
+        isIndexable={true}
+      />
       <div className="text-center space-y-2 pb-4 border-b border-slate-750">
         <Badge variant="magenta" size="md">Get In Touch</Badge>
         <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">Contact & Support</h1>

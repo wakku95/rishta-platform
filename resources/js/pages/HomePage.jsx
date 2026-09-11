@@ -17,12 +17,15 @@ import {
   Quote,
   ChevronRight,
   MapPin,
+  HelpCircle,
+  ChevronDown,
 } from 'lucide-react';
 import Button from '../components/ui/Button';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
 import Alert from '../components/ui/Alert';
 import ScrollReveal from '../components/ui/ScrollReveal';
+import SEOHead from '../components/seo/SEOHead';
 import api from '../api/client';
 import useAuth from '../hooks/useAuth';
 
@@ -37,6 +40,30 @@ export default function HomePage() {
 
   const [healthData, setHealthData] = useState(null);
   const [healthLoading, setHealthLoading] = useState(true);
+  const [openFaq, setOpenFaq] = useState(0);
+
+  const faqItems = [
+    {
+      q: 'What is RaabtaNow and how does online rishta work in Pakistan?',
+      a: 'RaabtaNow is a privacy-first Pakistani matrimonial platform created to help individuals and families discover compatible marriage proposals (Nikah). Unlike dating apps, RaabtaNow requires verified email registrations, keeps all photographs and personal contact information completely hidden from the public, and only reveals contact numbers when both sides mutually accept a proposal and verify via SMS OTP.',
+    },
+    {
+      q: 'Is it free to register, search, and send rishta requests?',
+      a: 'Yes. It is 100% free to register an account, build your matrimonial biodata, search candidates with demographic filters, shortlist profiles, and send or receive rishta proposal requests. There are no monthly recurring subscriptions.',
+    },
+    {
+      q: 'How does RaabtaNow protect candidate privacy?',
+      a: 'Privacy is our founding pillar. No public profile photos are ever shown, preventing photo misuse or scraping. Phone numbers, home addresses, and email addresses remain strictly confidential. Other users only see relevant compatibility details such as age, religion, sect, education, profession, city, and personal values.',
+    },
+    {
+      q: 'When and how are contact details shared between families?',
+      a: 'Contact information is never shared automatically. First, candidate A sends a formal proposal request. If candidate B reviews the biodata and explicitly accepts, candidate A pays a one-time micro-fee of Rs. 300 PKR. Both parties then complete SMS OTP verification on their active mobile numbers. Once verified, mutual phone numbers, names, and emails are unlocked on screen.',
+    },
+    {
+      q: 'Is RaabtaNow suitable for families and parents searching for their children?',
+      a: 'Absolutely. RaabtaNow was specifically engineered to respect Pakistani family traditions. Profiles can be registered and managed directly by candidates, parents, elder siblings, or guardians who desire a dignified, respectful, and halal search process.',
+    },
+  ];
 
   useEffect(() => {
     api.get('/health')
@@ -112,6 +139,12 @@ export default function HomePage() {
 
   return (
     <div className="space-y-16 sm:space-y-24 py-4 sm:py-6">
+      <SEOHead
+        title="Online Rishta in Pakistan | Pakistani Matrimonial Website | RaabtaNow"
+        description="RaabtaNow is a privacy-first Pakistani matrimonial platform to discover compatible rishtas online, connect through mutual interest, and build meaningful marriage connections."
+        canonicalPath="/"
+        isIndexable={true}
+      />
       
       {/* =========================================================================
           HERO SECTION (Matching Reference Visual Mood)
@@ -136,7 +169,7 @@ export default function HomePage() {
           <div className="lg:col-span-7 space-y-6 text-left">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-navy-750 border border-slate-700/80 text-xs font-semibold text-slate-300 shadow-xs">
               <Sparkles className="w-3.5 h-3.5 text-magenta-400" />
-              <span>Dignified Pakistani Matrimonial Platform</span>
+              <span>Online Rishta in Pakistan — Dignified Matrimonial Platform</span>
             </div>
 
             <div className="space-y-2">
@@ -151,7 +184,7 @@ export default function HomePage() {
             </div>
 
             <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl font-normal">
-              Find your life partner with RaabtaNow — where tradition meets modern privacy technology. Zero public photos, no dating swiping culture, and contact release strictly by mutual consent.
+              Discover compatible marriage proposals across Pakistan with RaabtaNow — where family tradition meets modern privacy technology. Zero public photos, no dating swiping culture, and contact details unlocked strictly with verified mutual consent.
             </p>
 
             {/* Hero Quick Search Box */}
@@ -612,6 +645,67 @@ export default function HomePage() {
           </section>
         </ScrollReveal>
       )}
+
+      {/* =========================================================================
+          FREQUENTLY ASKED QUESTIONS (Authentic SEO & Family Clarity)
+          ========================================================================= */}
+      <ScrollReveal animation="fade-up" duration={600}>
+        <section className="max-w-3xl mx-auto space-y-6">
+          <div className="text-center space-y-2">
+            <Badge variant="magenta" size="md">Got Questions?</Badge>
+            <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-400">
+              Clear, honest answers about online rishta and family matrimonial discovery in Pakistan.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            {faqItems.map((item, idx) => {
+              const isOpen = openFaq === idx;
+              return (
+                <div
+                  key={idx}
+                  className="rounded-2xl bg-navy-800 border border-slate-750 overflow-hidden transition-colors"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaq(isOpen ? -1 : idx)}
+                    className="w-full text-left p-4 sm:p-5 flex items-center justify-between gap-4 focus:outline-none cursor-pointer"
+                  >
+                    <span className="font-bold text-sm sm:text-base text-white">
+                      {item.q}
+                    </span>
+                    <ChevronDown
+                      className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                        isOpen ? 'rotate-180 text-magenta-400' : ''
+                      }`}
+                    />
+                  </button>
+                  {isOpen && (
+                    <div className="px-4 pb-5 sm:px-5 text-xs sm:text-sm text-slate-300 leading-relaxed border-t border-slate-750/70 pt-3">
+                      <p>{item.a}</p>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Internal descriptive SEO navigation links */}
+          <div className="text-center pt-2 text-xs text-slate-400">
+            Have more questions about our privacy guarantees?{' '}
+            <Link to="/how-it-works" className="text-magenta-400 hover:text-magenta-300 font-semibold underline underline-offset-4">
+              Explore our step-by-step rishta process
+            </Link>{' '}
+            or review our{' '}
+            <Link to="/pricing" className="text-magenta-400 hover:text-magenta-300 font-semibold underline underline-offset-4">
+              transparent micro-pricing
+            </Link>.
+          </div>
+        </section>
+      </ScrollReveal>
 
       {/* =========================================================================
           CALL TO ACTION FOOTER BANNER

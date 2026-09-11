@@ -6,12 +6,17 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
 import { User, Mail, ShieldCheck, Clock, CheckCircle2, AlertTriangle, Sparkles, LogOut, ArrowRight, KeyRound } from 'lucide-react';
+import SEOHead from '../../components/seo/SEOHead';
 
 export default function DashboardPage() {
   const { user, emailVerified, logout } = useAuth();
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
+      <SEOHead
+        title="Dashboard | RaabtaNow"
+        isIndexable={false}
+      />
       {/* Welcome Banner */}
       <div className="bg-gradient-to-r from-navy-850 via-navy-800 to-navy-850 rounded-3xl p-6 sm:p-8 text-white shadow-xl border border-slate-750 relative overflow-hidden">
         <div className="relative z-10 max-w-2xl space-y-2">

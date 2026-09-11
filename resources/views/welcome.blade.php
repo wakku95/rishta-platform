@@ -5,8 +5,124 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Rishta Platform') }} — Privacy-First Pakistani Matrimonial</title>
-        <meta name="description" content="A privacy-first, culturally respectful Pakistani matrimonial discovery platform. Search privately. Connect with mutual consent.">
+        <title>{{ $seo['title'] ?? 'RaabtaNow — Privacy-First Pakistani Matrimonial' }}</title>
+        <meta name="description" content="{{ $seo['description'] ?? 'RaabtaNow is a privacy-first Pakistani matrimonial platform to discover compatible rishtas online with complete family respect.' }}">
+
+        @if(isset($seo['is_indexable']) && $seo['is_indexable'])
+        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+        <link rel="canonical" href="{{ $seo['canonical'] ?? 'https://raabtanow.com' }}">
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website">
+        <meta property="og:url" content="{{ $seo['canonical'] ?? 'https://raabtanow.com' }}">
+        <meta property="og:title" content="{{ $seo['title'] ?? 'RaabtaNow — Privacy-First Pakistani Matrimonial' }}">
+        <meta property="og:description" content="{{ $seo['description'] ?? 'A privacy-first, culturally respectful Pakistani matrimonial discovery platform.' }}">
+        <meta property="og:image" content="https://raabtanow.com/images/raabtanow/privacy-trust.jpg">
+        <meta property="og:site_name" content="RaabtaNow">
+        <meta property="og:locale" content="en_PK">
+
+        <!-- Twitter / X Cards -->
+        <meta name="twitter:card" content="summary_large_image">
+        <meta name="twitter:url" content="{{ $seo['canonical'] ?? 'https://raabtanow.com' }}">
+        <meta name="twitter:title" content="{{ $seo['title'] ?? 'RaabtaNow — Privacy-First Pakistani Matrimonial' }}">
+        <meta name="twitter:description" content="{{ $seo['description'] ?? 'A privacy-first, culturally respectful Pakistani matrimonial discovery platform.' }}">
+        <meta name="twitter:image" content="https://raabtanow.com/images/raabtanow/privacy-trust.jpg">
+
+        <!-- JSON-LD Structured Data: Organization & WebSite -->
+        <script type="application/ld+json">
+        {
+            "&#64;context": "https://schema.org",
+            "&#64;graph": [
+                {
+                    "&#64;type": "Organization",
+                    "&#64;id": "https://raabtanow.com/#organization",
+                    "name": "RaabtaNow",
+                    "url": "https://raabtanow.com",
+                    "logo": {
+                        "&#64;type": "ImageObject",
+                        "url": "https://raabtanow.com/favicon.svg"
+                    },
+                    "contactPoint": {
+                        "&#64;type": "ContactPoint",
+                        "telephone": "+92-323-9225450",
+                        "contactType": "customer service",
+                        "areaServed": "PK",
+                        "availableLanguage": ["en", "ur"]
+                    },
+                    "address": {
+                        "&#64;type": "PostalAddress",
+                        "streetAddress": "Sector 48-C, Korangi",
+                        "addressLocality": "Karachi",
+                        "addressRegion": "Sindh",
+                        "addressCountry": "PK"
+                    }
+                },
+                {
+                    "&#64;type": "WebSite",
+                    "&#64;id": "https://raabtanow.com/#website",
+                    "url": "https://raabtanow.com",
+                    "name": "RaabtaNow",
+                    "publisher": {
+                        "&#64;id": "https://raabtanow.com/#organization"
+                    },
+                    "inLanguage": "en-PK"
+                }
+                @if(isset($seo['schema_type']) && $seo['schema_type'] === 'website')
+                ,
+                {
+                    "&#64;type": "FAQPage",
+                    "&#64;id": "https://raabtanow.com/#faq",
+                    "mainEntity": [
+                        {
+                            "&#64;type": "Question",
+                            "name": "What is RaabtaNow and how does online rishta work in Pakistan?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "RaabtaNow is a privacy-first Pakistani matrimonial platform created to help individuals and families discover compatible marriage proposals (Nikah). Unlike dating apps, RaabtaNow requires verified email registrations, keeps all photographs and personal contact information completely hidden from the public, and only reveals contact numbers when both sides mutually accept a proposal and verify via SMS OTP."
+                            }
+                        },
+                        {
+                            "&#64;type": "Question",
+                            "name": "Is it free to register, search, and send rishta requests?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "Yes. It is 100% free to register an account, build your matrimonial biodata, search candidates with demographic filters, shortlist profiles, and send or receive rishta proposal requests. There are no monthly recurring subscriptions."
+                            }
+                        },
+                        {
+                            "&#64;type": "Question",
+                            "name": "How does RaabtaNow protect candidate privacy?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "Privacy is our founding pillar. No public profile photos are ever shown, preventing photo misuse or scraping. Phone numbers, home addresses, and email addresses remain strictly confidential. Other users only see relevant compatibility details such as age, religion, sect, education, profession, city, and personal values."
+                            }
+                        },
+                        {
+                            "&#64;type": "Question",
+                            "name": "When and how are contact details shared between families?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "Contact information is never shared automatically. First, candidate A sends a formal proposal request. If candidate B reviews the biodata and explicitly accepts, candidate A pays a one-time micro-fee of Rs. 300 PKR. Both parties then complete SMS OTP verification on their active mobile numbers. Once verified, mutual phone numbers, names, and emails are unlocked on screen."
+                            }
+                        },
+                        {
+                            "&#64;type": "Question",
+                            "name": "Is RaabtaNow suitable for families and parents searching for their children?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "Absolutely. RaabtaNow was specifically engineered to respect Pakistani family traditions. Profiles can be registered and managed directly by candidates, parents, elder siblings, or guardians who desire a dignified, respectful, and halal search process."
+                            }
+                        }
+                    ]
+                }
+                @endif
+            ]
+        }
+        </script>
+        @else
+        <!-- Strictly protect private matrimonial and authentication pages from indexing -->
+        <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+        @endif
 
         <!-- Favicon -->
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">

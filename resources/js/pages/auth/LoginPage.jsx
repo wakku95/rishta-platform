@@ -6,6 +6,7 @@ import Button from '../../components/ui/Button';
 import Card from '../../components/ui/Card';
 import Alert from '../../components/ui/Alert';
 import { HeartHandshake, LogIn } from 'lucide-react';
+import SEOHead from '../../components/seo/SEOHead';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -63,6 +64,10 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-[75vh] flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+      <SEOHead
+        title="Sign In | RaabtaNow"
+        isIndexable={false}
+      />
       <div className="w-full max-w-md space-y-6">
         <div className="text-center space-y-2">
           <div className="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-tr from-magenta-500 to-purple-600 flex items-center justify-center text-white shadow-xl shadow-magenta-500/20 border border-white/20">
