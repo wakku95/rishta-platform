@@ -82,7 +82,6 @@ class MatrimonialProfilesSeeder extends Seeder
             $user = User::create([
                 'name' => $fullName,
                 'email' => $email,
-                'phone' => '+923' . rand(10, 49) . rand(1000000, 9999999),
                 'password' => Hash::make('Password@123'),
                 'email_verified_at' => $now->copy()->subDays(rand(2, 60)),
                 'status' => 'active',
