@@ -226,9 +226,9 @@ html.light body {
   color: #1E293B;
 }
 
-/* Image Treatment: enhance contrast, saturation, and rich tone so photographs never look faded on light surfaces */
-html.light img:not([alt=""]):not([aria-hidden="true"]) {
-  filter: contrast(1.07) saturate(1.05) brightness(0.96);
+/* Disable dark text drop shadows in light mode to prevent dark halo smudges on dark slate text */
+html.light [class*="drop-shadow"]:not([data-keep-white]):not([data-keep-white] *) {
+  filter: none !important;
 }
 
 /* Brand Gradient Text: Deepen saturation for vibrant presence on light backgrounds */
@@ -251,7 +251,9 @@ html.light .hero-couplet {
 
 /* Card and container borders and shadows in light mode */
 html.light .bg-navy-800,
-html.light .bg-navy-850 {
+html.light .bg-navy-850,
+html.light [class*="bg-navy-800/"],
+html.light [class*="bg-navy-850/"] {
   border-color: #E2E8F0 !important;
   box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.06), 0 2px 6px -1px rgba(15, 23, 42, 0.03);
 }

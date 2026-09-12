@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut } from 'lucide-react';
 import Button from '../ui/Button';
@@ -8,6 +8,34 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
   const { user, authenticated, logout } = useAuth();
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [location.pathname]);
+
+  // Lock background scroll when mobile menu is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  // Close mobile menu on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [mobileMenuOpen]);
 
   const desktopNavLinks = authenticated
     ? [
@@ -69,9 +97,10 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   to={link.href}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`px-3 py-1.5 rounded-xl transition-all duration-150 whitespace-nowrap ${
                     isActive
-                      ? 'bg-navy-750 text-white font-semibold border border-magenta-500/30 shadow-xs'
+                      ? 'bg-magenta-500/15 text-magenta-400 font-semibold border border-magenta-500/30 shadow-xs'
                       : 'text-slate-300 hover:text-white hover:bg-navy-800/80'
                   }`}
                 >
@@ -130,6 +159,8 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2.5 rounded-xl border border-slate-750 bg-navy-800 text-slate-200 hover:text-white hover:bg-navy-750 focus:outline-none focus:ring-2 focus:ring-magenta-500 cursor-pointer"
               aria-label="Toggle navigation menu"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -137,20 +168,33 @@ export default function Navbar() {
         </div>
       </div>
 
+      {/* Mobile Menu Backdrop Overlay for Outside-Click Dismiss */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 top-16 sm:top-20 bg-black/60 z-30 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Mobile Menu Dropdown */}
       {mobileMenuOpen && (
-        <div className="md:hidden border-t border-slate-800 bg-navy-900/95 backdrop-blur-2xl px-4 pt-3 pb-6 space-y-4 shadow-2xl">
+        <div
+          id="mobile-menu"
+          className="relative z-40 md:hidden border-t border-slate-800 bg-navy-900/98 backdrop-blur-xl px-4 pt-3 pb-6 space-y-4 shadow-2xl"
+        >
           <div className="space-y-1">
-            {navLinks.map((link) => {
+            {mobileNavLinks.map((link) => {
               const isActive = location.pathname === link.href;
               return (
                 <Link
                   key={link.name}
                   to={link.href}
                   onClick={() => setMobileMenuOpen(false)}
+                  aria-current={isActive ? 'page' : undefined}
                   className={`block px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
                     isActive
-                      ? 'bg-navy-750 text-white border border-magenta-500/40'
+                      ? 'bg-magenta-500/15 text-magenta-400 border border-magenta-500/40 font-bold'
                       : 'text-slate-300 hover:text-white hover:bg-navy-800'
                   }`}
                 >

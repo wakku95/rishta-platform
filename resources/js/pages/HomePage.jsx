@@ -491,10 +491,10 @@ export default function HomePage() {
           <div className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-4 text-left">
               <Badge variant="purple" size="md">Nationwide Reach</Badge>
-              <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">
+              <h2 className="font-serif text-2xl sm:text-3xl font-extrabold text-white">
                 Bringing Hearts Closer Across Pakistan
               </h2>
-              <p className="text-sm text-slate-300 leading-relaxed max-w-xl drop-shadow-sm">
+              <p className="text-sm text-slate-300 leading-relaxed max-w-xl">
                 From Karachi to Lahore, Islamabad to Peshawar — and overseas Pakistani communities worldwide. Find compatible proposals from respected families with complete dignity.
               </p>
               <div className="pt-2">
@@ -507,7 +507,7 @@ export default function HomePage() {
             </div>
 
             <div className="lg:col-span-5 grid grid-cols-2 gap-3.5">
-              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+              <div className="p-4 rounded-2xl bg-navy-800 border border-slate-750/80 text-center space-y-1">
                 <div className="w-9 h-9 rounded-xl bg-magenta-500/15 text-magenta-400 flex items-center justify-center mx-auto">
                   <Users className="w-5 h-5" />
                 </div>
@@ -515,7 +515,7 @@ export default function HomePage() {
                 <p className="text-[11px] text-slate-400">Respectful & secure</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+              <div className="p-4 rounded-2xl bg-navy-800 border border-slate-750/80 text-center space-y-1">
                 <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-400 flex items-center justify-center mx-auto">
                   <Shield className="w-5 h-5" />
                 </div>
@@ -523,7 +523,7 @@ export default function HomePage() {
                 <p className="text-[11px] text-slate-400">Find your life partner</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+              <div className="p-4 rounded-2xl bg-navy-800 border border-slate-750/80 text-center space-y-1">
                 <div className="w-9 h-9 rounded-xl bg-blue-500/15 text-blue-400 flex items-center justify-center mx-auto">
                   <HeartHandshake className="w-5 h-5" />
                 </div>
@@ -531,7 +531,7 @@ export default function HomePage() {
                 <p className="text-[11px] text-slate-400">Peace of mind & trust</p>
               </div>
 
-              <div className="p-4 rounded-2xl bg-navy-800/90 border border-slate-700/70 text-center space-y-1">
+              <div className="p-4 rounded-2xl bg-navy-800 border border-slate-750/80 text-center space-y-1">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center mx-auto">
                   <Sparkles className="w-5 h-5" />
                 </div>

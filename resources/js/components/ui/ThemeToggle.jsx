@@ -10,7 +10,7 @@ export default function ThemeToggle() {
   const { theme, toggleTheme, isDark } = useTheme();
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 sm:bottom-6 sm:right-6 select-none print:hidden">
+    <div className="fixed bottom-5 right-5 z-20 sm:z-30 sm:bottom-6 sm:right-6 select-none print:hidden">
       <button
         onClick={toggleTheme}
         type="button"

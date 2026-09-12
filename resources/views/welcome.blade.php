@@ -144,7 +144,9 @@
             (function() {
                 try {
                     var theme = localStorage.getItem('raabtanow_theme');
-                    if (theme === 'light') {
+                    var systemPrefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+                    var isLight = theme === 'light' || (!theme && systemPrefersLight);
+                    if (isLight) {
                         document.documentElement.classList.add('light');
                         document.documentElement.setAttribute('data-theme', 'light');
                     } else {
@@ -163,6 +165,15 @@
         <div id="app">
             <div id="rn-preloader" style="position:fixed;inset:0;background:#0B0F19;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;font-family:system-ui,-apple-system,sans-serif;">
                 <style>
+                    html.light #rn-preloader {
+                        background: #F8FAFC !important;
+                    }
+                    html.light .rn-preloader-title {
+                        color: #0F172A !important;
+                    }
+                    html.light .rn-progress-track {
+                        background: rgba(0, 0, 0, 0.08) !important;
+                    }
                     @keyframes rn-pulse {
                         0%, 100% { transform: scale(1); opacity: 1; filter: drop-shadow(0 0 16px rgba(225,29,116,0.45)); }
                         50% { transform: scale(1.08); opacity: 0.85; filter: drop-shadow(0 0 26px rgba(139,92,246,0.65)); }
@@ -199,7 +210,7 @@
                         <path d="M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762"/>
                     </svg>
                 </div>
-                <div style="margin-top:16px;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.02em;">
+                <div class="rn-preloader-title" style="margin-top:16px;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.02em;">
                     Raabta<span style="color:#F472B6;">Now</span>
                 </div>
                 <div style="margin-top:4px;color:#94A3B8;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">
