@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { 
   BarChart3, Users, HeartHandshake, 
-  Layers, CreditCard, Shield, ArrowLeft 
+  Layers, CreditCard, Shield, ShieldCheck, ArrowLeft 
 } from 'lucide-react';
 import AdminOverviewTab from './AdminOverviewTab';
 import AdminUsersTab from './AdminUsersTab';
 import AdminProfilesTab from './AdminProfilesTab';
 import AdminRequestsTab from './AdminRequestsTab';
 import AdminFinancialsTab from './AdminFinancialsTab';
+import AdminVerificationsTab from './AdminVerificationsTab';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -22,6 +23,7 @@ export default function AdminPage() {
     { id: 'overview', name: 'Overview', icon: BarChart3 },
     { id: 'users', name: 'Users & Accounts', icon: Users },
     { id: 'profiles', name: 'Profiles Moderation', icon: HeartHandshake },
+    { id: 'verifications', name: 'Verifications', icon: ShieldCheck },
     { id: 'requests', name: 'Rishta Requests', icon: Layers },
     { id: 'financials', name: 'Financials & Unlocks', icon: CreditCard },
   ];
@@ -78,6 +80,7 @@ export default function AdminPage() {
           {activeTab === 'overview' && <AdminOverviewTab />}
           {activeTab === 'users' && <AdminUsersTab />}
           {activeTab === 'profiles' && <AdminProfilesTab />}
+          {activeTab === 'verifications' && <AdminVerificationsTab />}
           {activeTab === 'requests' && <AdminRequestsTab />}
           {activeTab === 'financials' && <AdminFinancialsTab />}
         </div>

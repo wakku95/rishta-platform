@@ -9,25 +9,42 @@ export default function Navbar() {
   const location = useLocation();
   const { user, authenticated, logout } = useAuth();
 
-  const navLinks = [
-    { name: 'Home', href: '/' },
-    { name: 'How It Works', href: '/how-it-works' },
-    { name: 'Pricing', href: '/pricing' },
-    { name: 'About', href: '/about' },
-  ];
+  const navLinks = authenticated
+    ? [
+        { name: 'Find Matches', href: '/search' },
+        { name: 'Requests', href: '/requests' },
+        { name: 'Shortlist', href: '/shortlist' },
+        { name: 'My Profile', href: '/profile' },
+      ]
+    : [
+        { name: 'Home', href: '/' },
+        { name: 'How It Works', href: '/how-it-works' },
+        { name: 'Pricing', href: '/pricing' },
+        { name: 'About', href: '/about' },
+      ];
 
-  if (authenticated) {
-    navLinks.push({ name: 'Find Matches', href: '/search' });
-    navLinks.push({ name: 'Shortlist', href: '/shortlist' });
-    navLinks.push({ name: 'Requests', href: '/requests' });
-    navLinks.push({ name: 'Dashboard', href: '/dashboard' });
-    navLinks.push({ name: 'My Profile', href: '/profile' });
-  }
+  const mobileNavLinks = authenticated
+    ? [
+        { name: 'Find Matches', href: '/search' },
+        { name: 'Requests', href: '/requests' },
+        { name: 'Shortlist', href: '/shortlist' },
+        { name: 'My Profile', href: '/profile' },
+        { name: 'Dashboard', href: '/dashboard' },
+        { name: 'How It Works', href: '/how-it-works' },
+        { name: 'Pricing', href: '/pricing' },
+        { name: 'About', href: '/about' },
+      ]
+    : [
+        { name: 'Home', href: '/' },
+        { name: 'How It Works', href: '/how-it-works' },
+        { name: 'Pricing', href: '/pricing' },
+        { name: 'About', href: '/about' },
+      ];
 
   return (
     <header className="sticky top-0 z-40 bg-navy-900 md:bg-navy-900/80 md:backdrop-blur-xl border-b border-slate-800/80 md:shadow-lg md:shadow-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-4">
           
           {/* Logo & Platform Name */}
           <Link to="/" className="flex items-center gap-3 group shrink-0">
@@ -52,7 +69,7 @@ export default function Navbar() {
                 <Link
                   key={link.name}
                   to={link.href}
-                  className={`px-3.5 py-2 rounded-xl transition-all duration-150 ${
+                  className={`px-3 py-1.5 rounded-xl transition-all duration-150 whitespace-nowrap ${
                     isActive
                       ? 'bg-navy-750 text-white font-semibold border border-magenta-500/30 shadow-xs'
                       : 'text-slate-300 hover:text-white hover:bg-navy-800/80'
@@ -65,34 +82,40 @@ export default function Navbar() {
           </nav>
 
           {/* Desktop Right Actions */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2 shrink-0">
             {authenticated ? (
               <>
                 {user?.role === 'admin' && (
-                  <Link to="/admin">
-                    <Button variant="gold" size="sm" icon={ShieldCheck}>
-                      Admin Portal
+                  <Link to="/admin" className="shrink-0">
+                    <Button variant="gold" size="sm" icon={ShieldCheck} className="whitespace-nowrap font-bold">
+                      Admin
                     </Button>
                   </Link>
                 )}
-                <Link to="/dashboard">
-                  <Button variant="secondary" size="sm" icon={User}>
-                    Dashboard ({user?.name ? user.name.split(' ')[0] : 'User'})
+                <Link to="/dashboard" className="shrink-0">
+                  <Button variant="secondary" size="sm" icon={User} className="whitespace-nowrap">
+                    Dashboard
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" icon={LogOut} onClick={logout}>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  icon={LogOut} 
+                  onClick={logout} 
+                  className="whitespace-nowrap text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 shrink-0"
+                >
                   Log Out
                 </Button>
               </>
             ) : (
               <>
-                <Link to="/login">
-                  <Button variant="ghost" size="sm">
+                <Link to="/login" className="shrink-0">
+                  <Button variant="ghost" size="sm" className="whitespace-nowrap">
                     Log In
                   </Button>
                 </Link>
-                <Link to="/register">
-                  <Button variant="primary" size="sm">
+                <Link to="/register" className="shrink-0">
+                  <Button variant="primary" size="sm" className="whitespace-nowrap">
                     Sign Up Free
                   </Button>
                 </Link>

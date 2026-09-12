@@ -92,11 +92,18 @@ export default function ProfileCard({ profile, isInitiallyShortlisted = false, o
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
-            {profile.verifications?.email_verified && (
-              <Badge variant="success" size="sm" className="inline-flex items-center gap-1">
+          <div className="flex items-center gap-1.5 flex-wrap justify-end">
+            {profile.verifications?.identity_verified && (
+              <Badge variant="success" size="sm" className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px]">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Verified</span>
+                <span>ID Verified</span>
+              </Badge>
+            )}
+
+            {profile.verifications?.education_verified && (
+              <Badge variant="success" size="sm" className="inline-flex items-center gap-1 bg-purple-500/20 text-purple-300 border-purple-500/40 text-[10px]">
+                <GraduationCap className="w-3.5 h-3.5" />
+                <span>Edu Verified</span>
               </Badge>
             )}
 

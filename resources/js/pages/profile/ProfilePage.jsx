@@ -9,6 +9,7 @@ import Alert from '../../components/ui/Alert';
 import LoadingState from '../../components/ui/LoadingState';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import Modal from '../../components/ui/Modal';
+import VerificationSection from '../../components/profile/VerificationSection';
 import {
   User,
   HeartHandshake,
@@ -686,6 +687,9 @@ export default function ProfilePage() {
           </Card>
         </div>
       </div>
+
+      {/* Trust & Verification Badges Section */}
+      <VerificationSection />
 
       {/* Confirmation Modal */}
       <ConfirmDialog

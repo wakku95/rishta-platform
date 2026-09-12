@@ -122,6 +122,18 @@ Route::post('/payments/safepay/webhook', [\App\Http\Controllers\Api\Payments\Pay
 
 /*
 |--------------------------------------------------------------------------
+| User Verification Routes (/api/verifications)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('verifications')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\Verification\VerificationController::class, 'index']);
+    Route::post('/identity', [\App\Http\Controllers\Api\Verification\VerificationController::class, 'submitIdentity'])->middleware('throttle:10,1');
+    Route::post('/education', [\App\Http\Controllers\Api\Verification\VerificationController::class, 'submitEducation'])->middleware('throttle:10,1');
+    Route::delete('/{id}', [\App\Http\Controllers\Api\Verification\VerificationController::class, 'destroy']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Admin Portal Routes (/api/admin)
 |--------------------------------------------------------------------------
 */
@@ -142,6 +154,14 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'show']);
     Route::post('/profiles/{id}/status', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateStatus']);
     Route::delete('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'destroy']);
+
+    // Verification Review & Document Streaming
+    Route::get('/verifications', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'index']);
+    Route::get('/verifications/{id}', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'show']);
+    Route::get('/verifications/{id}/document/{side?}', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'viewDocument']);
+    Route::post('/verifications/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'approve']);
+    Route::post('/verifications/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'reject']);
+    Route::post('/verifications/purge', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'purge']);
 
     // Requests Oversight & Intervention
     Route::get('/requests', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'requests']);

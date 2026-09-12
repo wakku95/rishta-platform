@@ -145,6 +145,19 @@ Route::get('/', function (Request $request) {
 Route::match(['get', 'post'], '/payments/{payment_uuid}/safepay/callback', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'safepayCallback'])
     ->name('payments.safepay.callback');
 
+// Named route for SPA login page to prevent RouteNotFoundException
+Route::get('/login', function (Request $request) {
+    if (str_starts_with($request->getHost(), 'api.')) {
+        return response()->json([
+            'success' => false,
+            'message' => 'The requested API resource was not found.',
+            'error_code' => 'NOT_FOUND',
+        ], 404);
+    }
+
+    return view('welcome', ['seo' => getSeoMetadata('login')]);
+})->name('login');
+
 Route::get('/{any}', function (Request $request, string $any) {
     // If accessed from an API host, non-API web paths must NOT render Blade/Vite; return 404 JSON
     if (str_starts_with($request->getHost(), 'api.')) {

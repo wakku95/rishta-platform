@@ -171,7 +171,7 @@ export function PricingPage() {
         </div>
 
         <p className="text-[12px] text-slate-400">
-          Secure payment processed via PayFast (debit/credit card, UnionPay, bank account, and mobile wallets).
+          Secure payment processed via Safepay (debit/credit card, bank account, and mobile wallets).
         </p>
       </Card>
     </div>
@@ -260,22 +260,36 @@ export function PrivacyPolicyPage() {
         <div>
           <h3 className="font-bold text-base text-white mb-2">2. Information We Collect</h3>
           <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-400">
-            <li><strong className="text-slate-200">Account & Verification Data:</strong> Legal name, email address, password hash, and active Pakistani mobile number.</li>
+            <li><strong className="text-slate-200">Account & Authentication Data:</strong> Legal name, email address, password hash, and active Pakistani mobile number.</li>
             <li><strong className="text-slate-200">Matrimonial Demographics (Public):</strong> Age, gender, faith, sect, city of residence, education, profession, height, and marital status.</li>
             <li><strong className="text-slate-200">Confidential Statements (Private):</strong> Detailed personal bio, family background, and partner preferences.</li>
-            <li><strong className="text-slate-200">Transactional Records:</strong> Payment attempt references, transaction IDs, timestamps, and payment status. We never collect or store credit/debit card numbers or bank PINs on our servers; all payments are processed through State Bank authorized payment gateways (PayFast).</li>
+            <li><strong className="text-slate-200">Optional Verification Credentials (Strictly Private):</strong> National Identity Card (CNIC / Smart Card) front and back images, and educational degree or diploma documents submitted voluntarily by candidates seeking verified trust badges.</li>
+            <li><strong className="text-slate-200">Transactional Records:</strong> Payment attempt references, transaction IDs, timestamps, and payment status. We never collect or store credit/debit card numbers or bank PINs on our servers; all payments are processed through State Bank authorized payment gateways (Safepay).</li>
           </ul>
         </div>
 
         <div>
           <h3 className="font-bold text-base text-white mb-2">3. Zero Public Exposure Guarantee</h3>
           <p>
-            RaabtaNow does not publicly display candidate photos, phone numbers, home addresses, or full email addresses. Browsing candidates can only review verified educational, professional, and demographic criteria.
+            RaabtaNow does not publicly display candidate photos, phone numbers, home addresses, CNIC details, or full email addresses. Browsing candidates can only review verified educational, professional, and demographic criteria.
           </p>
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-white mb-2">4. Two-Way Controlled Contact Release</h3>
+          <h3 className="font-bold text-base text-white mb-2">4. Identity & Education Document Protection</h3>
+          <p>
+            When you submit credentials for identity or educational verification:
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-400 mt-1">
+            <li><strong className="text-slate-200">Isolated Private Storage:</strong> Uploaded document files are stored in private, unlisted server disks that are completely inaccessible via direct web URLs or search engines.</li>
+            <li><strong className="text-slate-200">Strictly Internal Administrative Review:</strong> Documents are reviewed solely by authorized verification moderators to confirm candidate identity and qualifications.</li>
+            <li><strong className="text-slate-200">Display of Badges Only:</strong> Other platform users only see verified trust badges (<span className="text-emerald-400 font-medium">ID Verified</span> and <span className="text-purple-400 font-medium">Edu Verified</span>). Your actual document files, CNIC numbers, or certificate scans are never shown to any other user or family.</li>
+            <li><strong className="text-slate-200">Automated Storage Retention & Purging:</strong> To uphold data minimization and prevent unnecessary retention of sensitive personal identity documents, raw document images are scheduled for automatic disk purging following verification approval. User verification trust badges remain permanently active even after underlying source files have been purged.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-base text-white mb-2">5. Two-Way Controlled Contact Release</h3>
           <p>
             Contact details (mobile phone, email, and name) are strictly unlocked <strong className="text-white">ONLY</strong> when:
           </p>
@@ -288,9 +302,9 @@ export function PrivacyPolicyPage() {
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-white mb-2">5. Data Retention & Deletion Rights</h3>
+          <h3 className="font-bold text-base text-white mb-2">6. Data Retention & Deletion Rights</h3>
           <p>
-            Users reserve the complete right to update, hide, or permanently delete their profiles from our database at any time through their account dashboard or by writing to <strong className="text-magenta-400">support@raabtanow.com</strong>.
+            Users reserve the complete right to update, hide, or permanently delete their profiles and associated verification submissions from our database at any time through their account dashboard or by writing to <strong className="text-magenta-400">support@raabtanow.com</strong>. Upon profile deletion, all pending documents are securely unlinked and erased.
           </p>
         </div>
 
@@ -333,23 +347,30 @@ export function TermsPage() {
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-white mb-2">3. Fees & Payment Terms</h3>
+          <h3 className="font-bold text-base text-white mb-2">3. Identity & Credential Verification</h3>
           <p>
-            Registration, browsing, profile creation, and receiving connection requests are completely free of charge. A standard micro-fee of <strong className="text-white">Rs. 300 PKR</strong> is levied only on the proposal initiator upon mutual proposal acceptance to unlock verified contact details and finance two-way SMS OTP infrastructure.
+            Users who opt to submit National Identity Cards (CNIC) or educational credentials for verification badges warrant that all uploaded files are authentic, unaltered, and belong strictly to the registered candidate. Uploading falsified, forged, or third-party documents is strictly prohibited under Pakistani cyber laws and will result in immediate permanent account termination, badge revocation, and potential blacklisting.
           </p>
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-white mb-2">4. Code of Conduct & Respect</h3>
+          <h3 className="font-bold text-base text-white mb-2">4. Fees & Payment Terms</h3>
+          <p>
+            Registration, browsing, profile creation, and receiving connection requests are completely free of charge. A standard micro-fee of <strong className="text-white">Rs. 300 PKR</strong> is levied only on the proposal initiator upon mutual proposal acceptance to unlock verified contact details and finance two-way SMS OTP infrastructure. All electronic payments are processed securely via Safepay.
+          </p>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-base text-white mb-2">5. Code of Conduct & Respect</h3>
           <p>
             Candidates and family representatives agree to communicate with courtesy, modesty, and mutual respect. Any harassment, inappropriate language, fraudulent behavior, or commercial spam will lead to instant account suspension and blacklist.
           </p>
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-white mb-2">5. Disclaimer of Matrimonial Guarantee</h3>
+          <h3 className="font-bold text-base text-white mb-2">6. Disclaimer of Matrimonial Guarantee</h3>
           <p>
-            While RaabtaNow verifies email and phone numbers via SMS OTP, families are urged to conduct standard, thorough family background checks and due diligence prior to formalizing wedding engagements.
+            While RaabtaNow verifies email and phone numbers via SMS OTP and validates submitted CNIC credentials, families are urged to conduct standard, thorough family background checks and customary due diligence prior to formalizing wedding engagements.
           </p>
         </div>
 

@@ -7,6 +7,7 @@ import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
 import { User, Mail, ShieldCheck, Clock, CheckCircle2, AlertTriangle, Sparkles, LogOut, ArrowRight, KeyRound } from 'lucide-react';
 import SEOHead from '../../components/seo/SEOHead';
+import VerificationSection from '../../components/profile/VerificationSection';
 
 export default function DashboardPage() {
   const { user, emailVerified, logout } = useAuth();
@@ -167,6 +168,9 @@ export default function DashboardPage() {
           </Card>
         </div>
       </div>
+
+      {/* Trust & Verification Badges Section */}
+      <VerificationSection />
     </div>
   );
 }

@@ -25,4 +25,15 @@ export const adminApi = {
   // Payments & Unlocks
   getPayments: (params) => api.get('/admin/payments', { params }).then(r => r.data.data),
   getUnlocks: (params) => api.get('/admin/unlocks', { params }).then(r => r.data.data),
+
+  // Verifications
+  getVerifications: (params) => api.get('/admin/verifications', { params }).then(r => r.data.data),
+  getVerification: (id) => api.get(`/admin/verifications/${id}`).then(r => r.data.data),
+  approveVerification: (id) => api.post(`/admin/verifications/${id}/approve`).then(r => r.data),
+  rejectVerification: (id, reason) => api.post(`/admin/verifications/${id}/reject`, { reason }).then(r => r.data),
+  getDocumentUrl: (id, side = 'front') => `/api/admin/verifications/${id}/document/${side}`,
+  getDocumentBlob: (id, side = 'front') => api.get(`/admin/verifications/${id}/document/${side}`, {
+    responseType: 'blob',
+  }),
+  purgeDocuments: (days = 30) => api.post('/admin/verifications/purge', { days }).then(r => r.data),
 };

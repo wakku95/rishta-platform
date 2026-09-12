@@ -89,4 +89,57 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Payment::class);
     }
+
+    /**
+     * Get all profile verifications submitted by the user.
+     */
+    public function verifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProfileVerification::class);
+    }
+
+    /**
+     * Check if user has an approved identity verification.
+     */
+    public function isIdentityVerified(): bool
+    {
+        return $this->verifications()
+            ->where('type', ProfileVerification::TYPE_IDENTITY)
+            ->where('status', ProfileVerification::STATUS_APPROVED)
+            ->exists();
+    }
+
+    /**
+     * Check if user has an approved education verification.
+     */
+    public function isEducationVerified(): bool
+    {
+        return $this->verifications()
+            ->where('type', ProfileVerification::TYPE_EDUCATION)
+            ->where('status', ProfileVerification::STATUS_APPROVED)
+            ->exists();
+    }
+
+    /**
+     * Get latest identity verification record.
+     */
+    public function latestIdentityVerification(): ?ProfileVerification
+    {
+        return $this->verifications()
+            ->where('type', ProfileVerification::TYPE_IDENTITY)
+            ->latest('id')
+            ->first();
+    }
+
+    /**
+     * Get latest education verification record.
+     */
+    public function latestEducationVerification(): ?ProfileVerification
+    {
+        return $this->verifications()
+            ->where('type', ProfileVerification::TYPE_EDUCATION)
+            ->latest('id')
+            ->first();
+    }
 }
+

@@ -30,6 +30,8 @@ class PublicProfileResource extends JsonResource
             'profile_status' => $this->profile_status,
             'verifications' => [
                 'email_verified' => $this->user ? $this->user->hasVerifiedEmail() : false,
+                'identity_verified' => $this->user ? $this->user->isIdentityVerified() : false,
+                'education_verified' => $this->user ? $this->user->isEducationVerified() : false,
             ],
         ];
     }

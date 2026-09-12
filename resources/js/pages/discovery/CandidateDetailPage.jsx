@@ -270,9 +270,21 @@ export default function CandidateDetailPage() {
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 Matrimonial Biodata
               </span>
-              {profile.verifications?.email_verified && (
-                <Badge variant="success" size="sm" className="inline-flex items-center gap-1 text-[11px]">
+              {profile.verifications?.identity_verified && (
+                <Badge variant="success" size="sm" className="inline-flex items-center gap-1 text-[11px] bg-emerald-500/20 text-emerald-300 border-emerald-500/40">
                   <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>Identity Verified</span>
+                </Badge>
+              )}
+              {profile.verifications?.education_verified && (
+                <Badge variant="success" size="sm" className="inline-flex items-center gap-1 text-[11px] bg-purple-500/20 text-purple-300 border-purple-500/40">
+                  <GraduationCap className="w-3.5 h-3.5" />
+                  <span>Education Verified</span>
+                </Badge>
+              )}
+              {profile.verifications?.email_verified && (
+                <Badge variant="secondary" size="sm" className="inline-flex items-center gap-1 text-[11px] bg-slate-800/80 text-slate-300 border-slate-700/80">
+                  <ShieldCheck className="w-3.5 h-3.5 text-slate-400" />
                   <span>Email Verified</span>
                 </Badge>
               )}

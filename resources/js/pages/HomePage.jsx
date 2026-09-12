@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -26,7 +26,6 @@ import Badge from '../components/ui/Badge';
 import Alert from '../components/ui/Alert';
 import ScrollReveal from '../components/ui/ScrollReveal';
 import SEOHead from '../components/seo/SEOHead';
-import api from '../api/client';
 import useAuth from '../hooks/useAuth';
 
 export default function HomePage() {
@@ -37,9 +36,6 @@ export default function HomePage() {
   const [lookingFor, setLookingFor] = useState('female');
   const [selectedCity, setSelectedCity] = useState('');
   const [ageRange, setAgeRange] = useState('21-30');
-
-  const [healthData, setHealthData] = useState(null);
-  const [healthLoading, setHealthLoading] = useState(true);
   const [openFaq, setOpenFaq] = useState(0);
 
   const faqItems = [
@@ -64,17 +60,6 @@ export default function HomePage() {
       a: 'Absolutely. RaabtaNow was specifically engineered to respect Pakistani family traditions. Profiles can be registered and managed directly by candidates, parents, elder siblings, or guardians who desire a dignified, respectful, and halal search process.',
     },
   ];
-
-  useEffect(() => {
-    api.get('/health')
-      .then((res) => {
-        setHealthData(res.data.data);
-        setHealthLoading(false);
-      })
-      .catch(() => {
-        setHealthLoading(false);
-      });
-  }, []);
 
   const handleHeroSearch = (e) => {
     e.preventDefault();
@@ -656,45 +641,6 @@ export default function HomePage() {
         </ScrollReveal>
       </section>
 
-      {/* =========================================================================
-          SYSTEM STATUS & ENVIRONMENT (Preserving backend verification)
-          ========================================================================= */}
-      {healthData && (
-        <ScrollReveal animation="fade-up" duration={500}>
-          <section className="max-w-2xl mx-auto">
-            <Card
-              title="System & API Environment"
-              subtitle="Real-time Laravel 12 API status and Phase 1-5 service drivers"
-              action={
-                <Badge variant={healthData.status === 'healthy' ? 'success' : 'warning'} size="md">
-                  {healthData.status === 'healthy' ? 'API Online' : 'API Connecting'}
-                </Badge>
-              }
-            >
-              <div className="space-y-4 text-xs">
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-navy-850 p-4 rounded-xl border border-slate-800">
-                  <div>
-                    <span className="text-slate-400 font-bold block uppercase text-[10px]">Framework</span>
-                    <span className="font-bold text-white">Laravel 12 ({healthData.version})</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 font-bold block uppercase text-[10px]">Unlock Fee</span>
-                    <span className="font-bold text-amber-300">Rs. {healthData.services?.unlock_fee} {healthData.services?.currency}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 font-bold block uppercase text-[10px]">Payment</span>
-                    <span className="font-mono text-slate-300">{healthData.services?.payment_driver}</span>
-                  </div>
-                  <div>
-                    <span className="text-slate-400 font-bold block uppercase text-[10px]">SMS Driver</span>
-                    <span className="font-mono text-slate-300">{healthData.services?.sms_driver}</span>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </section>
-        </ScrollReveal>
-      )}
 
       {/* =========================================================================
           FREQUENTLY ASKED QUESTIONS (Authentic SEO & Family Clarity)

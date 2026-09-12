@@ -40,7 +40,7 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-6 pt-20 sm:pt-24 pb-8 overflow-y-auto"
       role="dialog"
       aria-modal="true"
     >
@@ -52,7 +52,7 @@ export default function Modal({
       />
 
       {/* Modal Card */}
-      <div className={`relative w-full ${maxWidth} bg-navy-800 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/80 z-10 overflow-hidden my-8 animate-in fade-in zoom-in-95 duration-150`}>
+      <div className={`relative w-full ${maxWidth} bg-navy-800 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/80 z-10 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150`}>
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-750/70 bg-navy-850/50 flex items-center justify-between">
           <div>

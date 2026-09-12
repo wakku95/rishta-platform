@@ -176,7 +176,12 @@ class AdminUserController extends Controller
             // Revoke tokens
             $user->tokens()->delete();
 
-            // Finally delete user record
+            // Safely delete stored private verification documents to avoid storage leakage
+            foreach ($user->verifications as $verification) {
+                $verification->deleteStoredDocuments();
+            }
+
+            // Finally delete user record (verifications foreign key will set null or cascade according to DB)
             $user->delete();
         });
 

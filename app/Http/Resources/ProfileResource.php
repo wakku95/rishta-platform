@@ -34,6 +34,11 @@ class ProfileResource extends JsonResource
             'profile_status' => $this->profile_status,
             'completion_percentage' => $this->calculateCompletionPercentage(),
             'preferences' => new ProfilePreferenceResource($this->whenLoaded('preferences')),
+            'verifications' => [
+                'email_verified' => $this->user ? $this->user->hasVerifiedEmail() : false,
+                'identity_verified' => $this->user ? $this->user->isIdentityVerified() : false,
+                'education_verified' => $this->user ? $this->user->isEducationVerified() : false,
+            ],
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];
