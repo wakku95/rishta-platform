@@ -59,11 +59,9 @@ export default function ForgotPasswordPage() {
               <Alert variant="success" title="Reset Link Dispatched">
                 {successMessage}
               </Alert>
-              <div className="p-4 rounded-xl bg-navy-750 border border-slate-700 text-xs text-slate-300 text-left space-y-2">
-                <p className="font-semibold text-white">Next Steps for Testing:</p>
-                <p>1. In development, email is logged to <code className="bg-navy-900 border border-slate-700 px-1.5 py-0.5 rounded text-magenta-300 font-mono">storage/logs/laravel.log</code>.</p>
-                <p>2. Copy the reset link from the log to test password completion.</p>
-              </div>
+              <p className="text-xs text-slate-300">
+                Please check your email inbox and spam folder for the password reset instructions.
+              </p>
               <Link to="/login" className="block w-full">
                 <Button variant="secondary" size="lg" className="w-full justify-center">
                   Return to Sign In

@@ -139,15 +139,6 @@ export default function VerifyEmailPage() {
                 </Alert>
               )}
 
-              {/* Development Testing Hint */}
-              <div className="p-3.5 rounded-xl bg-amber-950/30 border border-amber-500/30 text-xs text-amber-200 leading-relaxed space-y-1">
-                <p className="font-bold text-amber-300">Development Testing Note:</p>
-                <p>Since mail is configured to the log driver in development, the verification link is saved in:</p>
-                <code className="block bg-navy-900/80 border border-amber-900/50 p-1.5 rounded font-mono text-[11px] text-amber-300 break-all">
-                  storage/logs/laravel.log
-                </code>
-              </div>
-
               <div className="pt-2 flex flex-col gap-3">
                 <Button
                   type="button"
