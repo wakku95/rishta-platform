@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { MapPin, GraduationCap, Briefcase, Ruler, ShieldCheck, HeartHandshake, Eye, Bookmark } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import { addToShortlist, removeFromShortlist } from '../../api/shortlist';
+import useAuth from '../../hooks/useAuth';
 
 /**
  * Matrimonial candidate summary card for search discovery results.
@@ -13,12 +14,20 @@ import { addToShortlist, removeFromShortlist } from '../../api/shortlist';
 export default function ProfileCard({ profile, isInitiallyShortlisted = false, onShortlistChange }) {
   if (!profile) return null;
 
+  const navigate = useNavigate();
+  const { authenticated } = useAuth();
   const [isShortlisted, setIsShortlisted] = useState(isInitiallyShortlisted);
   const [loadingShortlist, setLoadingShortlist] = useState(false);
 
   const handleToggleShortlist = async (e) => {
     e.preventDefault();
     e.stopPropagation();
+
+    if (!authenticated) {
+      navigate(`/register?redirect=${encodeURIComponent(`/profiles/${profile.profile_code}`)}`);
+      return;
+    }
+
     if (loadingShortlist) return;
 
     setLoadingShortlist(true);

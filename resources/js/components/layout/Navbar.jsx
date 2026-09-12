@@ -9,7 +9,7 @@ export default function Navbar() {
   const location = useLocation();
   const { user, authenticated, logout } = useAuth();
 
-  const navLinks = authenticated
+  const desktopNavLinks = authenticated
     ? [
         { name: 'Find Matches', href: '/search' },
         { name: 'Requests', href: '/requests' },
@@ -17,7 +17,7 @@ export default function Navbar() {
         { name: 'My Profile', href: '/profile' },
       ]
     : [
-        { name: 'Home', href: '/' },
+        { name: 'Find Matches', href: '/search' },
         { name: 'How It Works', href: '/how-it-works' },
         { name: 'Pricing', href: '/pricing' },
         { name: 'About', href: '/about' },
@@ -35,7 +35,7 @@ export default function Navbar() {
         { name: 'About', href: '/about' },
       ]
     : [
-        { name: 'Home', href: '/' },
+        { name: 'Find Matches', href: '/search' },
         { name: 'How It Works', href: '/how-it-works' },
         { name: 'Pricing', href: '/pricing' },
         { name: 'About', href: '/about' },
@@ -63,7 +63,7 @@ export default function Navbar() {
 
           {/* Desktop Navigation Links */}
           <nav className="hidden md:flex items-center gap-1.5 text-sm font-medium">
-            {navLinks.map((link) => {
+            {desktopNavLinks.map((link) => {
               const isActive = location.pathname === link.href;
               return (
                 <Link

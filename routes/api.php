@@ -68,9 +68,11 @@ Route::middleware('auth:sanctum')->prefix('profile')->group(function () {
 | Discovery & Candidate Search Routes (/api/discovery)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth:sanctum')->prefix('discovery')->group(function () {
-    Route::get('/profiles', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'index']);
-    Route::get('/profiles/{profile_code}', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'show']);
+Route::prefix('discovery')->group(function () {
+    Route::get('/profiles', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'index'])
+        ->middleware('throttle:60,1');
+    Route::get('/profiles/{profile_code}', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'show'])
+        ->middleware('throttle:60,1');
 });
 
 /*

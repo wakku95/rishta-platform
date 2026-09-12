@@ -21,39 +21,44 @@ class DiscoveryController extends Controller
      */
     public function index(SearchProfilesRequest $request): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
 
-        // 1. Email verification enforcement
-        if (!$user->hasVerifiedEmail()) {
-            return $this->errorResponse(
-                'Your email address must be verified before accessing profile discovery.',
-                ['email' => ['Email verification is required to discover candidate profiles.']],
-                Response::HTTP_FORBIDDEN,
-                'EMAIL_NOT_VERIFIED'
-            );
+        // 1. If authenticated, enforce email verification and active status
+        if ($user) {
+            if (!$user->hasVerifiedEmail()) {
+                return $this->errorResponse(
+                    'Your email address must be verified before accessing profile discovery.',
+                    ['email' => ['Email verification is required to discover candidate profiles.']],
+                    Response::HTTP_FORBIDDEN,
+                    'EMAIL_NOT_VERIFIED'
+                );
+            }
+
+            if ($user->status === 'suspended') {
+                return $this->errorResponse(
+                    'Your account has been suspended.',
+                    [],
+                    Response::HTTP_FORBIDDEN,
+                    'ACCOUNT_SUSPENDED'
+                );
+            }
         }
 
-        // 2. Account suspension enforcement
-        if ($user->status === 'suspended') {
-            return $this->errorResponse(
-                'Your account has been suspended.',
-                [],
-                Response::HTTP_FORBIDDEN,
-                'ACCOUNT_SUSPENDED'
-            );
-        }
-
-        // 3. Base Query: Active profiles, excluding current user, excluding suspended/unverified users
+        // 2. Base Query: Active profiles, excluding suspended/unverified users
         $query = Profile::query()
             ->with('user')
             ->where('profile_status', 'active')
-            ->where('user_id', '!=', $user->id)
             ->whereHas('user', function ($q) {
                 $q->where('status', '!=', 'suspended')
                     ->whereNotNull('email_verified_at');
             });
 
-        // 4. Demographic Filters
+        // Exclude current user's own profile if authenticated
+        if ($user) {
+            $query->where('user_id', '!=', $user->id);
+        }
+
+        // 3. Demographic Filters
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }
@@ -134,29 +139,30 @@ class DiscoveryController extends Controller
      */
     public function show(Request $request, string $profile_code): JsonResponse
     {
-        $user = $request->user();
+        $user = $request->user('sanctum');
 
-        // 1. Email verification enforcement
-        if (!$user->hasVerifiedEmail()) {
-            return $this->errorResponse(
-                'Your email address must be verified before accessing profile details.',
-                ['email' => ['Email verification is required to view candidate profiles.']],
-                Response::HTTP_FORBIDDEN,
-                'EMAIL_NOT_VERIFIED'
-            );
+        // 1. If authenticated, enforce email verification and account status
+        if ($user) {
+            if (!$user->hasVerifiedEmail()) {
+                return $this->errorResponse(
+                    'Your email address must be verified before accessing profile details.',
+                    ['email' => ['Email verification is required to view candidate profiles.']],
+                    Response::HTTP_FORBIDDEN,
+                    'EMAIL_NOT_VERIFIED'
+                );
+            }
+
+            if ($user->status === 'suspended') {
+                return $this->errorResponse(
+                    'Your account has been suspended.',
+                    [],
+                    Response::HTTP_FORBIDDEN,
+                    'ACCOUNT_SUSPENDED'
+                );
+            }
         }
 
-        // 2. Account suspension enforcement
-        if ($user->status === 'suspended') {
-            return $this->errorResponse(
-                'Your account has been suspended.',
-                [],
-                Response::HTTP_FORBIDDEN,
-                'ACCOUNT_SUSPENDED'
-            );
-        }
-
-        // 3. Retrieve active profile
+        // 2. Retrieve active profile
         $profile = Profile::query()
             ->with('user')
             ->where('profile_code', $profile_code)
@@ -176,7 +182,24 @@ class DiscoveryController extends Controller
             );
         }
 
-        // Viewer context: shortlist status and active rishta request
+        $profileData = (new PublicProfileResource($profile))->toArray($request);
+
+        // 3. Viewer context: If guest, mark requires_auth: true and provide empty viewer context
+        if (!$user) {
+            $profileData['viewer_context'] = [
+                'is_guest' => true,
+                'is_shortlisted' => false,
+                'active_request' => null,
+                'daily_requests_remaining' => 0,
+            ];
+
+            return $this->successResponse(
+                $profileData,
+                'Candidate profile teaser retrieved successfully.'
+            );
+        }
+
+        // 4. Authenticated viewer context: shortlist status and active rishta request
         $isShortlisted = \App\Models\Shortlist::where('user_id', $user->id)
             ->where('profile_id', $profile->id)
             ->exists();
@@ -207,8 +230,8 @@ class DiscoveryController extends Controller
             ->where('created_at', '>=', \Illuminate\Support\Carbon::now()->startOfDay())
             ->count();
 
-        $profileData = (new PublicProfileResource($profile))->toArray($request);
         $profileData['viewer_context'] = [
+            'is_guest' => false,
             'is_shortlisted' => $isShortlisted,
             'active_request' => $activeRequestData,
             'daily_requests_remaining' => max(0, 3 - $todayRequestsCount),

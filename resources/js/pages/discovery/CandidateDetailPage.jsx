@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import {
   ArrowLeft,
   ShieldCheck,
@@ -17,6 +17,8 @@ import {
   XCircle,
   Clock,
   Heart,
+  UserPlus,
+  Sparkles,
 } from 'lucide-react';
 import { getPublicProfile } from '../../api/discovery';
 import { addToShortlist, removeFromShortlist } from '../../api/shortlist';
@@ -29,9 +31,12 @@ import Alert from '../../components/ui/Alert';
 import Modal from '../../components/ui/Modal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import ContactUnlockModal from '../../components/requests/ContactUnlockModal';
+import useAuth from '../../hooks/useAuth';
 
 export default function CandidateDetailPage() {
   const { profileCode } = useParams();
+  const navigate = useNavigate();
+  const { user, authenticated } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -82,6 +87,11 @@ export default function CandidateDetailPage() {
   };
 
   const handleToggleShortlist = async () => {
+    if (!authenticated) {
+      navigate(`/register?redirect=${encodeURIComponent(`/profiles/${profileCode}`)}`);
+      return;
+    }
+
     if (shortlistLoading) return;
     setShortlistLoading(true);
     try {
@@ -97,6 +107,14 @@ export default function CandidateDetailPage() {
     } finally {
       setShortlistLoading(false);
     }
+  };
+
+  const handleInitiateRequestClick = () => {
+    if (!authenticated) {
+      navigate(`/register?redirect=${encodeURIComponent(`/profiles/${profileCode}`)}`);
+      return;
+    }
+    setShowSendModal(true);
   };
 
   const handleSendRequest = async () => {
@@ -330,7 +348,7 @@ export default function CandidateDetailPage() {
                 variant="primary"
                 size="sm"
                 icon={Send}
-                onClick={() => setShowSendModal(true)}
+                onClick={handleInitiateRequestClick}
                 className="font-bold w-full sm:w-auto shadow-md"
               >
                 Send Rishta Request
@@ -445,6 +463,38 @@ export default function CandidateDetailPage() {
           </div>
         </div>
       </Card>
+
+      {/* Guest Conversion Teaser Banner */}
+      {!authenticated && (
+        <Card className="p-6 sm:p-8 bg-gradient-to-r from-magenta-950/70 via-purple-950/60 to-navy-900 border border-magenta-500/40 shadow-2xl rounded-2xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
+            <div className="space-y-1.5">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-magenta-500/20 text-magenta-300 text-xs font-bold border border-magenta-500/30">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Free Matrimonial Registration</span>
+              </div>
+              <h3 className="font-serif text-lg sm:text-xl font-extrabold text-white">
+                Connect with Candidate #{profile.profile_code}
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                Register a free profile to shortlist this candidate, view their complete compatibility criteria, and send a formal halal Rishta proposal.
+              </p>
+            </div>
+            <div className="flex sm:flex-col gap-2 shrink-0">
+              <Link to={`/register?redirect=${encodeURIComponent(`/profiles/${profile.profile_code}`)}`}>
+                <Button variant="primary" size="md" icon={UserPlus} className="font-bold shadow-lg w-full justify-center">
+                  Register Free Profile
+                </Button>
+              </Link>
+              <Link to={`/login?redirect=${encodeURIComponent(`/profiles/${profile.profile_code}`)}`}>
+                <Button variant="outline" size="sm" className="w-full justify-center">
+                  Log In
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </Card>
+      )}
 
       {/* Private Information Protection Notice Card */}
       <Card className="p-6 sm:p-8 bg-navy-850 border border-slate-750 shadow-md rounded-2xl space-y-4">

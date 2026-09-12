@@ -53,10 +53,42 @@ class DiscoveryTest extends TestCase
     // 1. Authentication & Authorization Tests
     // ==========================================
 
-    public function test_guest_cannot_search_profiles(): void
+    public function test_guest_can_search_active_profiles(): void
     {
+        $this->createCandidate();
+
         $response = $this->getJson('/api/discovery/profiles');
-        $response->assertStatus(401);
+        $response->assertStatus(200)
+            ->assertJsonStructure([
+                'success',
+                'data' => [
+                    '*' => [
+                        'profile_code',
+                        'age',
+                        'gender',
+                        'religion',
+                        'sect',
+                        'city',
+                        'education',
+                        'profession',
+                        'marital_status',
+                        'height',
+                        'height_formatted',
+                        'managed_by',
+                        'verifications' => [
+                            'email_verified',
+                            'identity_verified',
+                            'education_verified',
+                        ],
+                    ],
+                ],
+                'meta' => [
+                    'current_page',
+                    'last_page',
+                    'per_page',
+                    'total',
+                ],
+            ]);
     }
 
     public function test_unverified_user_cannot_search_profiles(): void
@@ -418,12 +450,24 @@ class DiscoveryTest extends TestCase
             ]);
     }
 
-    public function test_guest_cannot_view_public_detail(): void
+    public function test_guest_can_view_public_detail_teaser(): void
     {
         $candidate = $this->createCandidate();
 
         $response = $this->getJson('/api/discovery/profiles/' . $candidate->profile_code);
-        $response->assertStatus(401);
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'profile_code' => $candidate->profile_code,
+                    'viewer_context' => [
+                        'is_guest' => true,
+                        'is_shortlisted' => false,
+                        'active_request' => null,
+                        'daily_requests_remaining' => 0,
+                    ],
+                ],
+            ]);
     }
 
     public function test_unverified_user_cannot_view_public_detail(): void

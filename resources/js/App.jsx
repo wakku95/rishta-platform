@@ -86,10 +86,12 @@ export default function App() {
               <Route path="profile/preferences" element={<EditPreferencesPage />} />
             </Route>
 
-            {/* Discovery & Shortlist & Requests routes (requires verified email) */}
+            {/* Public Discovery & Candidate Teaser */}
+            <Route path="search" element={<SearchProfilesPage />} />
+            <Route path="profiles/:profileCode" element={<CandidateDetailPage />} />
+
+            {/* Shortlist & Requests routes (strictly requires verified email) */}
             <Route element={<VerifiedRoute />}>
-              <Route path="search" element={<SearchProfilesPage />} />
-              <Route path="profiles/:profileCode" element={<CandidateDetailPage />} />
               <Route path="shortlist" element={<ShortlistPage />} />
               <Route path="requests" element={<RequestsPage />} />
             </Route>
