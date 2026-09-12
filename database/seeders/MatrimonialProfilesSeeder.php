@@ -74,9 +74,9 @@ class MatrimonialProfilesSeeder extends Seeder
             $age = rand(21, 38);
             $dob = Carbon::now()->subYears($age)->subDays(rand(1, 350))->format('Y-m-d');
 
-            $randomSuffix = rand(1000, 99999);
-            $emailSafeName = strtolower(preg_replace('/[^a-z0-9]/', '', $firstName . $lastName));
-            $email = "{$emailSafeName}{$randomSuffix}@example.com";
+            // Distinct, non-colliding dummy email reserved for platform seed demo profiles
+            $emailSafeName = strtolower(preg_replace('/[^a-z0-9]/', '', $firstName . '.' . $lastName));
+            $email = "dummy.{$emailSafeName}.{$i}@seed.raabtanow.com";
 
             // Create verified active user
             $user = User::create([
