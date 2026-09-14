@@ -214,6 +214,89 @@ class ProfileTest extends TestCase
         ]);
     }
 
+    public function test_authenticated_user_cannot_change_gender_once_profile_is_created(): void
+    {
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-GENDERTEST',
+            'gender' => 'female',
+            'date_of_birth' => '1998-02-20',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Islamabad',
+            'education' => "Bachelor's",
+            'profession' => 'Medical / Healthcare',
+            'marital_status' => 'never_married',
+            'height' => 163,
+            'managed_by' => 'parent',
+            'profile_status' => 'draft',
+        ]);
+
+        $response = $this->actingAs($user)->postJson('/api/profile', [
+            'gender' => 'male', // Attempting to alter gender
+            'date_of_birth' => '1998-02-20',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Islamabad',
+            'education' => "Bachelor's",
+            'profession' => 'Medical / Healthcare',
+            'marital_status' => 'never_married',
+            'height' => 163,
+            'managed_by' => 'parent',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJson([
+                'success' => false,
+                'error_code' => 'GENDER_LOCKED',
+            ]);
+
+        $this->assertEquals('female', $profile->fresh()->gender);
+    }
+
+    public function test_admin_can_update_candidate_gender_upon_verified_request(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['role' => 'user']);
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-ADMINGENDER',
+            'gender' => 'male',
+            'date_of_birth' => '1995-05-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Engineering',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'profile_status' => 'active',
+        ]);
+
+        // Non-admin cannot call admin gender endpoint
+        $forbidden = $this->actingAs($user)->postJson("/api/admin/profiles/{$profile->id}/gender", [
+            'gender' => 'female',
+        ]);
+        $forbidden->assertStatus(403);
+
+        // Admin can call endpoint
+        $response = $this->actingAs($admin)->postJson("/api/admin/profiles/{$profile->id}/gender", [
+            'gender' => 'female',
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'gender' => 'female',
+                ],
+            ]);
+
+        $this->assertEquals('female', $profile->fresh()->gender);
+    }
+
     public function test_profile_validation_rejects_underage_candidate(): void
     {
         $user = User::factory()->create();

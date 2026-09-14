@@ -94,6 +94,35 @@ class AdminProfileController extends Controller
     }
 
     /**
+     * Administratively update candidate gender upon verified user request with proof.
+     */
+    public function updateGender(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'gender' => 'required|in:male,female',
+        ]);
+
+        $profile = Profile::find($id);
+
+        if (!$profile) {
+            return $this->errorResponse('Profile not found.', [], Response::HTTP_NOT_FOUND, 'PROFILE_NOT_FOUND');
+        }
+
+        $oldGender = $profile->gender;
+        $newGender = $request->input('gender');
+
+        $profile->update(['gender' => $newGender]);
+
+        \Illuminate\Support\Facades\Log::info("[Admin] Profile #{$profile->profile_code} gender administratively modified from {$oldGender} to {$newGender} by admin user #{$request->user()->id}");
+
+        return $this->successResponse([
+            'id' => $profile->id,
+            'profile_code' => $profile->profile_code,
+            'gender' => $profile->gender,
+        ], "Candidate gender successfully updated to [{$newGender}].");
+    }
+
+    /**
      * Permanently delete profile.
      */
     public function destroy(int $id): JsonResponse

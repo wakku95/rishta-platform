@@ -97,6 +97,15 @@ class ProfileController extends Controller
             $data['profile_status'] = 'draft';
             $profile = Profile::create($data);
         } else {
+            // Gender is immutable once set. Only Admin can update gender upon verified user request.
+            if (isset($data['gender']) && $data['gender'] !== $profile->gender) {
+                return $this->errorResponse(
+                    'Candidate gender cannot be modified once set. Please contact RaabtaNow Support if you require an administrative correction.',
+                    ['gender' => ['Candidate gender cannot be modified once set.']],
+                    Response::HTTP_UNPROCESSABLE_ENTITY,
+                    'GENDER_LOCKED'
+                );
+            }
             $profile->update($data);
         }
 

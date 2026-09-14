@@ -16,6 +16,7 @@ export const adminApi = {
   getProfiles: (params) => api.get('/admin/profiles', { params }).then(r => r.data.data),
   getProfile: (id) => api.get(`/admin/profiles/${id}`).then(r => r.data.data),
   updateProfileStatus: (id, status) => api.post(`/admin/profiles/${id}/status`, { profile_status: status }).then(r => r.data),
+  updateProfileGender: (id, gender) => api.post(`/admin/profiles/${id}/gender`, { gender }).then(r => r.data),
   deleteProfile: (id) => api.delete(`/admin/profiles/${id}`).then(r => r.data),
 
   // Requests

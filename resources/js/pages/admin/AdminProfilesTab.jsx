@@ -268,9 +268,31 @@ export default function AdminProfilesTab() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5">
-                <span className="text-slate-400 block mb-1">Gender & Age</span>
-                <span className="font-semibold text-white capitalize">{selectedProfile.gender}</span>
+              <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5 space-y-1">
+                <span className="text-slate-400 block">Gender & Age</span>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={selectedProfile.gender}
+                    onChange={async (e) => {
+                      const newG = e.target.value;
+                      if (window.confirm(`Are you sure you want to administratively change gender to ${newG}?`)) {
+                        try {
+                          await adminApi.updateProfileGender(selectedProfile.id, newG);
+                          setSelectedProfile(prev => ({ ...prev, gender: newG }));
+                          setMessage({ type: 'success', text: `Profile gender updated to ${newG}.` });
+                          fetchProfiles(pagination.current_page);
+                        } catch (err) {
+                          alert(err.response?.data?.message || 'Failed to update gender.');
+                        }
+                      }
+                    }}
+                    className="bg-navy-900 border border-slate-700 text-white rounded px-2 py-1 text-xs font-semibold capitalize focus:outline-none focus:ring-1 focus:ring-magenta-500"
+                  >
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                  </select>
+                  <span className="text-slate-300 font-semibold">{selectedProfile.age ? `• ${selectedProfile.age} yrs` : ''}</span>
+                </div>
               </div>
               <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5">
                 <span className="text-slate-400 block mb-1">City</span>

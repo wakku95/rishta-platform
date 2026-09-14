@@ -155,6 +155,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/profiles', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'index']);
     Route::get('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'show']);
     Route::post('/profiles/{id}/status', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateStatus']);
+    Route::post('/profiles/{id}/gender', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateGender']);
     Route::delete('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'destroy']);
 
     // Verification Review & Document Streaming

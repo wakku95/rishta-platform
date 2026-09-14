@@ -116,6 +116,7 @@ export default function EditProfilePage() {
   const [generalError, setGeneralError] = useState('');
   const [errors, setErrors] = useState({});
   const [options, setOptions] = useState(FALLBACK_OPTIONS);
+  const [isExistingProfile, setIsExistingProfile] = useState(false);
 
   const [formData, setFormData] = useState({
     gender: 'male',
@@ -150,6 +151,7 @@ export default function EditProfilePage() {
 
         if (profRes.status === 'fulfilled' && profRes.value?.data) {
           const d = profRes.value.data;
+          setIsExistingProfile(Boolean(d.id || d.profile_code));
           setFormData({
             gender: d.gender || 'male',
             date_of_birth: d.date_of_birth || '',
@@ -275,12 +277,18 @@ export default function EditProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Select
-              label="Candidate Gender"
+              label={isExistingProfile ? "Candidate Gender (Locked)" : "Candidate Gender"}
               name="gender"
               value={formData.gender}
               onChange={handleChange}
               error={errors.gender?.[0]}
               options={options.genders}
+              disabled={isExistingProfile}
+              helperText={
+                isExistingProfile
+                  ? "Gender is locked to prevent identity alterations. Please contact Support if an administrative correction is required."
+                  : undefined
+              }
               required
             />
 
