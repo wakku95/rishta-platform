@@ -25,6 +25,12 @@ export const adminApi = {
 
   // Payments & Unlocks
   getPayments: (params) => api.get('/admin/payments', { params }).then(r => r.data.data),
+  approvePayment: (id) => api.post(`/admin/payments/${id}/approve`).then(r => r.data),
+  rejectPayment: (id, reason) => api.post(`/admin/payments/${id}/reject`, { reason }).then(r => r.data),
+  getPaymentReceiptBlob: (id) => api.get(`/admin/payments/${id}/receipt`, {
+    responseType: 'blob',
+  }),
+  deletePaymentReceipt: (id) => api.delete(`/admin/payments/${id}/receipt`).then(r => r.data),
   getUnlocks: (params) => api.get('/admin/unlocks', { params }).then(r => r.data.data),
 
   // Verifications

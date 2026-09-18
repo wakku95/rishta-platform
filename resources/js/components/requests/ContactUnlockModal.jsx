@@ -11,6 +11,14 @@ import {
   ShieldCheck,
   Send,
   MessageSquare,
+  QrCode,
+  Copy,
+  Check,
+  Upload,
+  RefreshCw,
+  Maximize2,
+  ZoomIn,
+  Download,
 } from 'lucide-react';
 import Modal from '../ui/Modal';
 import Button from '../ui/Button';
@@ -25,6 +33,7 @@ import {
   sendUnlockOtp,
   verifyUnlockOtp,
   getUnlockedContact,
+  submitManualPaymentProof,
 } from '../../api/requests';
 
 export default function ContactUnlockModal({
@@ -41,6 +50,13 @@ export default function ContactUnlockModal({
 
   // Payment state
   const [paying, setPaying] = useState(false);
+  const [paymentTab, setPaymentTab] = useState('jazzcash'); // 'jazzcash' | 'safepay'
+  const [manualTid, setManualTid] = useState('');
+  const [receiptFile, setReceiptFile] = useState(null);
+  const [receiptPreview, setReceiptPreview] = useState(null);
+  const [submittingProof, setSubmittingProof] = useState(false);
+  const [copiedTill, setCopiedTill] = useState(false);
+  const [isQrZoomed, setIsQrZoomed] = useState(false);
 
   // Phone & OTP state
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -79,6 +95,10 @@ export default function ContactUnlockModal({
       setOtpCode('');
       setOtpStep('input_phone');
       setContactData(null);
+      setManualTid('');
+      setReceiptFile(null);
+      setReceiptPreview(null);
+      setPaymentTab('jazzcash');
     }
   }, [isOpen, requestCode]);
 
@@ -169,6 +189,72 @@ export default function ContactUnlockModal({
     }
   };
 
+  const handleCopyTill = (text) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedTill(true);
+      setTimeout(() => setCopiedTill(false), 2000);
+    }
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Receipt file size must be less than 5MB.');
+      return;
+    }
+
+    setReceiptFile(file);
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = () => setReceiptPreview(reader.result);
+      reader.readAsDataURL(file);
+    } else {
+      setReceiptPreview(null);
+    }
+  };
+
+  const handleSubmitManualProof = async (e) => {
+    e?.preventDefault();
+    setError(null);
+    setFeedback(null);
+
+    const cleanTid = manualTid.trim();
+    if (!/^\d{10,14}$/.test(cleanTid)) {
+      setError('Please enter a valid numeric JazzCash Transaction ID (10 to 14 digits).');
+      return;
+    }
+
+    if (!receiptFile) {
+      setError('Please upload your JazzCash payment screenshot or receipt.');
+      return;
+    }
+
+    setSubmittingProof(true);
+    try {
+      const formData = new FormData();
+      formData.append('transaction_reference', cleanTid);
+      formData.append('receipt', receiptFile);
+
+      await submitManualPaymentProof(requestCode, formData);
+      setFeedback({
+        type: 'success',
+        message: 'Payment proof submitted successfully! It is now pending admin verification.',
+      });
+      setManualTid('');
+      setReceiptFile(null);
+      setReceiptPreview(null);
+      await loadStatus();
+    } catch (err) {
+      console.error('Failed to submit manual payment proof:', err);
+      setError(err.response?.data?.message || 'Failed to submit payment proof. Please try again.');
+    } finally {
+      setSubmittingProof(false);
+    }
+  };
+
   const handleSendOtp = async (e) => {
     e?.preventDefault();
     if (!phoneNumber) return;
@@ -223,7 +309,8 @@ export default function ContactUnlockModal({
   const isSender = status?.my_role === 'sender';
 
   return (
-    <Modal
+    <>
+      <Modal
       isOpen={isOpen}
       onClose={onClose}
       title={
@@ -374,21 +461,274 @@ export default function ContactUnlockModal({
                 </div>
 
                 {isSender ? (
-                  <div className="pt-2 space-y-3">
-                    <div className="flex items-center justify-between text-xs bg-navy-800 p-3 rounded-xl border border-slate-700">
-                      <span className="text-slate-400 font-semibold">Initiator (You):</span>
-                      <span className="font-extrabold text-amber-300 text-sm">Rs. 300.00 PKR</span>
-                    </div>
+                  <div className="pt-2 space-y-4">
+                    {/* CASE A: PENDING ADMIN VERIFICATION */}
+                    {status?.pending_payment ? (
+                      <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <Clock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
+                          <div className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <h5 className="font-bold text-sm text-white">Payment Proof Submitted</h5>
+                              <Badge variant="warning" size="sm">Pending Verification</Badge>
+                            </div>
+                            <p className="text-xs text-amber-200/90 leading-relaxed">
+                              Your JazzCash payment proof has been received and is currently pending admin verification.
+                              Payments are typically reviewed within a few hours during business hours.
+                            </p>
+                          </div>
+                        </div>
 
-                    <Button
-                      variant="primary"
-                      className="w-full font-bold shadow-md"
-                      loading={paying}
-                      onClick={handleInitiateAndVerifyPayment}
-                      icon={CreditCard}
-                    >
-                      Pay Rs. 300 & Unlock Phone Verification
-                    </Button>
+                        <div className="bg-navy-900/80 p-3 rounded-lg border border-amber-500/20 text-xs space-y-1.5 font-mono">
+                          <div className="flex justify-between text-slate-300">
+                            <span>JazzCash TID:</span>
+                            <span className="font-bold text-white">{status.pending_payment.transaction_reference}</span>
+                          </div>
+                          {status.pending_payment.created_at && (
+                            <div className="flex justify-between text-slate-400 text-[11px]">
+                              <span>Submitted:</span>
+                              <span>{new Date(status.pending_payment.created_at).toLocaleString()}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="pt-1 flex items-center justify-between">
+                          <span className="text-[11px] text-slate-400 italic">
+                            Once approved, Step 2 (Phone OTP) will unlock automatically.
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={RefreshCw}
+                            onClick={loadStatus}
+                            isLoading={loading}
+                          >
+                            Check Status
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* CASE B: PAYMENT SUBMISSION REQUIRED OR RE-SUBMISSION */
+                      <div className="space-y-4">
+                        {status?.rejected_payment && (
+                          <div className="p-3.5 rounded-xl border border-rose-500/40 bg-rose-500/10 flex items-start gap-2.5 text-xs text-rose-200">
+                            <AlertCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+                            <div>
+                              <strong className="text-white block font-semibold mb-0.5">Previous Payment Proof Rejected:</strong>
+                              <p>{status.rejected_payment.admin_notes || 'Transaction reference could not be verified. Please re-check and submit valid proof.'}</p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Payment Method Selector Tabs */}
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block">
+                            Select Payment Method
+                          </label>
+                          <div className="grid grid-cols-2 gap-2">
+                            {/* JazzCash Option (Active) */}
+                            <button
+                              type="button"
+                              onClick={() => setPaymentTab('jazzcash')}
+                              className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                                paymentTab === 'jazzcash'
+                                  ? 'bg-magenta-500/15 border-magenta-500 text-white shadow-sm'
+                                  : 'bg-navy-800 border-slate-700 text-slate-400 hover:text-white'
+                              }`}
+                            >
+                              <QrCode className="w-4 h-4 text-amber-400 shrink-0" />
+                              <div>
+                                <div className="text-xs font-bold leading-tight">JazzCash QR / Till</div>
+                                <span className="text-[10px] text-amber-300 font-semibold">Active & Recommended</span>
+                              </div>
+                            </button>
+
+                            {/* Safepay Card Option (Disabled / Coming Soon) */}
+                            <div
+                              className="p-3 rounded-xl border border-slate-800 bg-navy-900/60 text-slate-500 cursor-not-allowed opacity-60 flex items-center gap-2.5 select-none relative overflow-hidden"
+                              title="Online card payments will be enabled upon completion of banking merchant onboarding."
+                            >
+                              <CreditCard className="w-4 h-4 shrink-0 text-slate-500" />
+                              <div>
+                                <div className="text-xs font-bold text-slate-400 leading-tight">Card / Safepay</div>
+                                <span className="text-[9px] text-slate-500 font-medium">Coming Soon</span>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Active Tab: JazzCash Details & Submission Form */}
+                        {paymentTab === 'jazzcash' && (
+                          <div className="p-4 bg-navy-900/70 border border-slate-750 rounded-xl space-y-4">
+                            {/* Account Details & QR Section */}
+                            <div className="space-y-4 pb-3 border-b border-slate-800">
+                              {/* Prominent Clickable QR Card */}
+                              <div className="flex flex-col items-center gap-2">
+                                <div
+                                  onClick={() => setIsQrZoomed(true)}
+                                  className="group relative cursor-pointer bg-white p-3 rounded-2xl shadow-xl border-2 border-amber-400/50 hover:border-amber-400 transition-all duration-200 hover:shadow-amber-500/10 hover:shadow-2xl"
+                                  title="Tap or click to enlarge QR"
+                                >
+                                  <div className="w-48 h-48 sm:w-56 sm:h-56 relative flex items-center justify-center overflow-hidden rounded-xl bg-white">
+                                    <img
+                                      src="/images/jazzcash-qr.png"
+                                      alt="JazzCash QR Code"
+                                      className="w-full h-full object-contain transition-transform duration-200 group-hover:scale-105"
+                                      onError={(e) => {
+                                        e.target.style.display = 'none';
+                                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                      }}
+                                    />
+                                    <div className="hidden flex-col items-center justify-center text-slate-800 text-xs text-center font-bold p-4">
+                                      <QrCode className="w-12 h-12 mb-2 text-slate-700" />
+                                      Scan via JazzCash App
+                                    </div>
+
+                                    {/* Hover / Touch overlay cue */}
+                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 backdrop-blur-[1px]">
+                                      <Maximize2 className="w-6 h-6" />
+                                      <span className="text-xs font-bold bg-black/60 px-2 py-1 rounded-md">Tap to Enlarge</span>
+                                    </div>
+                                  </div>
+
+                                  {/* Floating Pill Cue */}
+                                  <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-navy-900 border border-amber-400/60 text-amber-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md whitespace-nowrap">
+                                    <ZoomIn className="w-3 h-3" />
+                                    <span>Tap to Enlarge</span>
+                                  </div>
+                                </div>
+
+                                <div className="flex items-center gap-3 pt-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setIsQrZoomed(true)}
+                                    className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 transition"
+                                  >
+                                    <Maximize2 className="w-3.5 h-3.5" />
+                                    <span>View Fullscreen</span>
+                                  </button>
+                                  <span className="text-slate-600">•</span>
+                                  <a
+                                    href="/images/jazzcash-qr.png"
+                                    download="jazzcash-raabtanow-qr.png"
+                                    className="text-xs text-slate-300 hover:text-white font-semibold flex items-center gap-1 transition"
+                                    title="Save QR image to gallery for JazzCash scan"
+                                  >
+                                    <Download className="w-3.5 h-3.5 text-amber-400" />
+                                    <span>Save Image</span>
+                                  </a>
+                                </div>
+                              </div>
+
+                              {/* Payment Particulars Box */}
+                              <div className="w-full bg-navy-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2 text-xs">
+                                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                                  <span className="text-slate-400 font-medium">Exact Amount:</span>
+                                  <span className="font-extrabold text-amber-300 text-sm">Rs. 300.00 PKR</span>
+                                </div>
+
+                                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                                  <span className="text-slate-400 font-medium">Account Title:</span>
+                                  <span className="font-semibold text-white">muhammad shop</span>
+                                </div>
+
+                                <div className="flex items-center justify-between">
+                                  <span className="text-slate-400 font-medium">Till ID:</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-mono font-bold text-amber-400 text-sm tracking-wider">984453113</span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyTill('984453113')}
+                                      className={`px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
+                                        copiedTill
+                                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                          : 'bg-navy-800 hover:bg-navy-700 text-slate-200 border border-slate-600'
+                                      }`}
+                                      title="Copy Till ID"
+                                    >
+                                      {copiedTill ? (
+                                        <>
+                                          <Check className="w-3.5 h-3.5" />
+                                          <span>Copied!</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy className="w-3.5 h-3.5" />
+                                          <span>Copy</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+
+                                <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed">
+                                  💡 <strong className="text-white">Mobile Users:</strong> Copy Till ID <span className="font-mono text-amber-300 font-bold">984453113</span> and pay directly in the JazzCash App under <em>"Till Payments"</em>, or save the QR image above and tap <em>"Scan from Gallery"</em> in your JazzCash app.
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Proof Submission Form */}
+                            <form onSubmit={handleSubmitManualProof} className="space-y-3 pt-1">
+                              <div>
+                                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                                  JazzCash Transaction ID (TID) *
+                                </label>
+                                <input
+                                  type="text"
+                                  value={manualTid}
+                                  onChange={(e) => setManualTid(e.target.value.replace(/\D/g, '').slice(0, 14))}
+                                  placeholder="Enter 10 to 14 digit TID (e.g. 012345678901)"
+                                  className="w-full bg-navy-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:border-magenta-500 transition"
+                                  required
+                                />
+                                <span className="text-[10px] text-slate-400 mt-1 block">
+                                  Found in the SMS confirmation or JazzCash transaction history.
+                                </span>
+                              </div>
+
+                              <div>
+                                <label className="text-xs font-semibold text-slate-300 block mb-1">
+                                  Payment Screenshot / Receipt Proof *
+                                </label>
+                                <div className="flex items-center gap-3">
+                                  <label className="flex-1 cursor-pointer flex items-center justify-center gap-2 border border-dashed border-slate-700 hover:border-magenta-500/60 bg-navy-950/60 rounded-xl px-3 py-2.5 text-xs text-slate-300 hover:text-white transition">
+                                    <Upload className="w-4 h-4 text-slate-400" />
+                                    <span>{receiptFile ? receiptFile.name : 'Upload Screenshot (JPG, PNG, PDF max 5MB)'}</span>
+                                    <input
+                                      type="file"
+                                      accept="image/jpeg,image/png,image/webp,application/pdf"
+                                      onChange={handleFileChange}
+                                      className="hidden"
+                                    />
+                                  </label>
+                                  {receiptPreview && (
+                                    <img
+                                      src={receiptPreview}
+                                      alt="Preview"
+                                      className="w-10 h-10 object-cover rounded-lg border border-slate-700"
+                                    />
+                                  )}
+                                </div>
+                              </div>
+
+                              <Button
+                                type="submit"
+                                variant="primary"
+                                className="w-full font-bold shadow-md mt-2"
+                                isLoading={submittingProof}
+                                icon={CheckCircle}
+                              >
+                                Submit Payment Proof for Verification
+                              </Button>
+
+                              <p className="text-[11px] text-slate-400 text-center italic">
+                                Pending admin verification. Payments are typically reviewed within a few hours during business hours.
+                              </p>
+                            </form>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="p-3 bg-navy-800 border border-slate-700 rounded-xl flex items-center gap-2.5 text-xs text-slate-300">
@@ -520,5 +860,52 @@ export default function ContactUnlockModal({
         )}
       </div>
     </Modal>
+
+    {/* Zoomed QR Code Lightbox Modal */}
+    <Modal
+      isOpen={isQrZoomed}
+      onClose={() => setIsQrZoomed(false)}
+      title="JazzCash Payment QR Code"
+      subtitle="Rs. 300 PKR • muhammad shop"
+      maxWidth="max-w-md"
+    >
+      <div className="flex flex-col items-center py-2 space-y-4 text-center">
+        <div className="p-4 bg-white rounded-2xl shadow-2xl border-2 border-amber-400 inline-block">
+          <img
+            src="/images/jazzcash-qr.png"
+            alt="Enlarged JazzCash QR"
+            className="w-64 h-64 sm:w-80 sm:h-80 object-contain mx-auto"
+          />
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-sm font-bold text-white">
+            Scan with your JazzCash App
+          </p>
+          <p className="text-xs text-slate-300">
+            Till ID: <span className="font-mono font-bold text-amber-300">984453113</span> • Amount: <strong className="text-white">Rs. 300 PKR</strong>
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 pt-2 w-full justify-center">
+          <a
+            href="/images/jazzcash-qr.png"
+            download="jazzcash-raabtanow-qr.png"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-magenta-500 hover:bg-magenta-600 text-white transition shadow-md"
+          >
+            <Download className="w-4 h-4" />
+            <span>Save QR to Phone</span>
+          </a>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsQrZoomed(false)}
+          >
+            Close
+          </Button>
+        </div>
+      </div>
+    </Modal>
+  </>
   );
 }

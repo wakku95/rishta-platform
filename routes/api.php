@@ -102,6 +102,7 @@ Route::middleware('auth:sanctum')->prefix('requests')->group(function () {
 
     // Phase 5: Payment (Rs. 300 initiator payment)
     Route::post('/{request_code}/payment/initiate', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'initiate']);
+    Route::post('/{request_code}/payment/submit-proof', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'submitManualProof'])->middleware('throttle:10,1');
 
     // Phase 5: Mutual OTP verification & Contact details unlock
     Route::get('/{request_code}/unlock/status', [\App\Http\Controllers\Api\Unlock\ContactUnlockController::class, 'status']);
@@ -172,6 +173,10 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // Financial & Contact Unlock Logs
     Route::get('/payments', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'payments']);
+    Route::post('/payments/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'approvePayment']);
+    Route::post('/payments/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'rejectPayment']);
+    Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'viewReceipt']);
+    Route::delete('/payments/{id}/receipt', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'deleteReceipt']);
     Route::get('/unlocks', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'unlocks']);
 });
 

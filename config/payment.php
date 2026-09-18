@@ -49,5 +49,11 @@ return [
         'fake' => [
             'auto_approve' => env('PAYMENT_FAKE_AUTO_APPROVE', true),
         ],
+
+        'jazzcash' => [
+            'account_title' => env('JAZZCASH_ACCOUNT_TITLE', 'muhammad shop'),
+            'till_id' => env('JAZZCASH_TILL_ID', '984453113'),
+            'qr_image_url' => env('JAZZCASH_QR_IMAGE_URL', '/images/jazzcash-qr.png'),
+        ],
     ],
 ];

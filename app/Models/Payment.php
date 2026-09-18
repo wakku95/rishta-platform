@@ -26,6 +26,10 @@ class Payment extends Model
         'status',
         'gateway',
         'transaction_reference',
+        'receipt_path',
+        'admin_notes',
+        'reviewed_by',
+        'reviewed_at',
         'gateway_response',
         'paid_at',
     ];
@@ -36,6 +40,7 @@ class Payment extends Model
             'amount' => 'decimal:2',
             'gateway_response' => 'array',
             'paid_at' => 'datetime',
+            'reviewed_at' => 'datetime',
         ];
     }
 
@@ -61,6 +66,11 @@ class Payment extends Model
     public function contactUnlock(): HasOne
     {
         return $this->hasOne(ContactUnlock::class);
+    }
+
+    public function reviewedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     public function isPaid(): bool

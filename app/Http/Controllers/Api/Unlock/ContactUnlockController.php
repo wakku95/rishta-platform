@@ -85,6 +85,33 @@ class ContactUnlockController extends Controller
         $myVerified = $isSender ? (bool) $unlock?->isSenderVerified() : (bool) $unlock?->isReceiverVerified();
         $otherVerified = $isSender ? (bool) $unlock?->isReceiverVerified() : (bool) $unlock?->isSenderVerified();
 
+        $pendingPayment = null;
+        $rejectedPayment = null;
+
+        if (!$isPaid) {
+            $latestManualPayment = \App\Models\Payment::where('rishta_request_id', $rishtaRequest->id)
+                ->where('gateway', 'jazzcash_qr')
+                ->latest()
+                ->first();
+
+            if ($latestManualPayment) {
+                if ($latestManualPayment->status === \App\Models\Payment::STATUS_PENDING) {
+                    $pendingPayment = [
+                        'payment_uuid' => $latestManualPayment->payment_uuid,
+                        'transaction_reference' => $latestManualPayment->transaction_reference,
+                        'created_at' => $latestManualPayment->created_at?->toIso8601String(),
+                    ];
+                } elseif ($latestManualPayment->status === \App\Models\Payment::STATUS_FAILED) {
+                    $rejectedPayment = [
+                        'payment_uuid' => $latestManualPayment->payment_uuid,
+                        'transaction_reference' => $latestManualPayment->transaction_reference,
+                        'admin_notes' => $latestManualPayment->admin_notes,
+                        'rejected_at' => ($latestManualPayment->reviewed_at ?? $latestManualPayment->updated_at)?->toIso8601String(),
+                    ];
+                }
+            }
+        }
+
         return $this->successResponse([
             'request_code' => $rishtaRequest->request_code,
             'status' => $rishtaRequest->status,
@@ -96,6 +123,8 @@ class ContactUnlockController extends Controller
             'unlocked_at' => $unlock?->unlocked_at?->toIso8601String(),
             'my_phone' => $unlock?->{"{$role}_phone"},
             'cooldown_remaining' => $cooldownRemaining,
+            'pending_payment' => $pendingPayment,
+            'rejected_payment' => $rejectedPayment,
         ], 'Unlock status retrieved successfully.');
     }
 

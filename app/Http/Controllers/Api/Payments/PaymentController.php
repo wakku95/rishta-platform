@@ -392,4 +392,137 @@ class PaymentController extends Controller
 
         return redirect("{$frontendUrl}/dashboard/requests?request={$requestCode}&payment=success");
     }
+
+    /**
+     * Submit manual JazzCash payment proof (TID + Receipt) for admin verification.
+     * Strictly restricted to the original request sender.
+     */
+    public function submitManualProof(Request $request, string $request_code): JsonResponse
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::query()
+            ->where('request_code', $request_code)
+            ->first();
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse(
+                'The requested Rishta connection was not found.',
+                [],
+                Response::HTTP_NOT_FOUND,
+                'REQUEST_NOT_FOUND'
+            );
+        }
+
+        // Must be in ACCEPTED state
+        if ($rishtaRequest->status !== RishtaRequest::STATUS_ACCEPTED) {
+            return $this->errorResponse(
+                "Payment cannot be submitted for a request with status '{$rishtaRequest->status}'. Request must be accepted.",
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'REQUEST_NOT_ACCEPTED'
+            );
+        }
+
+        // Strict Authorization: Sender only
+        if ($user->id !== $rishtaRequest->sender_id) {
+            return $this->errorResponse(
+                'Only the original request sender is authorized to submit payment proof.',
+                [],
+                Response::HTTP_FORBIDDEN,
+                'UNAUTHORIZED_PAYMENT_INITIATOR'
+            );
+        }
+
+        // Check if already paid or unlocked
+        $alreadyPaid = Payment::where('rishta_request_id', $rishtaRequest->id)
+            ->where('status', Payment::STATUS_PAID)
+            ->exists();
+
+        if ($alreadyPaid || $rishtaRequest->contactUnlock?->unlocked_at) {
+            return $this->errorResponse(
+                'Contact unlock fee has already been paid for this connection.',
+                [],
+                Response::HTTP_BAD_REQUEST,
+                'PAYMENT_ALREADY_COMPLETED'
+            );
+        }
+
+        // Check if proof is already pending review
+        $pendingPayment = Payment::where('rishta_request_id', $rishtaRequest->id)
+            ->where('gateway', 'jazzcash_qr')
+            ->where('status', Payment::STATUS_PENDING)
+            ->first();
+
+        if ($pendingPayment) {
+            return $this->errorResponse(
+                'A payment proof has already been submitted and is currently pending admin verification.',
+                ['payment_uuid' => $pendingPayment->payment_uuid],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'PAYMENT_PROOF_ALREADY_PENDING'
+            );
+        }
+
+        $request->validate([
+            'transaction_reference' => [
+                'required',
+                'string',
+                'regex:/^\d{10,14}$/',
+            ],
+            'receipt' => [
+                'required',
+                'file',
+                'mimes:jpeg,png,jpg,webp,pdf',
+                'max:5120', // 5MB
+            ],
+        ], [
+            'transaction_reference.regex' => 'The JazzCash Transaction ID must be a numeric string between 10 and 14 digits.',
+            'receipt.mimes' => 'Receipt must be an image (JPG, PNG, WebP) or PDF document.',
+            'receipt.max' => 'Receipt file size must not exceed 5MB.',
+        ]);
+
+        $tid = trim($request->input('transaction_reference'));
+
+        // Prevent reuse of existing active/paid transaction IDs
+        $duplicateTid = Payment::where('transaction_reference', $tid)
+            ->whereIn('status', [Payment::STATUS_PAID, Payment::STATUS_PENDING])
+            ->exists();
+
+        if ($duplicateTid) {
+            return $this->errorResponse(
+                'This Transaction ID has already been submitted or processed. Please provide a valid transaction reference.',
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'DUPLICATE_TRANSACTION_ID'
+            );
+        }
+
+        // Securely store receipt in private storage disk
+        $receiptPath = $request->file('receipt')->store('receipts', 'local');
+
+        $fee = (float) config('payment.contact_unlock_fee', 300.00);
+        $currency = config('payment.currency', 'PKR');
+
+        $payment = Payment::create([
+            'rishta_request_id' => $rishtaRequest->id,
+            'user_id' => $user->id,
+            'amount' => $fee,
+            'currency' => $currency,
+            'status' => Payment::STATUS_PENDING,
+            'gateway' => 'jazzcash_qr',
+            'transaction_reference' => $tid,
+            'receipt_path' => $receiptPath,
+        ]);
+
+        return $this->successResponse([
+            'payment_uuid' => $payment->payment_uuid,
+            'request_code' => $rishtaRequest->request_code,
+            'amount' => $fee,
+            'currency' => $currency,
+            'status' => $payment->status,
+            'gateway' => 'jazzcash_qr',
+            'transaction_reference' => $tid,
+            'created_at' => $payment->created_at->toIso8601String(),
+        ], 'Payment proof submitted successfully. Pending admin verification.', Response::HTTP_CREATED);
+    }
 }

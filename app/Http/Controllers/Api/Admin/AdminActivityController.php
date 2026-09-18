@@ -9,6 +9,8 @@ use App\Models\RishtaRequest;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 class AdminActivityController extends Controller
@@ -112,10 +114,184 @@ class AdminActivityController extends Controller
             }
         }
 
+        if ($gateway = $request->input('gateway')) {
+            $query->where('gateway', $gateway);
+        }
+
         $perPage = min((int) $request->input('per_page', 15), 50);
         $payments = $query->latest()->paginate($perPage);
 
         return $this->successResponse($payments, 'Payment transactions retrieved.');
+    }
+
+    /**
+     * Approve manual payment (e.g. JazzCash QR) and link to ContactUnlock.
+     */
+    public function approvePayment(Request $request, int $id): JsonResponse
+    {
+        $payment = Payment::find($id);
+
+        if (!$payment) {
+            return $this->errorResponse('Payment record not found.', [], Response::HTTP_NOT_FOUND, 'PAYMENT_NOT_FOUND');
+        }
+
+        if ($payment->status !== Payment::STATUS_PENDING) {
+            return $this->errorResponse(
+                "Cannot approve payment with status '{$payment->status}'. Only pending payments can be approved.",
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'INVALID_PAYMENT_STATUS'
+            );
+        }
+
+        $adminId = $request->user()->id;
+
+        DB::transaction(function () use ($payment, $adminId) {
+            $lockedPayment = Payment::where('id', $payment->id)->lockForUpdate()->first();
+
+            if ($lockedPayment->isPaid()) {
+                return;
+            }
+
+            $lockedPayment->update([
+                'status' => Payment::STATUS_PAID,
+                'paid_at' => now(),
+                'reviewed_by' => $adminId,
+                'reviewed_at' => now(),
+            ]);
+
+            ContactUnlock::updateOrCreate(
+                ['rishta_request_id' => $lockedPayment->rishta_request_id],
+                ['payment_id' => $lockedPayment->id]
+            );
+        });
+
+        $payment->refresh();
+
+        return $this->successResponse([
+            'id' => $payment->id,
+            'payment_uuid' => $payment->payment_uuid,
+            'status' => $payment->status,
+            'paid_at' => $payment->paid_at?->toIso8601String(),
+            'reviewed_at' => $payment->reviewed_at?->toIso8601String(),
+        ], 'Payment successfully approved and marked as paid.');
+    }
+
+    /**
+     * Reject manual payment with admin reason.
+     */
+    public function rejectPayment(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'reason' => 'required|string|min:3|max:500',
+        ], [
+            'reason.required' => 'Please provide a reason explaining why the payment proof was rejected.',
+            'reason.min' => 'Rejection reason must be at least 3 characters.',
+        ]);
+
+        $payment = Payment::find($id);
+
+        if (!$payment) {
+            return $this->errorResponse('Payment record not found.', [], Response::HTTP_NOT_FOUND, 'PAYMENT_NOT_FOUND');
+        }
+
+        if ($payment->status !== Payment::STATUS_PENDING) {
+            return $this->errorResponse(
+                "Cannot reject payment with status '{$payment->status}'. Only pending payments can be rejected.",
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'INVALID_PAYMENT_STATUS'
+            );
+        }
+
+        $adminId = $request->user()->id;
+
+        $payment->update([
+            'status' => Payment::STATUS_FAILED,
+            'admin_notes' => trim($request->input('reason')),
+            'reviewed_by' => $adminId,
+            'reviewed_at' => now(),
+        ]);
+
+        return $this->successResponse([
+            'id' => $payment->id,
+            'payment_uuid' => $payment->payment_uuid,
+            'status' => $payment->status,
+            'admin_notes' => $payment->admin_notes,
+            'reviewed_at' => $payment->reviewed_at?->toIso8601String(),
+        ], 'Payment has been rejected.');
+    }
+
+    /**
+     * Stream the privately stored payment proof receipt to authenticated admin.
+     */
+    public function viewReceipt(int $id)
+    {
+        $payment = Payment::find($id);
+
+        if (!$payment || empty($payment->receipt_path)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Payment receipt not found.',
+                'error_code' => 'RECEIPT_NOT_FOUND',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!Storage::disk('local')->exists($payment->receipt_path)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Receipt file not found on disk or has been removed.',
+                'error_code' => 'FILE_NOT_FOUND',
+            ], Response::HTTP_NOT_FOUND);
+        }
+
+        $mimeType = Storage::disk('local')->mimeType($payment->receipt_path) ?: 'application/octet-stream';
+
+        return Storage::disk('local')->response($payment->receipt_path, null, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline',
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
+        ]);
+    }
+
+    /**
+     * Delete/Purge the stored receipt image for an approved or rejected payment to free server storage.
+     */
+    public function deleteReceipt(int $id): JsonResponse
+    {
+        $payment = Payment::find($id);
+
+        if (!$payment) {
+            return $this->errorResponse('Payment record not found.', [], Response::HTTP_NOT_FOUND, 'PAYMENT_NOT_FOUND');
+        }
+
+        if (empty($payment->receipt_path)) {
+            return $this->errorResponse('No receipt file found for this payment.', [], Response::HTTP_NOT_FOUND, 'RECEIPT_NOT_FOUND');
+        }
+
+        if ($payment->status === Payment::STATUS_PENDING) {
+            return $this->errorResponse(
+                'Cannot delete receipt while payment is pending review. Please approve or reject first.',
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'CANNOT_DELETE_PENDING_RECEIPT'
+            );
+        }
+
+        if (Storage::disk('local')->exists($payment->receipt_path)) {
+            Storage::disk('local')->delete($payment->receipt_path);
+        }
+
+        $payment->update([
+            'receipt_path' => null,
+        ]);
+
+        return $this->successResponse([
+            'id' => $payment->id,
+            'payment_uuid' => $payment->payment_uuid,
+            'receipt_path' => null,
+        ], 'Receipt file deleted successfully from server storage.');
     }
 
     /**

@@ -152,3 +152,19 @@ export const getUnlockedContact = async (requestCode) => {
   const response = await api.get(`/requests/${requestCode}/contact`);
   return response.data;
 };
+
+/**
+ * Submit manual payment proof (JazzCash QR / Till ID).
+ *
+ * @param {string} requestCode
+ * @param {FormData} formData
+ * @returns {Promise<Object>}
+ */
+export const submitManualPaymentProof = async (requestCode, formData) => {
+  const response = await api.post(`/requests/${requestCode}/payment/submit-proof`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
