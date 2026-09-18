@@ -88,7 +88,7 @@ export default function ProfileCard({ profile, isInitiallyShortlisted = false, o
     : profile.religion;
 
   return (
-    <Card className="flex flex-col justify-between bg-navy-800 border border-slate-750 hover:border-magenta-500/50 hover:shadow-xl hover:shadow-magenta-500/5 transition-all duration-200 rounded-2xl overflow-hidden p-5 sm:p-6 group">
+    <Card className="flex flex-col justify-between bg-navy-800 border border-slate-750 hover:border-magenta-500/50 hover:shadow-xl hover:shadow-magenta-500/5 transition-all duration-200 rounded-2xl overflow-hidden p-4 sm:p-5 group">
       <div className="space-y-4">
         {/* Header: Profile Code and Verification Badge */}
         <div className="flex items-center justify-between pb-3 border-b border-slate-750/70">

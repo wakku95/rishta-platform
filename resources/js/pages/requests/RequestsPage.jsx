@@ -193,7 +193,7 @@ export default function RequestsPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+    <div className="max-w-6xl mx-auto space-y-5 sm:space-y-6">
       {/* Header */}
       <div className="pb-4 border-b border-slate-800">
         <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
@@ -290,7 +290,7 @@ export default function RequestsPage() {
             return (
               <Card
                 key={req.request_code}
-                className="p-5 sm:p-6 bg-navy-800 border border-slate-750 shadow-md hover:border-magenta-500/40 transition-colors rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4"
+                className="p-3.5 sm:p-5 bg-navy-800 border border-slate-750 shadow-md hover:border-magenta-500/40 transition-colors rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4"
               >
                 {/* Left: Request info & Candidate summary */}
                 <div className="space-y-2">
@@ -327,7 +327,7 @@ export default function RequestsPage() {
                 </div>
 
                 {/* Right: Actions */}
-                <div className="flex items-center gap-2 self-end md:self-center">
+                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-750/70">
                   {candidate && (
                     <Link to={`/profiles/${candidate.profile_code}`}>
                       <Button variant="secondary" size="sm" icon={Eye}>
@@ -360,6 +360,7 @@ export default function RequestsPage() {
                         size="sm"
                         icon={CheckCircle}
                         onClick={() => { setSelectedRequest(req); setConfirmAcceptOpen(true); }}
+                        className="whitespace-nowrap"
                       >
                         Accept
                       </Button>
@@ -368,6 +369,7 @@ export default function RequestsPage() {
                         size="sm"
                         icon={XCircle}
                         onClick={() => { setSelectedRequest(req); setConfirmDeclineOpen(true); }}
+                        className="whitespace-nowrap"
                       >
                         Decline
                       </Button>
@@ -380,6 +382,7 @@ export default function RequestsPage() {
                       variant="danger"
                       size="sm"
                       onClick={() => { setSelectedRequest(req); setConfirmCancelOpen(true); }}
+                      className="whitespace-nowrap"
                     >
                       Cancel Request
                     </Button>

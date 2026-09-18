@@ -258,7 +258,7 @@ export default function CandidateDetailPage() {
     : profile.religion;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-6">
+    <div className="max-w-4xl mx-auto space-y-5 sm:space-y-6">
       {/* Top Navigation */}
       <div className="flex items-center justify-between">
         <Link
@@ -281,10 +281,10 @@ export default function CandidateDetailPage() {
       )}
 
       {/* Main Candidate Header Card */}
-      <Card className="p-6 sm:p-8 bg-navy-800 border border-slate-750 shadow-xl space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-750/80">
+      <Card className="p-4 sm:p-6 lg:p-8 bg-navy-800 border border-slate-750 shadow-xl space-y-5 sm:space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 sm:pb-6 border-b border-slate-750/80">
           <div>
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                 Matrimonial Biodata
               </span>
@@ -327,7 +327,7 @@ export default function CandidateDetailPage() {
         </div>
 
         {/* Action Bar (Shortlist & Rishta Request) */}
-        <div className="p-4 bg-navy-850 rounded-2xl border border-slate-700/70 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="p-3 sm:p-4 bg-navy-850 rounded-2xl border border-slate-700/70 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <Button
               variant={isShortlisted ? 'secondary' : 'outline'}
@@ -335,26 +335,26 @@ export default function CandidateDetailPage() {
               icon={Bookmark}
               loading={shortlistLoading}
               onClick={handleToggleShortlist}
-              className={isShortlisted ? 'bg-magenta-500/20 border-magenta-500/40 text-magenta-300 font-semibold' : 'font-semibold'}
+              className={isShortlisted ? 'bg-magenta-500/20 border-magenta-500/40 text-magenta-300 font-semibold w-full sm:w-auto justify-center' : 'font-semibold w-full sm:w-auto justify-center'}
             >
               {isShortlisted ? 'Shortlisted' : 'Save to Shortlist'}
             </Button>
           </div>
 
           {/* Rishta Request Action Context */}
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
             {!activeRequest ? (
               <Button
                 variant="primary"
                 size="sm"
                 icon={Send}
                 onClick={handleInitiateRequestClick}
-                className="font-bold w-full sm:w-auto shadow-md"
+                className="font-bold w-full sm:w-auto justify-center shadow-md"
               >
                 Send Rishta Request
               </Button>
             ) : activeRequest.status === 'pending' && activeRequest.is_sender ? (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
                 <Badge variant="warning" size="sm" className="inline-flex items-center gap-1">
                   <Clock className="w-3 h-3" />
                   <span>Request Pending</span>
@@ -363,12 +363,13 @@ export default function CandidateDetailPage() {
                   variant="danger"
                   size="sm"
                   onClick={() => setConfirmCancelOpen(true)}
+                  className="whitespace-nowrap"
                 >
                   Cancel Request
                 </Button>
               </div>
             ) : activeRequest.status === 'pending' && !activeRequest.is_sender ? (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
                 <Button
                   variant="success"
                   size="sm"
@@ -407,9 +408,9 @@ export default function CandidateDetailPage() {
         </div>
 
         {/* Structured Demographics Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 pt-2">
           {/* Faith & Origin */}
-          <div className="p-4 rounded-xl bg-navy-850 border border-slate-750 space-y-3">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-navy-850 border border-slate-750 space-y-3">
             <h3 className="font-serif text-xs font-bold text-magenta-400 uppercase tracking-wider pb-1 border-b border-slate-750">
               1. Demographics & Faith
             </h3>
@@ -434,7 +435,7 @@ export default function CandidateDetailPage() {
           </div>
 
           {/* Education & Career */}
-          <div className="p-4 rounded-xl bg-navy-850 border border-slate-750 space-y-3">
+          <div className="p-3.5 sm:p-4 rounded-xl bg-navy-850 border border-slate-750 space-y-3">
             <h3 className="font-serif text-xs font-bold text-purple-400 uppercase tracking-wider pb-1 border-b border-slate-750">
               2. Education & Vocation
             </h3>
@@ -466,7 +467,7 @@ export default function CandidateDetailPage() {
 
       {/* Guest Conversion Teaser Banner */}
       {!authenticated && (
-        <Card className="p-6 sm:p-8 bg-gradient-to-r from-magenta-950/70 via-purple-950/60 to-navy-900 border border-magenta-500/40 shadow-2xl rounded-2xl space-y-4">
+        <Card className="p-4 sm:p-6 lg:p-8 bg-gradient-to-r from-magenta-950/70 via-purple-950/60 to-navy-900 border border-magenta-500/40 shadow-2xl rounded-2xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
             <div className="space-y-1.5">
               <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-magenta-500/20 text-magenta-300 text-xs font-bold border border-magenta-500/30">
@@ -497,7 +498,7 @@ export default function CandidateDetailPage() {
       )}
 
       {/* Private Information Protection Notice Card */}
-      <Card className="p-6 sm:p-8 bg-navy-850 border border-slate-750 shadow-md rounded-2xl space-y-4">
+      <Card className="p-4 sm:p-6 lg:p-8 bg-navy-850 border border-slate-750 shadow-md rounded-2xl space-y-4">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-xl bg-navy-800 border border-slate-700 flex items-center justify-center text-magenta-400 shrink-0 mt-0.5">
             <Lock className="w-5 h-5" />

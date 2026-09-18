@@ -146,7 +146,7 @@ export default function SearchProfilesPage() {
   ).length;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+    <div className="space-y-5 sm:space-y-6">
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
         <div>
@@ -181,8 +181,9 @@ export default function SearchProfilesPage() {
               icon={RotateCcw}
               onClick={handleClearFilters}
               title="Clear Filters"
+              className="shrink-0 text-slate-400 hover:text-white"
             >
-              Reset
+              Clear
             </Button>
           )}
         </div>
@@ -196,7 +197,7 @@ export default function SearchProfilesPage() {
 
       {/* Filter Section (Responsive: Always visible on desktop, toggleable on mobile) */}
       <Card
-        className={`p-5 sm:p-6 bg-navy-800 border border-slate-750 shadow-xl rounded-2xl transition-all duration-200 ${
+        className={`p-4 sm:p-6 bg-navy-800 border border-slate-750 shadow-xl rounded-2xl transition-all duration-200 ${
           filterPanelOpen ? 'block' : 'hidden sm:block'
         }`}
       >
@@ -425,7 +426,7 @@ export default function SearchProfilesPage() {
       ) : (
         <div className="space-y-6">
           {/* Candidates Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {profiles.map((candidate) => (
               <ProfileCard key={candidate.profile_code} profile={candidate} />
             ))}
