@@ -412,7 +412,7 @@ export default function ContactUnlockModal({
             {/* Stepper Header */}
             <div className="grid grid-cols-2 gap-2 text-xs font-bold">
               <div
-                className={`p-3 rounded-xl border flex items-center gap-2 ${
+                className={`p-2.5 sm:p-3 rounded-xl border flex items-center gap-2 min-w-0 ${
                   status?.is_paid
                     ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
                     : 'bg-navy-750 border-magenta-500/40 text-magenta-300'
@@ -423,11 +423,14 @@ export default function ContactUnlockModal({
                 ) : (
                   <CreditCard className="w-4 h-4 text-magenta-400 shrink-0" />
                 )}
-                <span>1. Unlock Fee (Rs. 300)</span>
+                <span className="truncate">
+                  <span className="sm:inline hidden">1. Unlock Fee (Rs. 300)</span>
+                  <span className="sm:hidden inline">1. Fee (Rs. 300)</span>
+                </span>
               </div>
 
               <div
-                className={`p-3 rounded-xl border flex items-center gap-2 ${
+                className={`p-2.5 sm:p-3 rounded-xl border flex items-center gap-2 min-w-0 ${
                   status?.my_verified
                     ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
                     : 'bg-navy-850 border-slate-750 text-slate-400'
@@ -438,13 +441,16 @@ export default function ContactUnlockModal({
                 ) : (
                   <Phone className="w-4 h-4 text-slate-500 shrink-0" />
                 )}
-                <span>2. SMS OTP Verification</span>
+                <span className="truncate">
+                  <span className="sm:inline hidden">2. SMS OTP Verification</span>
+                  <span className="sm:hidden inline">2. Phone OTP</span>
+                </span>
               </div>
             </div>
 
             {/* STEP 1: PAYMENT (Sender Pays, Receiver Waits) */}
             {!status?.is_paid && (
-              <div className="p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
+              <div className="p-3.5 sm:p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
                 <div className="flex items-start gap-3">
                   <div className="w-9 h-9 rounded-xl bg-magenta-500/15 border border-magenta-500/30 text-magenta-400 flex items-center justify-center shrink-0 mt-0.5">
                     <Lock className="w-4 h-4" />
@@ -464,11 +470,11 @@ export default function ContactUnlockModal({
                   <div className="pt-2 space-y-4">
                     {/* CASE A: PENDING ADMIN VERIFICATION */}
                     {status?.pending_payment ? (
-                      <div className="p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 space-y-3">
+                      <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 space-y-3">
                         <div className="flex items-start gap-3">
                           <Clock className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
                           <div className="space-y-1">
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 flex-wrap">
                               <h5 className="font-bold text-sm text-white">Payment Proof Submitted</h5>
                               <Badge variant="warning" size="sm">Pending Verification</Badge>
                             </div>
@@ -492,7 +498,7 @@ export default function ContactUnlockModal({
                           )}
                         </div>
 
-                        <div className="pt-1 flex items-center justify-between">
+                        <div className="pt-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
                           <span className="text-[11px] text-slate-400 italic">
                             Once approved, Step 2 (Phone OTP) will unlock automatically.
                           </span>
@@ -502,6 +508,7 @@ export default function ContactUnlockModal({
                             icon={RefreshCw}
                             onClick={loadStatus}
                             isLoading={loading}
+                            className="self-end sm:self-auto shrink-0"
                           >
                             Check Status
                           </Button>
@@ -530,28 +537,31 @@ export default function ContactUnlockModal({
                             <button
                               type="button"
                               onClick={() => setPaymentTab('jazzcash')}
-                              className={`p-3 rounded-xl border text-left transition flex items-center gap-2.5 ${
+                              className={`p-2.5 sm:p-3 rounded-xl border text-left transition flex items-center gap-2 sm:gap-2.5 min-w-0 ${
                                 paymentTab === 'jazzcash'
                                   ? 'bg-magenta-500/15 border-magenta-500 text-white shadow-sm'
                                   : 'bg-navy-800 border-slate-700 text-slate-400 hover:text-white'
                               }`}
                             >
                               <QrCode className="w-4 h-4 text-amber-400 shrink-0" />
-                              <div>
-                                <div className="text-xs font-bold leading-tight">JazzCash QR / Till</div>
-                                <span className="text-[10px] text-amber-300 font-semibold">Active & Recommended</span>
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold leading-tight truncate">JazzCash QR / Till</div>
+                                <span className="text-[10px] text-amber-600 dark:text-amber-300 font-semibold block truncate">
+                                  <span className="sm:inline hidden">Active & Recommended</span>
+                                  <span className="sm:hidden inline">Active</span>
+                                </span>
                               </div>
                             </button>
 
                             {/* Safepay Card Option (Disabled / Coming Soon) */}
                             <div
-                              className="p-3 rounded-xl border border-slate-800 bg-navy-900/60 text-slate-500 cursor-not-allowed opacity-60 flex items-center gap-2.5 select-none relative overflow-hidden"
+                              className="p-2.5 sm:p-3 rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-100/70 dark:bg-navy-900/60 text-slate-500 cursor-not-allowed opacity-75 flex items-center gap-2 sm:gap-2.5 min-w-0 select-none relative overflow-hidden"
                               title="Online card payments will be enabled upon completion of banking merchant onboarding."
                             >
-                              <CreditCard className="w-4 h-4 shrink-0 text-slate-500" />
-                              <div>
-                                <div className="text-xs font-bold text-slate-400 leading-tight">Card / Safepay</div>
-                                <span className="text-[9px] text-slate-500 font-medium">Coming Soon</span>
+                              <CreditCard className="w-4 h-4 shrink-0 text-slate-400 dark:text-slate-500" />
+                              <div className="min-w-0">
+                                <div className="text-xs font-bold text-slate-600 dark:text-slate-400 leading-tight truncate">Card / Safepay</div>
+                                <span className="text-[9px] text-slate-500 font-medium block truncate">Coming Soon</span>
                               </div>
                             </div>
                           </div>
@@ -559,7 +569,7 @@ export default function ContactUnlockModal({
 
                         {/* Active Tab: JazzCash Details & Submission Form */}
                         {paymentTab === 'jazzcash' && (
-                          <div className="p-4 bg-navy-900/70 border border-slate-750 rounded-xl space-y-4">
+                          <div className="p-3 sm:p-4 bg-navy-900/70 border border-slate-750 rounded-xl space-y-4">
                             {/* Account Details & QR Section */}
                             <div className="space-y-4 pb-3 border-b border-slate-800">
                               {/* Prominent Clickable QR Card */}
@@ -569,7 +579,7 @@ export default function ContactUnlockModal({
                                   className="group relative cursor-pointer bg-white p-3 rounded-2xl shadow-xl border-2 border-amber-400/50 hover:border-amber-400 transition-all duration-200 hover:shadow-amber-500/10 hover:shadow-2xl"
                                   title="Tap or click to enlarge QR"
                                 >
-                                  <div className="w-48 h-48 sm:w-56 sm:h-56 relative flex items-center justify-center overflow-hidden rounded-xl bg-white">
+                                  <div className="w-44 h-44 sm:w-56 sm:h-56 relative flex items-center justify-center overflow-hidden rounded-xl bg-white">
                                     <img
                                       src="/images/jazzcash-qr.png"
                                       alt="JazzCash QR Code"
@@ -585,15 +595,21 @@ export default function ContactUnlockModal({
                                     </div>
 
                                     {/* Hover / Touch overlay cue */}
-                                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 backdrop-blur-[1px]">
-                                      <Maximize2 className="w-6 h-6" />
-                                      <span className="text-xs font-bold bg-black/60 px-2 py-1 rounded-md">Tap to Enlarge</span>
+                                    <div
+                                      data-keep-white
+                                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 backdrop-blur-[1px]"
+                                    >
+                                      <Maximize2 className="w-6 h-6 text-white" />
+                                      <span className="text-xs font-bold bg-black/60 px-2 py-1 rounded-md text-white">Tap to Enlarge</span>
                                     </div>
                                   </div>
 
                                   {/* Floating Pill Cue */}
-                                  <div className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-navy-900 border border-amber-400/60 text-amber-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md whitespace-nowrap">
-                                    <ZoomIn className="w-3 h-3" />
+                                  <div
+                                    data-keep-white
+                                    className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-900 border border-amber-400/80 text-amber-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md whitespace-nowrap"
+                                  >
+                                    <ZoomIn className="w-3 h-3 text-amber-300" />
                                     <span>Tap to Enlarge</span>
                                   </div>
                                 </div>
@@ -602,29 +618,29 @@ export default function ContactUnlockModal({
                                   <button
                                     type="button"
                                     onClick={() => setIsQrZoomed(true)}
-                                    className="text-xs text-cyan-400 hover:text-cyan-300 font-semibold flex items-center gap-1 transition"
+                                    className="text-xs text-cyan-700 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 font-semibold flex items-center gap-1 transition cursor-pointer"
                                   >
                                     <Maximize2 className="w-3.5 h-3.5" />
                                     <span>View Fullscreen</span>
                                   </button>
-                                  <span className="text-slate-600">•</span>
+                                  <span className="text-slate-400 dark:text-slate-600">•</span>
                                   <a
                                     href="/images/jazzcash-qr.png"
                                     download="jazzcash-raabtanow-qr.png"
-                                    className="text-xs text-slate-300 hover:text-white font-semibold flex items-center gap-1 transition"
+                                    className="text-xs text-slate-700 dark:text-slate-300 hover:text-magenta-600 dark:hover:text-white font-semibold flex items-center gap-1 transition"
                                     title="Save QR image to gallery for JazzCash scan"
                                   >
-                                    <Download className="w-3.5 h-3.5 text-amber-400" />
+                                    <Download className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
                                     <span>Save Image</span>
                                   </a>
                                 </div>
                               </div>
 
                               {/* Payment Particulars Box */}
-                              <div className="w-full bg-navy-950/80 border border-slate-800 rounded-xl p-3.5 space-y-2 text-xs">
+                              <div className="w-full bg-navy-950/80 border border-slate-800 rounded-xl p-3 sm:p-3.5 space-y-2 text-xs">
                                 <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
                                   <span className="text-slate-400 font-medium">Exact Amount:</span>
-                                  <span className="font-extrabold text-amber-300 text-sm">Rs. 300.00 PKR</span>
+                                  <span className="font-extrabold text-amber-600 dark:text-amber-300 text-sm">Rs. 300.00 PKR</span>
                                 </div>
 
                                 <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
@@ -635,7 +651,7 @@ export default function ContactUnlockModal({
                                 <div className="flex items-center justify-between">
                                   <span className="text-slate-400 font-medium">Till ID:</span>
                                   <div className="flex items-center gap-1.5">
-                                    <span className="font-mono font-bold text-amber-400 text-sm tracking-wider">984453113</span>
+                                    <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-sm tracking-wider">984453113</span>
                                     <button
                                       type="button"
                                       onClick={() => handleCopyTill('984453113')}
@@ -662,7 +678,7 @@ export default function ContactUnlockModal({
                                 </div>
 
                                 <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed">
-                                  💡 <strong className="text-white">Mobile Users:</strong> Copy Till ID <span className="font-mono text-amber-300 font-bold">984453113</span> and pay directly in the JazzCash App under <em>"Till Payments"</em>, or save the QR image above and tap <em>"Scan from Gallery"</em> in your JazzCash app.
+                                  💡 <strong className="text-white">Mobile Users:</strong> Copy Till ID <span className="font-mono text-amber-600 dark:text-amber-300 font-bold">984453113</span> and pay directly in the JazzCash App under <em>"Till Payments"</em>, or save the QR image above and tap <em>"Scan from Gallery"</em> in your JazzCash app.
                                 </div>
                               </div>
                             </div>
@@ -691,9 +707,9 @@ export default function ContactUnlockModal({
                                   Payment Screenshot / Receipt Proof *
                                 </label>
                                 <div className="flex items-center gap-3">
-                                  <label className="flex-1 cursor-pointer flex items-center justify-center gap-2 border border-dashed border-slate-700 hover:border-magenta-500/60 bg-navy-950/60 rounded-xl px-3 py-2.5 text-xs text-slate-300 hover:text-white transition">
-                                    <Upload className="w-4 h-4 text-slate-400" />
-                                    <span>{receiptFile ? receiptFile.name : 'Upload Screenshot (JPG, PNG, PDF max 5MB)'}</span>
+                                  <label className="flex-1 cursor-pointer flex items-center justify-center gap-2 border border-dashed border-slate-400/80 dark:border-slate-700 hover:border-magenta-500/60 bg-slate-100/80 dark:bg-navy-950/60 rounded-xl px-3 py-2.5 text-xs text-slate-700 dark:text-slate-300 hover:text-white transition overflow-hidden">
+                                    <Upload className="w-4 h-4 text-slate-400 shrink-0" />
+                                    <span className="truncate max-w-[190px] sm:max-w-xs">{receiptFile ? receiptFile.name : 'Upload Screenshot (JPG, PNG, PDF max 5MB)'}</span>
                                     <input
                                       type="file"
                                       accept="image/jpeg,image/png,image/webp,application/pdf"
@@ -705,7 +721,7 @@ export default function ContactUnlockModal({
                                     <img
                                       src={receiptPreview}
                                       alt="Preview"
-                                      className="w-10 h-10 object-cover rounded-lg border border-slate-700"
+                                      className="w-10 h-10 object-cover rounded-lg border border-slate-700 shrink-0"
                                     />
                                   )}
                                 </div>
@@ -743,7 +759,7 @@ export default function ContactUnlockModal({
 
             {/* STEP 2: SMS OTP VERIFICATION (Only active after payment is paid) */}
             {status?.is_paid && (
-              <div className="p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
+              <div className="p-3.5 sm:p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <h4 className="font-serif font-bold text-base text-white">
@@ -870,11 +886,11 @@ export default function ContactUnlockModal({
       maxWidth="max-w-md"
     >
       <div className="flex flex-col items-center py-2 space-y-4 text-center">
-        <div className="p-4 bg-white rounded-2xl shadow-2xl border-2 border-amber-400 inline-block">
+        <div className="p-3 sm:p-4 bg-white rounded-2xl shadow-2xl border-2 border-amber-400 inline-block">
           <img
             src="/images/jazzcash-qr.png"
             alt="Enlarged JazzCash QR"
-            className="w-64 h-64 sm:w-80 sm:h-80 object-contain mx-auto"
+            className="w-52 h-52 sm:w-80 sm:h-80 object-contain mx-auto"
           />
         </div>
 
@@ -883,15 +899,15 @@ export default function ContactUnlockModal({
             Scan with your JazzCash App
           </p>
           <p className="text-xs text-slate-300">
-            Till ID: <span className="font-mono font-bold text-amber-300">984453113</span> • Amount: <strong className="text-white">Rs. 300 PKR</strong>
+            Till ID: <span className="font-mono font-bold text-amber-600 dark:text-amber-300">984453113</span> • Amount: <strong className="text-white">Rs. 300 PKR</strong>
           </p>
         </div>
 
-        <div className="flex items-center gap-2 pt-2 w-full justify-center">
+        <div className="flex flex-col sm:flex-row items-center gap-2 pt-2 w-full justify-center">
           <a
             href="/images/jazzcash-qr.png"
             download="jazzcash-raabtanow-qr.png"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-magenta-500 hover:bg-magenta-600 text-white transition shadow-md"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-magenta-500 hover:bg-magenta-600 text-white transition shadow-md"
           >
             <Download className="w-4 h-4" />
             <span>Save QR to Phone</span>
@@ -900,6 +916,7 @@ export default function ContactUnlockModal({
             variant="secondary"
             size="sm"
             onClick={() => setIsQrZoomed(false)}
+            className="w-full sm:w-auto"
           >
             Close
           </Button>

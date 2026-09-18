@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Filter, RotateCcw, Search, SlidersHorizontal, Users } from 'lucide-react';
 import { searchProfiles } from '../../api/discovery';
 import { getProfileOptions } from '../../api/profile';
@@ -28,9 +29,21 @@ const INITIAL_FILTERS = {
   page: 1,
 };
 
+const parseFiltersFromSearchParams = (searchParams) => {
+  const parsed = { ...INITIAL_FILTERS };
+  for (const key of Object.keys(INITIAL_FILTERS)) {
+    const val = searchParams.get(key);
+    if (val !== null && val !== '') {
+      parsed[key] = key === 'page' ? (parseInt(val, 10) || 1) : val;
+    }
+  }
+  return parsed;
+};
+
 export default function SearchProfilesPage() {
-  const [filters, setFilters] = useState(INITIAL_FILTERS);
-  const [activeFilters, setActiveFilters] = useState(INITIAL_FILTERS);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [filters, setFilters] = useState(() => parseFiltersFromSearchParams(searchParams));
+  const [activeFilters, setActiveFilters] = useState(() => parseFiltersFromSearchParams(searchParams));
   const [options, setOptions] = useState({
     genders: [],
     religions: [],
@@ -97,7 +110,14 @@ export default function SearchProfilesPage() {
     }
   }, []);
 
-  // Initial fetch on mount
+  // Synchronize filters whenever URL search parameters change (e.g. from Home page or browser back/forward)
+  useEffect(() => {
+    const urlFilters = parseFiltersFromSearchParams(searchParams);
+    setFilters(urlFilters);
+    setActiveFilters(urlFilters);
+  }, [searchParams]);
+
+  // Fetch search results whenever activeFilters change
   useEffect(() => {
     fetchProfiles(activeFilters);
   }, [activeFilters, fetchProfiles]);
@@ -121,7 +141,19 @@ export default function SearchProfilesPage() {
   const handleSearchSubmit = (e) => {
     e.preventDefault();
     const nextFilters = { ...filters, page: 1 };
-    setActiveFilters(nextFilters);
+
+    const params = new URLSearchParams();
+    Object.entries(nextFilters).forEach(([key, val]) => {
+      if (val !== '' && val !== null && val !== undefined && !(key === 'page' && val === 1)) {
+        params.set(key, val);
+      }
+    });
+
+    if (params.toString() === searchParams.toString()) {
+      fetchProfiles(nextFilters);
+    } else {
+      setSearchParams(params);
+    }
     // Auto close filter panel on mobile after submitting
     setFilterPanelOpen(false);
   };
@@ -131,12 +163,21 @@ export default function SearchProfilesPage() {
     setActiveFilters(INITIAL_FILTERS);
     setValidationErrors({});
     setError(null);
+    if (searchParams.toString() !== '') {
+      setSearchParams({});
+    } else {
+      fetchProfiles(INITIAL_FILTERS);
+    }
   };
 
   const handlePageChange = (newPage) => {
-    const nextFilters = { ...activeFilters, page: newPage };
-    setFilters(nextFilters);
-    setActiveFilters(nextFilters);
+    const params = new URLSearchParams(searchParams);
+    if (newPage > 1) {
+      params.set('page', newPage);
+    } else {
+      params.delete('page');
+    }
+    setSearchParams(params);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 

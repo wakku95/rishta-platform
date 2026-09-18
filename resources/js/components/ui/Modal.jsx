@@ -40,23 +40,26 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center p-4 sm:p-6 pt-20 sm:pt-24 pb-8 overflow-y-auto"
-      role="dialog"
-      aria-modal="true"
+      className="fixed inset-0 z-[100] flex items-start justify-center p-3 sm:p-6 pt-4 sm:pt-20 pb-6 overflow-y-auto"
     >
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-navy-950/80 backdrop-blur-md transition-opacity"
+        className="fixed inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-sm transition-opacity"
         onClick={onClose}
         aria-hidden="true"
       />
 
       {/* Modal Card */}
-      <div className={`relative w-full ${maxWidth} bg-navy-800 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/80 z-10 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150`}>
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={title ? 'modal-title' : undefined}
+        className={`relative w-full ${maxWidth} bg-navy-800 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/80 z-10 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150`}
+      >
         {/* Header */}
-        <div className="px-6 py-4 border-b border-slate-750/70 bg-navy-850/50 flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-750/70 bg-navy-850/50 flex items-center justify-between">
           <div>
-            {title && <h3 className="text-lg font-bold text-white tracking-tight">{title}</h3>}
+            {title && <h3 id="modal-title" className="text-base sm:text-lg font-bold text-white tracking-tight">{title}</h3>}
             {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
           </div>
           {onClose && (
@@ -72,13 +75,13 @@ export default function Modal({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-3.5 sm:p-6">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-6 py-3.5 bg-navy-850/50 border-t border-slate-750/70 flex items-center justify-end gap-3">
+          <div className="px-4 sm:px-6 py-3 sm:py-3.5 bg-navy-850/50 border-t border-slate-750/70 flex items-center justify-end gap-3">
             {footer}
           </div>
         )}
