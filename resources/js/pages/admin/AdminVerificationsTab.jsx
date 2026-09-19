@@ -31,6 +31,19 @@ export default function AdminVerificationsTab() {
   const [purgeDays, setPurgeDays] = useState(30);
   const [purging, setPurging] = useState(false);
 
+  const calculateAge = (dobString) => {
+    if (!dobString) return null;
+    const dob = new Date(dobString);
+    if (isNaN(dob.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
   const closeReviewModal = () => {
     if (activeDoc?.url) {
       URL.revokeObjectURL(activeDoc.url);
@@ -312,11 +325,31 @@ export default function AdminVerificationsTab() {
           <div className="bg-navy-900 border border-white/15 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl my-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
-                <h3 className="text-lg font-bold text-white capitalize">
-                  Review {selectedItem.type} Verification
+                <h3 className="text-lg font-bold text-white capitalize flex items-center gap-2">
+                  <span>Review {selectedItem.type} Verification</span>
+                  {selectedItem.user?.profile?.date_of_birth && (
+                    <span className="text-xs px-2.5 py-0.5 rounded-full bg-magenta-500/20 text-magenta-300 border border-magenta-500/30 font-semibold tracking-wide">
+                      Age: {calculateAge(selectedItem.user.profile.date_of_birth)} yrs
+                    </span>
+                  )}
                 </h3>
-                <p className="text-xs text-slate-400">
-                  User: {selectedItem.user?.name} ({selectedItem.user?.email})
+                <p className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-3">
+                  <span>User: <strong className="text-slate-200">{selectedItem.user?.name}</strong> ({selectedItem.user?.email})</span>
+                  {selectedItem.user?.profile?.education && (
+                    <span className="text-cyan-300 font-semibold bg-cyan-500/15 px-2 py-0.5 rounded border border-cyan-500/30">
+                      Education: {selectedItem.user.profile.education}
+                    </span>
+                  )}
+                  {selectedItem.user?.profile?.date_of_birth && (
+                    <span className="text-emerald-300 font-mono">
+                      DOB: {selectedItem.user.profile.date_of_birth}
+                    </span>
+                  )}
+                  {selectedItem.user?.profile?.gender && (
+                    <span className="capitalize text-slate-300">
+                      Gender: {selectedItem.user.profile.gender}
+                    </span>
+                  )}
                 </p>
               </div>
               <button 

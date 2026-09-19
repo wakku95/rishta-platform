@@ -117,6 +117,8 @@ export default function EditProfilePage() {
   const [errors, setErrors] = useState({});
   const [options, setOptions] = useState(FALLBACK_OPTIONS);
   const [isExistingProfile, setIsExistingProfile] = useState(false);
+  const [isIdentityVerified, setIsIdentityVerified] = useState(false);
+  const [isEducationVerified, setIsEducationVerified] = useState(false);
 
   const [formData, setFormData] = useState({
     gender: 'male',
@@ -152,6 +154,8 @@ export default function EditProfilePage() {
         if (profRes.status === 'fulfilled' && profRes.value?.data) {
           const d = profRes.value.data;
           setIsExistingProfile(Boolean(d.id || d.profile_code));
+          setIsIdentityVerified(Boolean(d.verifications?.identity_verified || d.identity_verified));
+          setIsEducationVerified(Boolean(d.verifications?.education_verified || d.education_verified));
           setFormData({
             gender: d.gender || 'male',
             date_of_birth: d.date_of_birth || '',
@@ -293,13 +297,18 @@ export default function EditProfilePage() {
             />
 
             <Input
-              label="Date of Birth"
+              label={isIdentityVerified ? "Date of Birth (Locked)" : "Date of Birth"}
               name="date_of_birth"
               type="date"
               value={formData.date_of_birth}
               onChange={handleChange}
               error={errors.date_of_birth?.[0]}
-              helperText="Candidate must be 18 to 80 years old. DOB is strictly private; only calculated age is shown to others."
+              disabled={isIdentityVerified}
+              helperText={
+                isIdentityVerified
+                  ? "🔒 Date of birth is verified and locked via CNIC identity document. Contact Support if administrative correction is required."
+                  : "Candidate must be 18 to 80 years old. DOB is strictly private; only calculated age is shown to others."
+              }
               required
             />
 
@@ -384,12 +393,18 @@ export default function EditProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
             <Select
-              label="Highest Qualification"
+              label={isEducationVerified ? "Highest Qualification (Locked)" : "Highest Qualification"}
               name="education"
               value={formData.education}
               onChange={handleChange}
               error={errors.education?.[0]}
               options={options.educations}
+              disabled={isEducationVerified}
+              helperText={
+                isEducationVerified
+                  ? "🔒 Education degree/level is verified and locked via submitted degree document. Contact Support if administrative correction is required."
+                  : undefined
+              }
               required
             />
 

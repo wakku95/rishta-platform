@@ -31,7 +31,7 @@ class AdminVerificationController extends Controller
         $query = ProfileVerification::query()
             ->with([
                 'user:id,name,email,status',
-                'user.profile:id,user_id,profile_code,gender,city',
+                'user.profile:id,user_id,profile_code,gender,city,date_of_birth,education',
                 'reviewer:id,name,email',
             ]);
 

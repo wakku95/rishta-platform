@@ -123,6 +123,37 @@ class AdminProfileController extends Controller
     }
 
     /**
+     * Administratively update candidate locked profile field (date_of_birth, education, gender) upon user request.
+     */
+    public function updateField(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'field' => 'required|in:date_of_birth,education,gender',
+            'value' => 'required|string',
+        ]);
+
+        $profile = Profile::find($id);
+
+        if (!$profile) {
+            return $this->errorResponse('Profile not found.', [], Response::HTTP_NOT_FOUND, 'PROFILE_NOT_FOUND');
+        }
+
+        $field = $request->input('field');
+        $value = $request->input('value');
+        $oldValue = (string) $profile->{$field};
+
+        $profile->update([$field => $value]);
+
+        \Illuminate\Support\Facades\Log::info("[Admin] Profile #{$profile->profile_code} {$field} administratively modified from '{$oldValue}' to '{$value}' by admin user #{$request->user()->id}");
+
+        return $this->successResponse([
+            'id' => $profile->id,
+            'profile_code' => $profile->profile_code,
+            $field => $profile->{$field},
+        ], "Candidate {$field} successfully updated to [{$value}].");
+    }
+
+    /**
      * Permanently delete profile.
      */
     public function destroy(int $id): JsonResponse

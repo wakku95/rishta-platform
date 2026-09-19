@@ -55,7 +55,7 @@ const Select = forwardRef(function Select({
               {placeholder}
             </option>
           )}
-          {options.map((opt) => (
+          {(options || []).map((opt) => (
             <option
               key={typeof opt === 'object' ? opt.value : opt}
               value={typeof opt === 'object' ? opt.value : opt}

@@ -347,13 +347,13 @@ class PaymentController extends Controller
         $frontendUrl = rtrim(config('app.frontend_url', config('app.url', 'https://raabtanow.com')), '/');
 
         if (!$payment) {
-            return redirect("{$frontendUrl}/dashboard/requests?payment=not_found");
+            return redirect("{$frontendUrl}/requests?payment=not_found");
         }
 
         $requestCode = $payment->rishtaRequest?->request_code ?? '';
 
         if ($payment->isPaid()) {
-            return redirect("{$frontendUrl}/dashboard/requests?request={$requestCode}&payment=success");
+            return redirect("{$frontendUrl}/requests?request={$requestCode}&payment=success");
         }
 
         if (!$request->has('tracker') && !empty($payment->transaction_reference)) {
@@ -368,7 +368,7 @@ class PaymentController extends Controller
                 'gateway_response' => $result->rawResponse,
             ]);
 
-            return redirect("{$frontendUrl}/dashboard/requests?request={$requestCode}&payment=failed");
+            return redirect("{$frontendUrl}/requests?request={$requestCode}&payment=failed");
         }
 
         DB::transaction(function () use ($payment, $result) {
@@ -390,7 +390,7 @@ class PaymentController extends Controller
             );
         });
 
-        return redirect("{$frontendUrl}/dashboard/requests?request={$requestCode}&payment=success");
+        return redirect("{$frontendUrl}/requests?request={$requestCode}&payment=success");
     }
 
     /**

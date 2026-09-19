@@ -106,6 +106,32 @@ class ProfileController extends Controller
                     'GENDER_LOCKED'
                 );
             }
+
+            // Date of Birth is locked once CNIC Identity Verification is approved
+            if ($user->isIdentityVerified() && isset($data['date_of_birth']) && $profile->date_of_birth) {
+                $currentDob = $profile->date_of_birth->toDateString();
+                if ($data['date_of_birth'] !== $currentDob) {
+                    return $this->errorResponse(
+                        'Date of Birth cannot be modified after CNIC Identity Verification has been approved. Please contact RaabtaNow Support if an administrative correction is required.',
+                        ['date_of_birth' => ['Date of Birth is locked following approved CNIC Identity Verification.']],
+                        Response::HTTP_UNPROCESSABLE_ENTITY,
+                        'DOB_LOCKED_AFTER_VERIFICATION'
+                    );
+                }
+            }
+
+            // Education level is locked once Education Verification is approved
+            if ($user->isEducationVerified() && isset($data['education']) && $profile->education) {
+                if ($data['education'] !== $profile->education) {
+                    return $this->errorResponse(
+                        'Education level cannot be modified after Education Verification has been approved. Please contact RaabtaNow Support if an administrative correction is required.',
+                        ['education' => ['Education level is locked following approved Education Verification.']],
+                        Response::HTTP_UNPROCESSABLE_ENTITY,
+                        'EDUCATION_LOCKED_AFTER_VERIFICATION'
+                    );
+                }
+            }
+
             $profile->update($data);
         }
 

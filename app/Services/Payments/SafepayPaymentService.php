@@ -73,7 +73,7 @@ class SafepayPaymentService implements PaymentGatewayInterface
             // Construct callback & cancel URLs
             $appUrl = rtrim(config('app.url', 'https://raabtanow.com'), '/');
             $redirectUrl = "{$appUrl}/payments/{$paymentUuid}/safepay/callback";
-            $cancelUrl = "{$appUrl}/dashboard/requests?request={$requestCode}&payment=cancelled";
+            $cancelUrl = "{$appUrl}/requests?request={$requestCode}&payment=cancelled";
 
             // Build Safepay hosted checkout redirect URL
             $queryParams = http_build_query([
