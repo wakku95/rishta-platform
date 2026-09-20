@@ -39,6 +39,8 @@ class ProfileResource extends JsonResource
                 'identity_verified' => $this->user ? $this->user->isIdentityVerified() : false,
                 'education_verified' => $this->user ? $this->user->isEducationVerified() : false,
             ],
+            'is_assisted' => !empty($this->created_by_admin_id),
+            'confirmed_at' => $this->confirmed_at?->toIso8601String(),
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

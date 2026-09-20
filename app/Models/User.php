@@ -141,5 +141,13 @@ class User extends Authenticatable implements MustVerifyEmail
             ->latest('id')
             ->first();
     }
+
+    /**
+     * Get the assisted profiles created by this user (admin).
+     */
+    public function assistedProfiles(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Profile::class, 'created_by_admin_id');
+    }
 }
 

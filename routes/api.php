@@ -13,6 +13,10 @@ use Illuminate\Support\Facades\Route;
 */
 Route::get('/health', HealthCheckController::class);
 
+// Assisted Profile Confirmation (public, token-based)
+Route::get('/assisted/confirm/{token}', [\App\Http\Controllers\Api\AssistedConfirmationController::class, 'show']);
+Route::post('/assisted/confirm/{token}', [\App\Http\Controllers\Api\AssistedConfirmationController::class, 'confirm']);
+
 /*
 |--------------------------------------------------------------------------
 | Authentication Routes (/api/auth)
@@ -179,5 +183,17 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/payments/{id}/receipt', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'viewReceipt']);
     Route::delete('/payments/{id}/receipt', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'deleteReceipt']);
     Route::get('/unlocks', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'unlocks']);
+
+    // Assisted Matchmaking
+    Route::prefix('assisted')->group(function () {
+        Route::post('/create-profile', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'createProfile']);
+        Route::get('/profiles', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'listAssistedProfiles']);
+        Route::get('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'showAssistedProfile']);
+        Route::put('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'updateAssistedProfile']);
+        Route::post('/profiles/{id}/resend-confirmation', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'resendConfirmation']);
+        Route::post('/profiles/{id}/search-matches', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'searchMatches']);
+        Route::post('/profiles/{id}/send-proposal', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'sendProposal']);
+        Route::get('/profiles/{id}/proposals', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'listProposals']);
+    });
 });
 

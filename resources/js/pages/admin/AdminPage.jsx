@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { 
   BarChart3, Users, HeartHandshake, 
-  Layers, CreditCard, Shield, ShieldCheck, ArrowLeft 
+  Layers, CreditCard, Shield, ShieldCheck, ArrowLeft, UserPlus 
 } from 'lucide-react';
 import AdminOverviewTab from './AdminOverviewTab';
 import AdminUsersTab from './AdminUsersTab';
@@ -10,6 +10,7 @@ import AdminProfilesTab from './AdminProfilesTab';
 import AdminRequestsTab from './AdminRequestsTab';
 import AdminFinancialsTab from './AdminFinancialsTab';
 import AdminVerificationsTab from './AdminVerificationsTab';
+import AdminAssistedTab from './AdminAssistedTab';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +27,7 @@ export default function AdminPage() {
     { id: 'verifications', name: 'Verifications', icon: ShieldCheck },
     { id: 'requests', name: 'Rishta Requests', icon: Layers },
     { id: 'financials', name: 'Financials & Unlocks', icon: CreditCard },
+    { id: 'assisted', name: 'Assisted Matchmaking', icon: UserPlus },
   ];
 
   return (
@@ -83,6 +85,7 @@ export default function AdminPage() {
           {activeTab === 'verifications' && <AdminVerificationsTab />}
           {activeTab === 'requests' && <AdminRequestsTab />}
           {activeTab === 'financials' && <AdminFinancialsTab />}
+          {activeTab === 'assisted' && <AdminAssistedTab />}
         </div>
       </div>
     </div>

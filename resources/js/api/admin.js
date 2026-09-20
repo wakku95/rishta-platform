@@ -43,4 +43,14 @@ export const adminApi = {
     responseType: 'blob',
   }),
   purgeDocuments: (days = 30) => api.post('/admin/verifications/purge', { days }).then(r => r.data),
+
+  // Assisted Matchmaking
+  createAssistedProfile: (data) => api.post('/admin/assisted/create-profile', data).then(r => r.data.data),
+  getAssistedProfiles: (params) => api.get('/admin/assisted/profiles', { params }).then(r => r.data.data),
+  getAssistedProfile: (id) => api.get(`/admin/assisted/profiles/${id}`).then(r => r.data.data),
+  updateAssistedProfile: (id, data) => api.put(`/admin/assisted/profiles/${id}`, data).then(r => r.data.data),
+  resendConfirmation: (id) => api.post(`/admin/assisted/profiles/${id}/resend-confirmation`).then(r => r.data),
+  searchMatches: (id, params) => api.post(`/admin/assisted/profiles/${id}/search-matches`, params).then(r => r.data.data),
+  sendProposal: (id, data) => api.post(`/admin/assisted/profiles/${id}/send-proposal`, data).then(r => r.data),
+  listProposals: (id) => api.get(`/admin/assisted/profiles/${id}/proposals`).then(r => r.data.data),
 };

@@ -22,6 +22,7 @@ import RegisterPage from './pages/auth/RegisterPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
 import VerifyEmailPage from './pages/auth/VerifyEmailPage';
+import ConfirmAssistedProfilePage from './pages/assisted/ConfirmAssistedProfilePage';
 import DashboardPage from './pages/dashboard/DashboardPage';
 
 // Profile Pages
@@ -77,6 +78,7 @@ export default function App() {
 
             {/* Email verification page (accessible to authenticated users or via email link) */}
             <Route path="verify-email" element={<VerifyEmailPage />} />
+            <Route path="confirm-profile/:token" element={<ConfirmAssistedProfilePage />} />
 
             {/* Protected authenticated routes */}
             <Route element={<ProtectedRoute />}>

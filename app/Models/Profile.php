@@ -34,6 +34,10 @@ class Profile extends Model
         'family_background',
         'managed_by',
         'profile_status',
+        'created_by_admin_id',
+        'confirmation_token',
+        'confirmation_expires_at',
+        'confirmed_at',
     ];
 
     /**
@@ -46,6 +50,8 @@ class Profile extends Model
         return [
             'date_of_birth' => 'date:Y-m-d',
             'height' => 'integer',
+            'confirmation_expires_at' => 'datetime',
+            'confirmed_at' => 'datetime',
         ];
     }
 
@@ -208,6 +214,30 @@ class Profile extends Model
         }
 
         return min(100, $score);
+    }
+
+    /**
+     * Get the admin who created this profile (if assisted).
+     */
+    public function createdByAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by_admin_id');
+    }
+
+    /**
+     * Check if this profile was created by an admin (Assisted Matchmaking).
+     */
+    public function isAssistedProfile(): bool
+    {
+        return !empty($this->created_by_admin_id);
+    }
+
+    /**
+     * Check if this assisted profile has been confirmed by the user.
+     */
+    public function isConfirmed(): bool
+    {
+        return !empty($this->confirmed_at);
     }
 }
 

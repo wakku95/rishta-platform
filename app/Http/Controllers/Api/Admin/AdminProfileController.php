@@ -39,7 +39,7 @@ class AdminProfileController extends Controller
         }
 
         if ($status = $request->input('status')) {
-            if (in_array($status, ['active', 'draft', 'suspended'])) {
+            if (in_array($status, ['active', 'draft', 'suspended', 'assisted_pending'])) {
                 $query->where('profile_status', $status);
             }
         }
@@ -74,7 +74,7 @@ class AdminProfileController extends Controller
     public function updateStatus(Request $request, int $id): JsonResponse
     {
         $request->validate([
-            'profile_status' => 'required|in:active,draft,suspended',
+            'profile_status' => 'required|in:active,draft,suspended,assisted_pending',
         ]);
 
         $profile = Profile::find($id);

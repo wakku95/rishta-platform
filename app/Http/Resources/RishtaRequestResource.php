@@ -26,6 +26,7 @@ class RishtaRequestResource extends JsonResource
             'request_code' => $this->request_code,
             'status' => $this->status,
             'is_sender' => $isSender,
+            'is_admin_initiated' => !empty($this->initiated_by_admin_id),
             'candidate_profile' => $targetProfile ? new PublicProfileResource($targetProfile) : null,
             'created_at' => $this->created_at?->toIso8601String(),
             'expires_at' => $this->expires_at?->toIso8601String(),

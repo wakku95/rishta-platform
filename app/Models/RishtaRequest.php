@@ -30,6 +30,7 @@ class RishtaRequest extends Model
         'declined_at',
         'cancelled_at',
         'expires_at',
+        'initiated_by_admin_id',
     ];
 
     protected $casts = [
@@ -98,5 +99,21 @@ class RishtaRequest extends Model
         }
 
         return false;
+    }
+
+    /**
+     * Get the admin who initiated this request (if assisted).
+     */
+    public function initiatedByAdmin(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'initiated_by_admin_id');
+    }
+
+    /**
+     * Check if this request was initiated by an admin on behalf of a user.
+     */
+    public function isAdminInitiated(): bool
+    {
+        return !empty($this->initiated_by_admin_id);
     }
 }
