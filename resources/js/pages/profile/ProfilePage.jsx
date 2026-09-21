@@ -34,7 +34,7 @@ import {
 } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, emailVerified } = useAuth();
+  const { user, emailVerified, refreshUser } = useAuth();
   const navigate = useNavigate();
 
   const [profile, setProfile] = useState(null);
@@ -58,12 +58,15 @@ export default function ProfilePage() {
 
   const fetchProfileData = async () => {
     setLoading(true);
-    setError('');
     try {
       const res = await getProfile();
       setProfile(res.data);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to load profile data.');
+      if (err.response?.status === 404) {
+        setProfile(null);
+      } else {
+        setError('Could not load profile data.');
+      }
     } finally {
       setLoading(false);
     }
@@ -78,25 +81,12 @@ export default function ProfilePage() {
     setPreviewLoading(true);
     try {
       const res = await getProfilePreview();
-      setPreviewData(res.data);
+      if (res.data) {
+        setPreviewData(res.data);
+      }
     } catch (err) {
-      // Fallback to local profile safe preview if preview route errors
-      if (profile) {
-        setPreviewData({
-          profile_code: profile.profile_code,
-          age: profile.age,
-          gender: profile.gender,
-          religion: profile.religion,
-          sect: profile.sect,
-          city: profile.city,
-          education: profile.education,
-          profession: profile.profession,
-          marital_status: profile.marital_status,
-          height: profile.height,
-          height_formatted: profile.height_formatted,
-          managed_by: profile.managed_by,
-          profile_status: profile.profile_status,
-        });
+      if (err.response?.status !== 404) {
+        console.error('Failed to load profile preview:', err);
       }
     } finally {
       setPreviewLoading(false);
@@ -110,6 +100,7 @@ export default function ProfilePage() {
     try {
       const res = await activateProfile();
       setProfile(res.data);
+      await refreshUser();
       setActionSuccess('Your matrimonial profile is now active and discoverable.');
     } catch (err) {
       setError(err.response?.data?.message || 'Could not activate profile.');
@@ -126,6 +117,7 @@ export default function ProfilePage() {
     try {
       const res = await hideProfile();
       setProfile(res.data);
+      await refreshUser();
       setActionSuccess('Your profile has been hidden from search results.');
     } catch (err) {
       setError(err.response?.data?.message || 'Could not hide profile.');

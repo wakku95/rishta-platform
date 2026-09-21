@@ -86,6 +86,7 @@ const HEIGHT_OPTIONS = [
 
 export default function EditPreferencesPage() {
   const navigate = useNavigate();
+  const { refreshUser } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -202,6 +203,7 @@ export default function EditPreferencesPage() {
         payload.preferred_sect = null;
       }
       await savePreferences(payload);
+      await refreshUser();
       navigate('/profile');
     } catch (err) {
       if (err.response?.status === 422) {

@@ -36,7 +36,7 @@ import useAuth from '../../hooks/useAuth';
 export default function CandidateDetailPage() {
   const { profileCode } = useParams();
   const navigate = useNavigate();
-  const { user, authenticated } = useAuth();
+  const { user, authenticated, profileStatus, emailVerified, hasProfile, hasPreferences } = useAuth();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -51,11 +51,11 @@ export default function CandidateDetailPage() {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionFeedback, setActionFeedback] = useState(null);
 
-  // Confirm dialogs
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
   const [confirmDeclineOpen, setConfirmDeclineOpen] = useState(false);
   const [confirmAcceptOpen, setConfirmAcceptOpen] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
+  const [showInactiveModal, setShowInactiveModal] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -114,6 +114,12 @@ export default function CandidateDetailPage() {
       navigate(`/register?redirect=${encodeURIComponent(`/profiles/${profileCode}`)}`);
       return;
     }
+
+    if (profileStatus !== 'active') {
+      setShowInactiveModal(true);
+      return;
+    }
+
     setShowSendModal(true);
   };
 
@@ -617,6 +623,60 @@ export default function CandidateDetailPage() {
           }}
         />
       )}
+
+      {/* Inactive Profile Warning Modal */}
+      <Modal
+        isOpen={showInactiveModal}
+        onClose={() => setShowInactiveModal(false)}
+        title={
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between w-full">
+            <span>{!emailVerified ? 'Verification Required' : !hasProfile ? 'Profile Required' : !hasPreferences ? 'Preferences Required' : 'Activation Required'}</span>
+            <span className="font-urdu text-lg font-bold" dir="rtl">{!emailVerified ? 'تصدیق درکار ہے' : !hasProfile ? 'پروفائل درکار ہے' : !hasPreferences ? 'ترجیحات درکار ہیں' : 'ایکٹیویشن درکار ہے'}</span>
+          </div>
+        }
+      >
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4 text-slate-300">
+            <p className="text-base text-center">
+              {!emailVerified 
+                ? 'Please verify your email before sending a rishta request.'
+                : !hasProfile
+                  ? 'Please create your matrimonial profile before sending a rishta request.'
+                  : !hasPreferences
+                    ? 'Please set your partner preferences before sending a rishta request.'
+                    : 'Please activate your profile before sending a rishta request.'}
+            </p>
+            <p className="font-urdu text-center text-lg md:text-xl" dir="rtl">
+              {!emailVerified
+                ? 'رشتہ کی درخواست بھیجنے سے پہلے اپنا ای میل تصدیق کریں۔'
+                : !hasProfile
+                  ? 'رشتہ کی درخواست بھیجنے سے پہلے اپنا پروفائل مکمل کریں۔'
+                  : !hasPreferences
+                    ? 'رشتہ کی درخواست بھیجنے سے پہلے شریک حیات کی ترجیحات سیٹ کریں۔'
+                    : 'رشتہ کی درخواست بھیجنے سے پہلے اپنا پروفائل ایکٹیویٹ کریں۔'}
+            </p>
+          </div>
+          <div className="bg-navy-900/50 p-4 rounded-xl border border-slate-700/50 text-sm text-slate-400 text-center">
+            {!emailVerified
+              ? 'Check your inbox for the verification link.'
+              : !hasProfile
+                ? 'You can easily create your profile in a few steps.'
+                : !hasPreferences
+                  ? 'Tell us what you are looking for in a partner.'
+                  : 'You can check your exact missing requirements on your profile page.'}
+          </div>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-slate-700/50">
+            <Button variant="secondary" onClick={() => setShowInactiveModal(false)}>
+              Cancel
+            </Button>
+            <Link to={!emailVerified ? '/verify-email' : !hasProfile ? '/profile/edit' : !hasPreferences ? '/profile/preferences' : '/profile'}>
+              <Button variant="primary" className="w-full sm:w-auto">
+                {!emailVerified ? 'Verify Email' : !hasProfile ? 'Create Profile' : !hasPreferences ? 'Set Preferences' : 'Go to Profile'}
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

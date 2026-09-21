@@ -109,7 +109,7 @@ const HEIGHT_OPTIONS = Array.from({ length: 101 }, (_, i) => {
 
 export default function EditProfilePage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -210,6 +210,7 @@ export default function EditProfilePage() {
         payload.sect = null;
       }
       await saveProfile(payload);
+      await refreshUser();
       navigate('/profile');
     } catch (err) {
       if (err.response?.status === 422) {

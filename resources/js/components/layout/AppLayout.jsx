@@ -3,6 +3,8 @@ import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import ThemeToggle from '../ui/ThemeToggle';
+import OnboardingBanner from '../ui/OnboardingBanner';
+import OnboardingModal from '../ui/OnboardingModal';
 
 /**
  * Mobile-First Root Layout Shell.
@@ -26,6 +28,8 @@ export default function AppLayout() {
       <Navbar />
       
       <main id="main-content" className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 relative">
+        <OnboardingBanner />
+        <OnboardingModal />
         <Outlet />
       </main>
 
