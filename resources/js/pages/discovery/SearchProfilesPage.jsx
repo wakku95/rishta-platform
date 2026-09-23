@@ -12,6 +12,7 @@ import EmptyState from '../../components/ui/EmptyState';
 import LoadingState from '../../components/ui/LoadingState';
 import Alert from '../../components/ui/Alert';
 import ProfileCard from '../../components/profile/ProfileCard';
+import AssistedListingCard from '../../components/profile/AssistedListingCard';
 
 // Standard fallback options matching ProfileOptions
 const INITIAL_FILTERS = {
@@ -91,10 +92,21 @@ export default function SearchProfilesPage() {
         return acc;
       }, {});
 
-      const res = await searchProfiles(cleanParams);
-      if (res.data) {
-        setProfiles(res.data);
-        setMeta(res.meta || { current_page: 1, last_page: 1, total: res.data.length, per_page: 12 });
+      // Fetch normal profiles and assisted listings in parallel
+      const [resProfiles, resListings] = await Promise.all([
+        searchProfiles(cleanParams),
+        import('../../api/listings').then(m => m.searchAssistedListings(cleanParams)).catch(() => ({ data: [] }))
+      ]);
+
+      if (resProfiles.data) {
+        // Tag listings so we can use a different card component
+        const listingsWithTag = (resListings?.data || []).map(l => ({ ...l, is_assisted_listing: true }));
+        
+        // Merge - we'll just append them to the end of the normal results for this page
+        setProfiles([...resProfiles.data, ...listingsWithTag]);
+        
+        // Use normal profile pagination for the main UI state
+        setMeta(resProfiles.meta || { current_page: 1, last_page: 1, total: resProfiles.data.length + listingsWithTag.length, per_page: 12 });
       }
     } catch (err) {
       if (err.response?.status === 422) {
@@ -469,7 +481,11 @@ export default function SearchProfilesPage() {
           {/* Candidates Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {profiles.map((candidate) => (
-              <ProfileCard key={candidate.profile_code} profile={candidate} />
+              candidate.is_assisted_listing ? (
+                <AssistedListingCard key={`listing-${candidate.listing_code}`} listing={candidate} />
+              ) : (
+                <ProfileCard key={`profile-${candidate.profile_code}`} profile={candidate} />
+              )
             ))}
           </div>
 

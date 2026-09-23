@@ -81,6 +81,20 @@ Route::prefix('discovery')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| Public Assisted Listings Routes (/api/listings)
+|--------------------------------------------------------------------------
+*/
+Route::prefix('listings')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'index'])
+        ->middleware('throttle:60,1');
+    Route::get('/{listing_code}', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'show'])
+        ->middleware('throttle:60,1');
+    Route::post('/{listing_code}/interest', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'submitInterest'])
+        ->middleware('throttle:5,1'); // Rate limited heavily for anti-abuse
+});
+
+/*
+|--------------------------------------------------------------------------
 | Shortlists Routes (/api/shortlists)
 |--------------------------------------------------------------------------
 */
@@ -194,6 +208,26 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/profiles/{id}/search-matches', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'searchMatches']);
         Route::post('/profiles/{id}/send-proposal', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'sendProposal']);
         Route::get('/profiles/{id}/proposals', [\App\Http\Controllers\Api\Admin\AdminAssistedController::class, 'listProposals']);
+    });
+
+    // Admin Assisted Listings (New non-account profiles)
+    Route::prefix('listings')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'store']);
+        Route::get('/{assistedListing}', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'show']);
+        Route::put('/{assistedListing}', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'update']);
+        Route::delete('/{assistedListing}', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'destroy']);
+        Route::post('/{assistedListing}/unpublish', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'unpublish']);
+        Route::post('/{assistedListing}/otp/send', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'sendOtp']);
+        Route::post('/{assistedListing}/otp/verify', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'verifyOtp']);
+        Route::post('/{assistedListing}/convert', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'convert']);
+
+        // Listing Interests
+        Route::get('/{assistedListing}/interests', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'index']);
+        Route::get('/{assistedListing}/interests/{interest}', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'show']);
+        Route::post('/{assistedListing}/interests/{interest}/status', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'updateStatus']);
+        Route::post('/{assistedListing}/interests/{interest}/notes', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'addNotes']);
+        Route::delete('/{assistedListing}/interests/{interest}', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'destroy']);
     });
 });
 

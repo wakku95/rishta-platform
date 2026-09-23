@@ -33,6 +33,7 @@ import EditPreferencesPage from './pages/profile/EditPreferencesPage';
 // Discovery Pages
 import SearchProfilesPage from './pages/discovery/SearchProfilesPage';
 import CandidateDetailPage from './pages/discovery/CandidateDetailPage';
+import AssistedListingDetailPage from './pages/discovery/AssistedListingDetailPage';
 
 // Requests & Shortlist Pages
 import ShortlistPage from './pages/requests/ShortlistPage';
@@ -91,6 +92,7 @@ export default function App() {
             {/* Public Discovery & Candidate Teaser */}
             <Route path="search" element={<SearchProfilesPage />} />
             <Route path="profiles/:profileCode" element={<CandidateDetailPage />} />
+            <Route path="listings/:listingCode" element={<AssistedListingDetailPage />} />
 
             {/* Shortlist & Requests routes (strictly requires verified email) */}
             <Route element={<VerifiedRoute />}>

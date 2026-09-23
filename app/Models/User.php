@@ -149,5 +149,13 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Profile::class, 'created_by_admin_id');
     }
+
+    /**
+     * Get the assisted listings created by this user (admin).
+     */
+    public function assistedListings(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(AssistedListing::class, 'created_by_admin_id');
+    }
 }
 

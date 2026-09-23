@@ -11,6 +11,8 @@ import AdminRequestsTab from './AdminRequestsTab';
 import AdminFinancialsTab from './AdminFinancialsTab';
 import AdminVerificationsTab from './AdminVerificationsTab';
 import AdminAssistedTab from './AdminAssistedTab';
+import AdminAssistedListingsTab from './AdminAssistedListingsTab';
+import { ClipboardList } from 'lucide-react';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +29,8 @@ export default function AdminPage() {
     { id: 'verifications', name: 'Verifications', icon: ShieldCheck },
     { id: 'requests', name: 'Rishta Requests', icon: Layers },
     { id: 'financials', name: 'Financials & Unlocks', icon: CreditCard },
-    { id: 'assisted', name: 'Assisted Matchmaking', icon: UserPlus },
+    { id: 'assisted', name: 'Assisted Accounts', icon: UserPlus },
+    { id: 'listings', name: 'Assisted Listings', icon: ClipboardList },
   ];
 
   return (
@@ -86,6 +89,7 @@ export default function AdminPage() {
           {activeTab === 'requests' && <AdminRequestsTab />}
           {activeTab === 'financials' && <AdminFinancialsTab />}
           {activeTab === 'assisted' && <AdminAssistedTab />}
+          {activeTab === 'listings' && <AdminAssistedListingsTab />}
         </div>
       </div>
     </div>
