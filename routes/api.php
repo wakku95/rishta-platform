@@ -229,5 +229,16 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{assistedListing}/interests/{interest}/notes', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'addNotes']);
         Route::delete('/{assistedListing}/interests/{interest}', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'destroy']);
     });
+
+    // Assisted Profile Submissions (Customer facing)
+    Route::prefix('assisted-submissions')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\AssistedProfileSubmissionController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Admin\AssistedProfileSubmissionController::class, 'show']);
+        Route::post('/{id}/approve', [\App\Http\Controllers\Admin\AssistedProfileSubmissionController::class, 'approve']);
+        Route::post('/{id}/reject', [\App\Http\Controllers\Admin\AssistedProfileSubmissionController::class, 'reject']);
+    });
 });
+
+// Public Assisted Profile Submission (No auth required)
+Route::post('/assisted-submissions', [\App\Http\Controllers\AssistedProfileSubmissionController::class, 'store']);
 

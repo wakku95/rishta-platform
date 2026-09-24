@@ -12,7 +12,8 @@ import AdminFinancialsTab from './AdminFinancialsTab';
 import AdminVerificationsTab from './AdminVerificationsTab';
 import AdminAssistedTab from './AdminAssistedTab';
 import AdminAssistedListingsTab from './AdminAssistedListingsTab';
-import { ClipboardList } from 'lucide-react';
+import AdminAssistedSubmissionsTab from './AdminAssistedSubmissionsTab';
+import { ClipboardList, FileText } from 'lucide-react';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -31,6 +32,7 @@ export default function AdminPage() {
     { id: 'financials', name: 'Financials & Unlocks', icon: CreditCard },
     { id: 'assisted', name: 'Assisted Accounts', icon: UserPlus },
     { id: 'listings', name: 'Assisted Listings', icon: ClipboardList },
+    { id: 'submissions', name: 'Assisted Submissions', icon: FileText },
   ];
 
   return (
@@ -90,6 +92,7 @@ export default function AdminPage() {
           {activeTab === 'financials' && <AdminFinancialsTab />}
           {activeTab === 'assisted' && <AdminAssistedTab />}
           {activeTab === 'listings' && <AdminAssistedListingsTab />}
+          {activeTab === 'submissions' && <AdminAssistedSubmissionsTab />}
         </div>
       </div>
     </div>

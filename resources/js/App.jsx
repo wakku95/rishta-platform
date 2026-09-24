@@ -38,6 +38,7 @@ import AssistedListingDetailPage from './pages/discovery/AssistedListingDetailPa
 // Requests & Shortlist Pages
 import ShortlistPage from './pages/requests/ShortlistPage';
 import RequestsPage from './pages/requests/RequestsPage';
+import AssistedProfileSubmissionPage from './pages/discovery/AssistedProfileSubmissionPage';
 
 // Route Guards
 import GuestRoute from './components/auth/GuestRoute';
@@ -80,6 +81,7 @@ export default function App() {
             {/* Email verification page (accessible to authenticated users or via email link) */}
             <Route path="verify-email" element={<VerifyEmailPage />} />
             <Route path="confirm-profile/:token" element={<ConfirmAssistedProfilePage />} />
+            <Route path="assisted-profile" element={<AssistedProfileSubmissionPage />} />
 
             {/* Protected authenticated routes */}
             <Route element={<ProtectedRoute />}>
