@@ -64,9 +64,9 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
-      <div className="bg-navy-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl">
+      <div className="bg-navy-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl max-h-[90vh]">
         
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10 bg-navy-800/50">
+        <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-navy-800/50">
           <h2 className="text-lg font-bold text-white flex items-center gap-2">
             <HeartHandshake className="w-5 h-5 text-amber-500" />
             Express Interest
@@ -76,7 +76,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="flex-1 p-6 overflow-y-auto min-h-0">
           {success ? (
             <div className="text-center py-6">
               <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -177,7 +177,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
         </div>
 
         {!success && (
-          <div className="p-4 border-t border-white/10 bg-navy-800/50 flex justify-end gap-3">
+          <div className="shrink-0 p-4 border-t border-white/10 bg-navy-800/50 flex justify-end gap-3">
             <button 
               type="button"
               onClick={onClose}

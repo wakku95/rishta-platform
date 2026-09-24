@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { CheckCircle2, XCircle, FileText, ChevronRight, UserPlus, Eye } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
@@ -134,16 +134,16 @@ export default function AdminAssistedSubmissionsTab() {
       </div>
 
       {selectedSubmission && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm overflow-y-auto">
-          <div className="bg-navy-900 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl my-8">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-navy-800/50">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
+          <div className="bg-navy-900 border border-slate-700 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-slate-800 bg-navy-800/50">
               <h3 className="font-bold text-white">Review Submission #{selectedSubmission.id}</h3>
               <button onClick={() => setSelectedSubmission(null)} className="text-slate-400 hover:text-white transition">
                 <XCircle className="w-6 h-6" />
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="flex-1 p-6 space-y-6 overflow-y-auto min-h-0">
               {/* Private Info */}
               <div className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-xl">
                 <h4 className="font-bold text-rose-400 mb-3 text-sm">🔒 Private Information</h4>
