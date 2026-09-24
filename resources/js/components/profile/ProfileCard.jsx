@@ -105,14 +105,14 @@ export default function ProfileCard({ profile, isInitiallyShortlisted = false, o
             {profile.verifications?.identity_verified && (
               <Badge variant="success" size="sm" className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px]">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>ID Verified</span>
+                <span>ID Submitted</span>
               </Badge>
             )}
 
             {profile.verifications?.education_verified && (
               <Badge variant="success" size="sm" className="inline-flex items-center gap-1 bg-purple-500/20 text-purple-300 border-purple-500/40 text-[10px]">
                 <GraduationCap className="w-3.5 h-3.5" />
-                <span>Edu Verified</span>
+                <span>Education Submitted</span>
               </Badge>
             )}
 

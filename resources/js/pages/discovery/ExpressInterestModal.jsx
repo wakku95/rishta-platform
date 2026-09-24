@@ -95,10 +95,13 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
             </div>
           ) : (
             <>
-              <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+              <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl space-y-3">
                 <p className="text-sm text-slate-300">
                   You are expressing interest in listing <strong className="text-amber-500">{listing.listing_code}</strong>. 
                   Please provide your contact details so our matchmaking team can reach out to you.
+                </p>
+                <p className="text-[11px] text-amber-500/80 leading-tight border-t border-amber-500/20 pt-2">
+                  <strong className="font-semibold text-amber-500">Important:</strong> This is an assisted listing managed through RaabtaNow. Information provided by the profile owner may not have been independently verified by RaabtaNow. Please independently verify important information directly before proceeding.
                 </p>
               </div>
 

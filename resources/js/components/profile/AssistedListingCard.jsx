@@ -66,10 +66,16 @@ export default function AssistedListingCard({ listing }) {
             "{truncateAbout(listing.public_about)}"
           </p>
         </div>
-
+        
+        {/* Concise Disclaimer */}
+        <div className="mt-auto pt-2">
+          <p className="text-[10px] text-slate-500 leading-tight">
+            <strong className="text-slate-400">Important:</strong> Information provided may not have been independently verified by RaabtaNow. Please independently verify before proceeding.
+          </p>
+        </div>
       </div>
 
-      <div className="p-4 border-t border-white/5 bg-navy-900/50 mt-auto">
+      <div className="p-4 border-t border-white/5 bg-navy-900/50">
         <Link
           to={`/listings/${listing.listing_code}`}
           className="w-full flex items-center justify-center py-2.5 bg-navy-800 hover:bg-navy-750 text-amber-400 text-sm font-bold rounded-xl border border-amber-500/30 transition-colors"

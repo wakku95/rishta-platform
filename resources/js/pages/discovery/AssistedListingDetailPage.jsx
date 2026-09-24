@@ -67,7 +67,7 @@ export default function AssistedListingDetailPage() {
         <div className="mb-8 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
           <p className="text-sm text-amber-500 font-medium">
-            Important: This is an assisted listing managed through RaabtaNow. Information provided by the profile owner may not have been independently verified by RaabtaNow. Please independently verify important information before proceeding.
+            <strong className="font-bold">Important:</strong> This is an assisted listing managed through RaabtaNow. Information provided by the profile owner may not have been independently verified by RaabtaNow. Please independently verify the person's identity and other important information during your first contact before sharing sensitive information, sending money, or proceeding further.
           </p>
         </div>
 

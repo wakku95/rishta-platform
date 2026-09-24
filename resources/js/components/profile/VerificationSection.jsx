@@ -204,7 +204,7 @@ export default function VerificationSection() {
           <div className="pt-2 flex items-center justify-between">
             {identity?.status === 'approved' ? (
               <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                ✓ Identity Verified
+                ✓ ID Submitted
               </span>
             ) : identity?.status === 'pending' ? (
               <div className="flex items-center justify-between w-full">
@@ -254,7 +254,7 @@ export default function VerificationSection() {
           <div className="pt-2 flex items-center justify-between">
             {education?.status === 'approved' ? (
               <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                ✓ Education Verified
+                ✓ Education Submitted
               </span>
             ) : education?.status === 'pending' ? (
               <div className="flex items-center justify-between w-full">

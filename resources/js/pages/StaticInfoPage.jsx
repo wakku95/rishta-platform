@@ -174,6 +174,17 @@ export function PricingPage() {
           Secure payment processed via Safepay (debit/credit card, bank account, and mobile wallets).
         </p>
       </Card>
+
+      {/* Admin Assisted Pricing Card */}
+      <Card className="text-center p-8 bg-navy-800 border border-amber-500/20 mt-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 bg-amber-500 text-slate-950 text-[10px] font-black px-3 py-1 uppercase tracking-wider rounded-bl-lg">
+          Assisted Service
+        </div>
+        <h2 className="font-serif text-2xl font-bold text-white mb-3 mt-2">Admin Assisted Services</h2>
+        <p className="text-sm text-slate-300 leading-relaxed max-w-md mx-auto">
+          Admin-assisted services are provided separately from the standard website flow. Service charges may vary depending on the type and level of assistance required. Payment arrangements are handled separately with RaabtaNow.
+        </p>
+      </Card>
     </div>
   );
 }
@@ -283,7 +294,7 @@ export function PrivacyPolicyPage() {
           <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-400 mt-1">
             <li><strong className="text-slate-200">Isolated Private Storage:</strong> Uploaded document files are stored in private, unlisted server disks that are completely inaccessible via direct web URLs or search engines.</li>
             <li><strong className="text-slate-200">Strictly Internal Administrative Review:</strong> Documents are reviewed solely by authorized verification moderators to confirm candidate identity and qualifications.</li>
-            <li><strong className="text-slate-200">Display of Badges Only:</strong> Other platform users only see verified trust badges (<span className="text-emerald-400 font-medium">ID Verified</span> and <span className="text-purple-400 font-medium">Edu Verified</span>). Your actual document files, CNIC numbers, or certificate scans are never shown to any other user or family.</li>
+            <li><strong className="text-slate-200">Display of Badges Only:</strong> Other platform users only see verified trust badges (<span className="text-emerald-400 font-medium">ID Submitted</span> and <span className="text-purple-400 font-medium">Education Submitted</span>). Your actual document files, CNIC numbers, or certificate scans are never shown to any other user or family.</li>
             <li><strong className="text-slate-200">Automated Storage Retention & Purging:</strong> To uphold data minimization and prevent unnecessary retention of sensitive personal identity documents, raw document images are scheduled for automatic disk purging following verification approval. User verification trust badges remain permanently active even after underlying source files have been purged.</li>
           </ul>
         </div>
@@ -349,14 +360,14 @@ export function TermsPage() {
         <div>
           <h3 className="font-bold text-base text-white mb-2">3. Identity & Credential Verification</h3>
           <p>
-            Users who opt to submit National Identity Cards (CNIC) or educational credentials for verification badges warrant that all uploaded files are authentic, unaltered, and belong strictly to the registered candidate. Uploading falsified, forged, or third-party documents is strictly prohibited under Pakistani cyber laws and will result in immediate permanent account termination, badge revocation, and potential blacklisting.
+            Users who opt to submit National Identity Cards (CNIC) or educational credentials for verification badges warrant that all uploaded files are authentic, unaltered, and belong strictly to the registered candidate. Uploading falsified, forged, or third-party documents is strictly prohibited under Pakistani cyber laws and will result in immediate permanent account termination, badge revocation, and potential blacklisting. Information submitted by users or profile owners may not have been independently verified by RaabtaNow, and users are responsible for independently verifying information about other users.
           </p>
         </div>
 
         <div>
           <h3 className="font-bold text-base text-white mb-2">4. Fees & Payment Terms</h3>
           <p>
-            Registration, browsing, profile creation, and receiving connection requests are completely free of charge. A standard micro-fee of <strong className="text-white">Rs. 300 PKR</strong> is levied only on the proposal initiator upon mutual proposal acceptance to unlock verified contact details and finance two-way SMS OTP infrastructure. All electronic payments are processed securely via Safepay.
+            Registration, browsing, profile creation, and receiving connection requests are completely free of charge. A standard micro-fee of <strong className="text-white">Rs. 300 PKR</strong> is levied only on the proposal initiator upon mutual proposal acceptance to unlock verified contact details and finance two-way SMS OTP infrastructure. All electronic payments are processed securely via Safepay. For Admin Assisted services, service charges may vary depending on the type and level of assistance required. Payment arrangements for Assisted services are handled separately with RaabtaNow and do not use the standard Rs. 300 flow.
           </p>
         </div>
 
@@ -368,9 +379,10 @@ export function TermsPage() {
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-white mb-2">6. Disclaimer of Matrimonial Guarantee</h3>
+          <h3 className="font-bold text-base text-white mb-2">6. Disclaimer of Matrimonial Guarantee & User Responsibility</h3>
           <p>
-            While RaabtaNow verifies email and phone numbers via SMS OTP and validates submitted CNIC credentials, families are urged to conduct standard, thorough family background checks and customary due diligence prior to formalizing wedding engagements.
+            RaabtaNow does not guarantee that every profile or listing is accurate, complete, current, or suitable. 
+            While RaabtaNow verifies email and phone numbers via SMS OTP when applicable, we do not independently guarantee the outcome of a proposal, introduction, meeting, or marriage. Please independently verify the person's identity, education, marital status, and other important information during your first contact before sharing sensitive information, sending money, or proceeding further.
           </p>
         </div>
 
