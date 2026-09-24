@@ -237,6 +237,24 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{id}/approve', [\App\Http\Controllers\Admin\AssistedProfileSubmissionController::class, 'approve']);
         Route::post('/{id}/reject', [\App\Http\Controllers\Admin\AssistedProfileSubmissionController::class, 'reject']);
     });
+
+    // Social Media Publication Requests
+    Route::prefix('social-media-publication-requests')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'index']);
+        Route::get('/{id}', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'show']);
+        Route::post('/{id}/approve', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'approve']);
+        Route::post('/{id}/reject', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'reject']);
+        Route::post('/{id}/mark-published', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'markPublished']);
+        Route::post('/{id}/mark-removed', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'markRemoved']);
+    });
+});
+
+// User Social Media Publication Requests
+Route::middleware('auth:sanctum')->prefix('social-media-publication-requests')->group(function () {
+    Route::get('/', [\App\Http\Controllers\SocialMediaPublicationRequestController::class, 'index']);
+    Route::get('/latest', [\App\Http\Controllers\SocialMediaPublicationRequestController::class, 'latest']);
+    Route::post('/', [\App\Http\Controllers\SocialMediaPublicationRequestController::class, 'store']);
+    Route::post('/{id}/remove', [\App\Http\Controllers\SocialMediaPublicationRequestController::class, 'remove']);
 });
 
 // Public Assisted Profile Submission (No auth required)

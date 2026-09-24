@@ -13,7 +13,8 @@ import AdminVerificationsTab from './AdminVerificationsTab';
 import AdminAssistedTab from './AdminAssistedTab';
 import AdminAssistedListingsTab from './AdminAssistedListingsTab';
 import AdminAssistedSubmissionsTab from './AdminAssistedSubmissionsTab';
-import { ClipboardList, FileText } from 'lucide-react';
+import AdminSocialMediaTab from './AdminSocialMediaTab';
+import { ClipboardList, FileText, Share2 } from 'lucide-react';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -33,6 +34,7 @@ export default function AdminPage() {
     { id: 'assisted', name: 'Assisted Accounts', icon: UserPlus },
     { id: 'listings', name: 'Assisted Listings', icon: ClipboardList },
     { id: 'submissions', name: 'Assisted Submissions', icon: FileText },
+    { id: 'social-media', name: 'Social Media', icon: Share2 },
   ];
 
   return (
@@ -93,6 +95,7 @@ export default function AdminPage() {
           {activeTab === 'assisted' && <AdminAssistedTab />}
           {activeTab === 'listings' && <AdminAssistedListingsTab />}
           {activeTab === 'submissions' && <AdminAssistedSubmissionsTab />}
+          {activeTab === 'social-media' && <AdminSocialMediaTab />}
         </div>
       </div>
     </div>

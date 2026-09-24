@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import { getProfile, activateProfile, hideProfile, getProfilePreview } from '../../api/profile';
 import Card from '../../components/ui/Card';
+import SocialMediaPublicationCard from '../../components/profile/SocialMediaPublicationCard';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
@@ -562,6 +563,8 @@ export default function ProfilePage() {
 
         {/* Sidebar Column: Partner Preferences & Management */}
         <div className="space-y-6">
+          <SocialMediaPublicationCard profile={profile} isActive={canActivate} />
+          
           {/* Profile Management Info */}
           <Card className="p-6 bg-navy-800 border border-slate-750 shadow-md space-y-4">
             <h2 className="text-base font-serif font-extrabold text-white pb-2 border-b border-slate-750">
