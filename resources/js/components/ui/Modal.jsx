@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+﻿import React, { useEffect } from 'react';
 import { X } from 'lucide-react';
 
 /**
@@ -40,7 +40,7 @@ export default function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-start justify-center p-3 sm:p-6 pt-4 sm:pt-20 pb-6 overflow-y-auto"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-3 sm:p-6"
     >
       {/* Backdrop */}
       <div
@@ -54,10 +54,10 @@ export default function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
-        className={`relative w-full ${maxWidth} bg-navy-800 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/80 z-10 overflow-hidden my-auto animate-in fade-in zoom-in-95 duration-150`}
+        className={`relative w-full ${maxWidth} max-h-[90vh] flex flex-col bg-navy-800 rounded-2xl shadow-2xl shadow-black/60 border border-slate-700/80 z-10 overflow-hidden mx-auto animate-in fade-in zoom-in-95 duration-150`}
       >
         {/* Header */}
-        <div className="px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-750/70 bg-navy-850/50 flex items-center justify-between">
+        <div className="shrink-0 px-4 sm:px-6 py-3.5 sm:py-4 border-b border-slate-750/70 bg-navy-850/50 flex items-center justify-between">
           <div>
             {title && <h3 id="modal-title" className="text-base sm:text-lg font-bold text-white tracking-tight">{title}</h3>}
             {subtitle && <p className="text-xs text-slate-400 mt-0.5">{subtitle}</p>}
@@ -75,13 +75,13 @@ export default function Modal({
         </div>
 
         {/* Content */}
-        <div className="p-3.5 sm:p-6">
+        <div className="flex-1 overflow-y-auto p-3.5 sm:p-6">
           {children}
         </div>
 
         {/* Footer */}
         {footer && (
-          <div className="px-4 sm:px-6 py-3 sm:py-3.5 bg-navy-850/50 border-t border-slate-750/70 flex items-center justify-end gap-3">
+          <div className="shrink-0 px-4 sm:px-6 py-3 sm:py-3.5 bg-navy-850/50 border-t border-slate-750/70 flex items-center justify-end gap-3">
             {footer}
           </div>
         )}
