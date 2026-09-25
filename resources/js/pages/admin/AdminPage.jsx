@@ -36,6 +36,7 @@ export default function AdminPage() {
     { id: 'listings', name: 'Assisted Listings', icon: ClipboardList },
     { id: 'submissions', name: 'Assisted Submissions', icon: FileText },
     { id: 'social-media', name: 'Social Media', icon: Share2 },
+    { id: 'portfolio', name: 'My Portfolio', icon: Briefcase },
   ];
 
   return (
