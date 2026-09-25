@@ -1,8 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Settings, Save, Plus, Edit2, Trash2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
-import Card from '../ui/Card';
-import Button from '../ui/Button';
+import Card from '../../components/ui/Card';
+import Button from '../../components/ui/Button';
 
 export default function AdminPortfolioTab() {
   const [settings, setSettings] = useState({});
