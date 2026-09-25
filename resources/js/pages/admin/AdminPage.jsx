@@ -14,7 +14,8 @@ import AdminAssistedTab from './AdminAssistedTab';
 import AdminAssistedListingsTab from './AdminAssistedListingsTab';
 import AdminAssistedSubmissionsTab from './AdminAssistedSubmissionsTab';
 import AdminSocialMediaTab from './AdminSocialMediaTab';
-import { ClipboardList, FileText, Share2 } from 'lucide-react';
+import { ClipboardList, FileText, Share2, Briefcase } from 'lucide-react';
+import AdminPortfolioTab from './AdminPortfolioTab';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -96,6 +97,7 @@ export default function AdminPage() {
           {activeTab === 'listings' && <AdminAssistedListingsTab />}
           {activeTab === 'submissions' && <AdminAssistedSubmissionsTab />}
           {activeTab === 'social-media' && <AdminSocialMediaTab />}
+          {activeTab === 'portfolio' && <AdminPortfolioTab />}
         </div>
       </div>
     </div>

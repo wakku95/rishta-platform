@@ -247,6 +247,16 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{id}/mark-published', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'markPublished']);
         Route::post('/{id}/mark-removed', [\App\Http\Controllers\Admin\SocialMediaPublicationRequestController::class, 'markRemoved']);
     });
+
+    // Portfolio CMS Admin Routes
+    Route::prefix('portfolio')->group(function () {
+        Route::get('/settings', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'getSettings']);
+        Route::post('/settings', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'updateSettings']);
+        Route::get('/items', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'getItems']);
+        Route::post('/items', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'storeItem']);
+        Route::put('/items/{id}', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'updateItem']);
+        Route::delete('/items/{id}', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'destroyItem']);
+    });
 });
 
 // User Social Media Publication Requests
