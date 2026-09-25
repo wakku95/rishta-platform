@@ -1,0 +1,117 @@
+﻿{
+  "success": true,
+  "data": {
+    "settings": {
+      "full_name": "John Doe",
+      "profession": "Full Stack React & Laravel Developer",
+      "hero_tagline": "Building scalable web applications.",
+      "about_me": "I am a passionate developer with expertise in modern JavaScript frameworks and PHP backends. I love building products that solve real-world problems.",
+      "cv_link": "https://raabtanow.com/storage/portfolio/cv-latest.pdf",
+      "contact_email": "hello@johndoe.com",
+      "contact_phone": "+92 300 0000000",
+      "github_url": "https://github.com/yourusername",
+      "linkedin_url": "https://linkedin.com/in/yourusername"
+    },
+    "projects": [
+      {
+        "id": 1,
+        "type": "project",
+        "title": "RaabtaNow Matrimonial",
+        "subtitle": "A secure matrimonial platform for Pakistan",
+        "description": "Built a highly secure, privacy-first matrimonial platform with OTP verification, admin-assisted matchmaking, and automated payment gateways.",
+        "image_url": "https://raabtanow.com/storage/portfolio/projects/raabtanow.png",
+        "primary_link": "https://raabtanow.com",
+        "secondary_link": null,
+        "metadata": {
+          "tech_stack": ["React", "Laravel", "Tailwind CSS", "MySQL"],
+          "featured": true,
+          "year": "2026"
+        },
+        "sort_order": 1
+      },
+      {
+        "id": 2,
+        "type": "project",
+        "title": "E-Commerce Dashboard",
+        "subtitle": "Admin panel for tracking sales",
+        "description": "Developed a real-time dashboard for merchants to track analytics, inventory, and fulfillment.",
+        "image_url": "https://raabtanow.com/storage/portfolio/projects/dashboard.png",
+        "primary_link": "https://demo.example.com",
+        "secondary_link": "https://github.com/yourusername/ecommerce-dashboard",
+        "metadata": {
+          "tech_stack": ["Vue.js", "Node.js", "PostgreSQL"],
+          "featured": false,
+          "year": "2025"
+        },
+        "sort_order": 2
+      }
+    ],
+    "experience": [
+      {
+        "id": 3,
+        "type": "experience",
+        "title": "Senior Frontend Developer",
+        "subtitle": "Tech Solutions Inc.",
+        "description": "Lead the frontend team to migrate legacy systems to React. Improved performance by 40%.",
+        "image_url": "https://raabtanow.com/storage/portfolio/company-logo.png",
+        "primary_link": "https://techsolutions.com",
+        "secondary_link": null,
+        "metadata": {
+          "start_date": "2023-01",
+          "end_date": "Present",
+          "is_current": true
+        },
+        "sort_order": 1
+      }
+    ],
+    "education": [
+      {
+        "id": 4,
+        "type": "education",
+        "title": "Bachelor of Computer Science",
+        "subtitle": "University of Technology",
+        "description": "Graduated with Honors. Specialized in Software Engineering.",
+        "image_url": null,
+        "primary_link": null,
+        "secondary_link": null,
+        "metadata": {
+          "start_date": "2018",
+          "end_date": "2022"
+        },
+        "sort_order": 1
+      }
+    ],
+    "skills": [
+      {
+        "id": 5,
+        "type": "skill",
+        "title": "React.js",
+        "subtitle": "Frontend Framework",
+        "description": null,
+        "image_url": "https://raabtanow.com/storage/portfolio/icons/react.svg",
+        "primary_link": null,
+        "secondary_link": null,
+        "metadata": {
+          "proficiency": 90,
+          "category": "Frontend"
+        },
+        "sort_order": 1
+      },
+      {
+        "id": 6,
+        "type": "skill",
+        "title": "Laravel",
+        "subtitle": "Backend Framework",
+        "description": null,
+        "image_url": "https://raabtanow.com/storage/portfolio/icons/laravel.svg",
+        "primary_link": null,
+        "secondary_link": null,
+        "metadata": {
+          "proficiency": 85,
+          "category": "Backend"
+        },
+        "sort_order": 2
+      }
+    ]
+  }
+}

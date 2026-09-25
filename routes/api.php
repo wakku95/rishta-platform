@@ -260,3 +260,6 @@ Route::middleware('auth:sanctum')->prefix('social-media-publication-requests')->
 // Public Assisted Profile Submission (No auth required)
 Route::post('/assisted-submissions', [\App\Http\Controllers\AssistedProfileSubmissionController::class, 'store']);
 
+
+// External Portfolio API (Public)
+Route::get('/portfolio/data', [\App\Http\Controllers\Api\PortfolioController::class, 'index']);
