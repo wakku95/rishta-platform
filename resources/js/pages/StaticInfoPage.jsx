@@ -318,6 +318,13 @@ export function PrivacyPolicyPage() {
             Users reserve the complete right to update, hide, or permanently delete their profiles and associated verification submissions from our database at any time through their account dashboard or by writing to <strong className="text-magenta-400">support@raabtanow.com</strong>. Upon profile deletion, all pending documents are securely unlinked and erased.
           </p>
         </div>
+  
+        <div>
+          <h3 className="font-bold text-base text-white mb-2">7. Governing Law & Jurisdiction</h3>
+          <p>
+            These Terms and Conditions are governed by and construed in accordance with the laws of the Islamic Republic of Pakistan. Any disputes arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the competent courts located in Pakistan.
+          </p>
+        </div>
 
         <div className="pt-4 border-t border-slate-750 text-xs text-slate-500">
           <p>Registered Office: RaabtaNow, L95, 48C, Korangi, Karachi, Pakistan. | Phone: +92-323-9225450</p>
@@ -556,9 +563,30 @@ export function ContactUsPage() {
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Dedicated Matchmaking Assistance</li>
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Overseas Pakistani Matrimonial Search</li>
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Zero Public Photo / Phone Exposure Policy</li>
-          </ul>
+            </ul>
+          </Card>
+        </div>
+
+        <Card className="p-6 space-y-4 bg-navy-800 border border-slate-750">
+          <h3 className="font-bold text-base text-white border-b border-slate-700 pb-2">Customer Complaint Handling Mechanism</h3>
+          <div className="space-y-4 text-sm text-slate-300 leading-relaxed">
+            <p>
+              At RaabtaNow, we are committed to providing a reliable and secure matrimonial platform. If you have any complaints or concerns regarding our services, profiles, or payments, please follow our dispute resolution process below:
+            </p>
+            <div>
+              <strong className="text-white">How to contact us with a complaint:</strong>
+              <ul className="list-disc pl-5 mt-1 space-y-1">
+                <li>Email: <strong className="text-magenta-400">support@raabtanow.com</strong></li>
+                <li>Phone: <strong className="text-white">+92 323 9225450</strong></li>
+              </ul>
+            </div>
+            <div>
+              <strong className="text-white">Resolution Timeline:</strong>
+              <p className="mt-1">
+                Our support team will acknowledge your complaint within 24 hours. We aim to thoroughly investigate and provide a final resolution or solution to your dispute within <strong>3 to 5 business days</strong>.
+              </p>
+            </div>
+          </div>
         </Card>
       </div>
-    </div>
-  );
-}
+    );}
