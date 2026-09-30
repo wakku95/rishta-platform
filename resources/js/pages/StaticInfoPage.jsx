@@ -393,6 +393,13 @@ export function TermsPage() {
           </p>
         </div>
 
+        <div>
+          <h3 className="font-bold text-base text-white mb-2">7. Governing Law & Jurisdiction</h3>
+          <p>
+            These Terms and Conditions, your access to and use of RaabtaNow, and any dispute, controversy, or claim arising out of or in connection with them (including non-contractual disputes or claims) shall be governed by and construed in accordance with the laws of the Islamic Republic of Pakistan. You irrevocably agree that the competent courts located in Karachi, Pakistan shall have exclusive jurisdiction to settle any legal dispute, controversy, or claim arising out of or relating to these Terms and Conditions, the privacy policy, or the services provided by RaabtaNow.
+          </p>
+        </div>
+
         <div className="pt-4 border-t border-slate-750 text-xs text-slate-500">
           <p>RaabtaNow | Address: Sector 48-C, Korangi, Karachi, Sindh, Pakistan. | Email: support@raabtanow.com</p>
         </div>
