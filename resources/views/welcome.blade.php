@@ -56,7 +56,11 @@
                         "addressLocality": "Karachi",
                         "addressRegion": "Sindh",
                         "addressCountry": "PK"
-                    }
+                    },
+                    "sameAs": [
+                        "https://www.facebook.com/p/Raabta-Now-61594211561148/",
+                        "https://www.instagram.com/raabtanow/"
+                    ]
                 },
                 {
                     "&#64;type": "WebSite",
