@@ -15,6 +15,16 @@ class AssistedListingController extends Controller
     {
         $query = AssistedListing::query()->where('listing_status', 'published');
 
+        if ($request->filled('profile_code')) {
+            $code = trim($request->profile_code);
+            $query->where('listing_code', 'like', "%{$code}%");
+        }
+
+        if ($request->filled('listing_code')) {
+            $code = trim($request->listing_code);
+            $query->where('listing_code', 'like', "%{$code}%");
+        }
+
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }

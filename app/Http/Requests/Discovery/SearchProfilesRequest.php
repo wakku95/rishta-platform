@@ -24,6 +24,7 @@ class SearchProfilesRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'profile_code' => ['nullable', 'string', 'max:50'],
             'gender' => ['nullable', 'string', Rule::in(array_keys(ProfileOptions::GENDERS))],
             'min_age' => ['nullable', 'integer', 'min:18', 'max:80'],
             'max_age' => [

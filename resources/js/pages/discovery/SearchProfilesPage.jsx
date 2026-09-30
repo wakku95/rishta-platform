@@ -16,6 +16,7 @@ import AssistedListingCard from '../../components/profile/AssistedListingCard';
 
 // Standard fallback options matching ProfileOptions
 const INITIAL_FILTERS = {
+  profile_code: '',
   gender: '',
   min_age: '',
   max_age: '',
@@ -268,6 +269,16 @@ export default function SearchProfilesPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Profile ID / Code */}
+            <Input
+              label="Profile ID / Code"
+              name="profile_code"
+              placeholder="e.g. RN-1001 or AP-1001"
+              value={filters.profile_code}
+              onChange={handleInputChange}
+              error={validationErrors.profile_code?.[0]}
+            />
+
             {/* Gender */}
             <Select
               label="Gender"

@@ -58,7 +58,12 @@ class DiscoveryController extends Controller
             $query->where('user_id', '!=', $user->id);
         }
 
-        // 3. Demographic Filters
+        // 3. Demographic & Code Filters
+        if ($request->filled('profile_code')) {
+            $code = trim($request->profile_code);
+            $query->where('profile_code', 'like', "%{$code}%");
+        }
+
         if ($request->filled('gender')) {
             $query->where('gender', $request->gender);
         }
