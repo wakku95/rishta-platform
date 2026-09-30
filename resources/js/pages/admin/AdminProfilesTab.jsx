@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Eye, Trash2, ShieldAlert, RefreshCw, CheckCircle, Clock } from 'lucide-react';
+import { Search, Eye, Trash2, ShieldAlert, RefreshCw, CheckCircle, Clock, Sparkles } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
+import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 
 export default function AdminProfilesTab() {
   const [profiles, setProfiles] = useState([]);
@@ -12,6 +13,7 @@ export default function AdminProfilesTab() {
   const [loading, setLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
+  const [cardCandidate, setCardCandidate] = useState(null);
   const [message, setMessage] = useState(null);
 
   const fetchProfiles = async (page = 1) => {
@@ -192,6 +194,13 @@ export default function AdminProfilesTab() {
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
+                        onClick={() => setCardCandidate(p)}
+                        title="Generate 1080x1080 Social Media Card"
+                        className="p-1.5 rounded-lg text-magenta-400 hover:text-white hover:bg-magenta-500/20 transition cursor-pointer"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => handleInspect(p.id)}
                         disabled={inspectingId === p.id}
                         title="View Full Profile Details"
@@ -343,6 +352,14 @@ export default function AdminProfilesTab() {
             )}
           </div>
         </div>
+      )}
+
+      {/* Social Card Generator Modal */}
+      {cardCandidate && (
+        <AdminSocialCardModal
+          candidate={cardCandidate}
+          onClose={() => setCardCandidate(null)}
+        />
       )}
     </div>
   );

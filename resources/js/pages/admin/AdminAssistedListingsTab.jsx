@@ -2,11 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { 
   Plus, Search, Edit, FileText, CheckCircle, 
-  XCircle, Filter, FileSearch, ShieldCheck, UserPlus 
+  XCircle, Filter, FileSearch, ShieldCheck, UserPlus, Sparkles, Trash2 
 } from 'lucide-react';
 import CreateAssistedListingModal from './CreateAssistedListingModal';
 import ListingConversionModal from './ListingConversionModal';
 import AssistedListingDetailView from './AssistedListingDetailView';
+import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 
 export default function AdminAssistedListingsTab() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,6 +24,7 @@ export default function AdminAssistedListingsTab() {
   const [editingListing, setEditingListing] = useState(null);
   const [convertingListing, setConvertingListing] = useState(null);
   const [viewingListing, setViewingListing] = useState(null);
+  const [cardCandidate, setCardCandidate] = useState(null);
 
   const fetchListings = useCallback(async () => {
     setIsLoading(true);
@@ -186,6 +188,13 @@ export default function AdminAssistedListingsTab() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">
                       <button 
+                        onClick={() => setCardCandidate(listing)}
+                        className="text-magenta-400 hover:text-white transition"
+                        title="Generate 1080x1080 Social Media Card"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                      </button>
+                      <button 
                         onClick={() => setViewingListing(listing)}
                         className="text-slate-400 hover:text-amber-400 transition"
                         title="Manage / View Detail"
@@ -219,6 +228,14 @@ export default function AdminAssistedListingsTab() {
                           <UserPlus className="w-4 h-4" />
                         </button>
                       )}
+
+                      <button 
+                        onClick={() => handleDelete(listing.id)}
+                        className="text-rose-400/70 hover:text-rose-400 transition"
+                        title="Delete Listing Permanently"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -282,6 +299,14 @@ export default function AdminAssistedListingsTab() {
             setConvertingListing(null);
             mutate();
           }}
+        />
+      )}
+
+      {/* Social Card Generator Modal */}
+      {cardCandidate && (
+        <AdminSocialCardModal
+          candidate={cardCandidate}
+          onClose={() => setCardCandidate(null)}
         />
       )}
     </div>

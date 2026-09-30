@@ -10,7 +10,7 @@ class SocialMediaPublicationRequestController extends Controller
 {
     public function index()
     {
-        $requests = SocialMediaPublicationRequest::with(['user', 'profile', 'assistedListing'])
+        $requests = SocialMediaPublicationRequest::with(['user', 'profile.preferences', 'assistedListing'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
             

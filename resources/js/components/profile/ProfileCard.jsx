@@ -4,6 +4,7 @@ import { MapPin, GraduationCap, Briefcase, Ruler, ShieldCheck, HeartHandshake, E
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
+import GenderAvatar from '../ui/GenderAvatar';
 import { addToShortlist, removeFromShortlist } from '../../api/shortlist';
 import useAuth from '../../hooks/useAuth';
 
@@ -132,19 +133,23 @@ export default function ProfileCard({ profile, isInitiallyShortlisted = false, o
         </div>
 
         {/* Primary Demographics */}
-        <div>
-          <div className="flex items-baseline gap-2">
-            <span className="text-xl sm:text-2xl font-serif font-extrabold text-white">
-              {profile.age} yrs
-            </span>
-            <span className="text-sm font-bold text-slate-400 capitalize">
-              • {profile.gender}
-            </span>
-          </div>
+        <div className="flex items-center gap-3.5">
+          <GenderAvatar gender={profile.gender} size="md" />
 
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-magenta-400 mt-1">
-            <MapPin className="w-3.5 h-3.5 shrink-0" />
-            <span>{profile.city}</span>
+          <div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-xl sm:text-2xl font-serif font-extrabold text-white">
+                {profile.age} yrs
+              </span>
+              <span className="text-xs font-bold text-slate-400 capitalize">
+                • {profile.gender}
+              </span>
+            </div>
+
+            <div className="flex items-center gap-1.5 text-xs font-semibold text-magenta-400 mt-1">
+              <MapPin className="w-3.5 h-3.5 shrink-0" />
+              <span>{profile.city}</span>
+            </div>
           </div>
         </div>
 

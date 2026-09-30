@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Briefcase, GraduationCap, Ruler, AlertCircle } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
+import GenderAvatar from '../ui/GenderAvatar';
 
 export default function AssistedListingCard({ listing }) {
   // Truncate public about text
@@ -22,7 +23,9 @@ export default function AssistedListingCard({ listing }) {
 
       <div className="p-5 flex-1 flex flex-col">
         {/* Header (No Name) */}
-        <div className="flex items-start justify-between mb-3 pt-2">
+        <div className="flex items-center gap-3 mb-3 pt-2">
+          <GenderAvatar gender={listing.gender} size="md" />
+
           <div>
             <h3 className="text-lg font-bold text-white font-serif tracking-tight">
               {listing.gender === 'male' ? 'Male' : 'Female'} ({listing.age} yrs)

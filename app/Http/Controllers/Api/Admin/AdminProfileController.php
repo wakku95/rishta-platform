@@ -18,7 +18,7 @@ class AdminProfileController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Profile::query()->with('user:id,name,email,status');
+        $query = Profile::query()->with(['user:id,name,email,status', 'preferences']);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {

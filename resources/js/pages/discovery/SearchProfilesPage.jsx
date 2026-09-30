@@ -106,8 +106,17 @@ export default function SearchProfilesPage() {
         // Merge - we'll just append them to the end of the normal results for this page
         setProfiles([...resProfiles.data, ...listingsWithTag]);
         
-        // Use normal profile pagination for the main UI state
-        setMeta(resProfiles.meta || { current_page: 1, last_page: 1, total: resProfiles.data.length + listingsWithTag.length, per_page: 12 });
+        const regularTotal = resProfiles.meta?.total ?? resProfiles.data.length;
+        const assistedTotal = resListings?.meta?.total ?? listingsWithTag.length;
+        const combinedTotal = regularTotal + assistedTotal;
+
+        // Use normal profile pagination for page controls, but display combined total count
+        setMeta({
+          current_page: resProfiles.meta?.current_page || 1,
+          last_page: resProfiles.meta?.last_page || 1,
+          per_page: resProfiles.meta?.per_page || 12,
+          total: combinedTotal,
+        });
       }
     } catch (err) {
       if (err.response?.status === 422) {

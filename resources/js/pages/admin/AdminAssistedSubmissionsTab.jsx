@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CheckCircle2, XCircle, FileText, ChevronRight, UserPlus, Eye } from 'lucide-react';
+import { CheckCircle2, XCircle, FileText, ChevronRight, UserPlus, Eye, Sparkles } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
+import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 
 export default function AdminAssistedSubmissionsTab() {
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSubmission, setSelectedSubmission] = useState(null);
+  const [cardCandidate, setCardCandidate] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [message, setMessage] = useState(null);
@@ -119,12 +121,21 @@ export default function AdminAssistedSubmissionsTab() {
                     {sub.status === 'rejected' && <Badge variant="danger" size="sm">Rejected</Badge>}
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => setSelectedSubmission(sub)}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 ml-auto"
-                    >
-                      <Eye className="w-3.5 h-3.5" /> View
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => setCardCandidate(sub)}
+                        className="px-2.5 py-1.5 bg-magenta-500/20 hover:bg-magenta-500/30 text-magenta-300 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                        title="Generate 1080x1080 Card"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" /> Card
+                      </button>
+                      <button 
+                        onClick={() => setSelectedSubmission(sub)}
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> View
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -238,6 +249,14 @@ export default function AdminAssistedSubmissionsTab() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Social Card Generator Modal */}
+      {cardCandidate && (
+        <AdminSocialCardModal
+          candidate={cardCandidate}
+          onClose={() => setCardCandidate(null)}
+        />
       )}
     </div>
   );

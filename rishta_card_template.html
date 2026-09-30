@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RaabtaNow — Social Rishta Card</title>
+<style>
+  :root{
+    --paper:#fbf8f2;
+    --paper2:#f3eee5;
+    --ink:#202421;
+    --muted:#626862;
+    --line:#d9d0c2;
+    --gold:#a77a27;
+    --gold-soft:#eadfc9;
+    --emerald:#176b5b;
+    --emerald-soft:#e4f0ec;
+    --rose:#a85d6a;
+    --rose-soft:#f4e7e9;
+    --white:#ffffff;
+  }
+
+  *{box-sizing:border-box}
+  body{
+    margin:0;
+    min-height:100vh;
+    background:#e8e4dd;
+    font-family:Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    color:var(--ink);
+  }
+
+  .page{
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:28px;
+    gap:22px;
+  }
+
+  .toolbar{
+    width:min(1080px,100%);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:12px;
+  }
+
+  .toolbar h1{
+    margin:0;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:-.02em;
+  }
+
+  .toolbar p{
+    margin:4px 0 0;
+    color:#74776f;
+    font-size:13px;
+  }
+
+  .switch{
+    display:flex;
+    background:#fff;
+    border:1px solid #d8d3c9;
+    border-radius:12px;
+    padding:4px;
+    box-shadow:0 4px 16px rgba(0,0,0,.05);
+  }
+
+  .switch button{
+    border:0;
+    background:transparent;
+    padding:10px 16px;
+    border-radius:8px;
+    font-weight:700;
+    cursor:pointer;
+    color:#666b64;
+    transition: all 0.2s;
+  }
+
+  .switch button.active{
+    background:var(--ink);
+    color:white;
+  }
+
+  /* 1080 x 1350 social-media canvas */
+  .card{
+    width:540px;
+    height:675px;
+    position:relative;
+    overflow:hidden;
+    background:var(--paper);
+    border:1px solid #cfc5b5;
+    box-shadow:0 22px 60px rgba(44,38,27,.18);
+    border-radius:4px;
+  }
+
+  .card.groom{--accent:var(--emerald);--accent-soft:var(--emerald-soft)}
+  .card.bride{--accent:var(--rose);--accent-soft:var(--rose-soft)}
+
+  .inner{
+    position:absolute;
+    inset:13px;
+    border:1px solid var(--line);
+    padding:28px 31px 25px;
+    display:flex;
+    flex-direction:column;
+  }
+
+  .top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex:0 0 auto;
+  }
+
+  .brand{
+    font-family:Georgia, "Times New Roman", serif;
+    font-size:24px;
+    font-weight:700;
+    letter-spacing:.075em;
+    color:var(--ink);
+  }
+
+  .brand span{color:var(--gold)}
+
+  .category{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.14em;
+    color:var(--gold);
+    text-transform:uppercase;
+    text-align:right;
+    line-height:1.3;
+  }
+
+  .hero{
+    display:grid;
+    grid-template-columns:190px 1fr;
+    gap:25px;
+    align-items:center;
+    margin-top:22px;
+  }
+
+  .avatar{
+    width:190px;
+    height:190px;
+    border-radius:50%;
+    background:var(--accent-soft);
+    border:8px solid #fff;
+    outline:2px solid var(--accent);
+    display:grid;
+    place-items:center;
+    overflow:hidden;
+  }
+
+  .avatar img{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+  }
+
+  .eyebrow{
+    color:var(--accent);
+    font-size:13px;
+    font-weight:900;
+    letter-spacing:.13em;
+    text-transform:uppercase;
+    margin-bottom:7px;
+  }
+
+  .age{
+    font-size:42px;
+    line-height:.98;
+    font-weight:900;
+    letter-spacing:-.045em;
+    margin:0;
+  }
+
+  .location{
+    margin-top:10px;
+    font-size:21px;
+    line-height:1.2;
+    font-weight:700;
+    color:#363b37;
+  }
+
+  .community{
+    display:inline-flex;
+    align-items:center;
+    margin-top:13px;
+    padding:7px 14px;
+    background:var(--accent-soft);
+    color:var(--accent);
+    border-radius:999px;
+    font-size:13px;
+    font-weight:800;
+  }
+
+  .rule{
+    height:3px;
+    width:54px;
+    background:var(--accent);
+    margin:21px 0 15px;
+    border-radius:99px;
+    flex:0 0 auto;
+  }
+
+  .details{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    flex:0 0 auto;
+  }
+
+  .detail{
+    background:rgba(255,255,255,.68);
+    border:1px solid var(--line);
+    padding:13px 15px;
+    min-height:67px;
+  }
+
+  .label{
+    font-size:10px;
+    font-weight:900;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#7a7c76;
+    margin-bottom:5px;
+  }
+
+  .value{
+    font-size:17px;
+    line-height:1.15;
+    font-weight:800;
+    color:var(--ink);
+  }
+
+  .wide{
+    grid-column:span 2;
+  }
+
+  .text-row{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:10px;
+    flex:1;
+    min-height:0;
+  }
+
+  .text-box{
+    border-top:2px solid var(--accent);
+    padding:11px 2px 0;
+    min-width:0;
+  }
+
+  .text-box .label{color:var(--accent)}
+  .text-box p{
+    margin:4px 0 0;
+    font-size:14px;
+    line-height:1.3;
+    font-weight:600;
+    color:#343935;
+  }
+
+  .bottom{
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:15px;
+    margin-top:14px;
+    flex:0 0 auto;
+  }
+
+  .cta{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    font-size:14px;
+    font-weight:900;
+    color:var(--accent);
+  }
+
+  .cta-dot{
+    width:9px;
+    height:9px;
+    background:var(--accent);
+    border-radius:50%;
+  }
+
+  .site{
+    text-align:right;
+  }
+
+  .site strong{
+    display:block;
+    font-family:Georgia, "Times New Roman", serif;
+    font-size:16px;
+    letter-spacing:.02em;
+  }
+
+  .code{
+    display:block;
+    margin-top:2px;
+    color:#777a73;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.1em;
+  }
+
+  .controls-note{
+    color:#74776f;
+    font-size:12px;
+    text-align:center;
+  }
+
+  @media(max-width:650px){
+    .page{padding:12px}
+    .toolbar{align-items:flex-start; flex-direction:column}
+    .card{
+      transform-origin:top center;
+      width:min(540px, calc(100vw - 24px));
+      height:auto;
+      aspect-ratio:4/5;
+    }
+    .inner{padding:5.2% 5.7% 4.5%; inset:2.4%}
+    .hero{grid-template-columns:34% 1fr; gap:5%}
+    .avatar{width:100%;height:auto;aspect-ratio:1}
+    .age{font-size:clamp(25px,7.8vw,42px)}
+    .location{font-size:clamp(13px,3.9vw,21px)}
+    .brand{font-size:clamp(15px,4.5vw,24px)}
+    .details{gap:2%}
+    .detail{padding:3.1% 3.5%; min-height:0}
+    .value{font-size:clamp(11px,3.15vw,17px)}
+    .label{font-size:clamp(7px,1.85vw,10px)}
+    .text-row{gap:4%}
+    .text-box p{font-size:clamp(9px,2.55vw,14px)}
+    .category{font-size:clamp(6px,1.85vw,10px)}
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="toolbar">
+    <div>
+      <h1>RaabtaNow — Social Profile Card</h1>
+      <p>Clean, respectable Pakistani matrimonial design · 4:5 social format</p>
+    </div>
+    <div class="switch">
+      <button id="groomBtn" class="active" onclick="setGender('groom')">Groom</button>
+      <button id="brideBtn" onclick="setGender('bride')">Bride</button>
+    </div>
+  </div>
+
+  <div id="card" class="card groom">
+    <div class="inner">
+
+      <header class="top">
+        <div class="brand">RAABTA <span>NOW</span></div>
+        <div class="category">PAKISTANI<br>MATRIMONIAL</div>
+      </header>
+
+      <section class="hero">
+        <div class="avatar" id="avatar">
+          <img id="avatarImg" src="public/images/avatars/male_avatar.png" onerror="this.src='/images/avatars/male_avatar.png'" alt="Avatar" />
+        </div>
+
+        <div>
+          <div class="eyebrow" id="role">GROOM PROFILE</div>
+          <h2 class="age" id="age">29 YEARS</h2>
+          <div class="location" id="location">5'8" &nbsp;•&nbsp; Karachi</div>
+          <div class="community" id="community">Muslim • Sunni</div>
+        </div>
+      </section>
+
+      <div class="rule"></div>
+
+      <section class="details">
+        <div class="detail">
+          <div class="label">Education</div>
+          <div class="value" id="education">B.Com</div>
+        </div>
+
+        <div class="detail">
+          <div class="label">Profession</div>
+          <div class="value" id="profession">Business</div>
+        </div>
+
+        <div class="detail">
+          <div class="label">Marital Status</div>
+          <div class="value" id="status">Never Married</div>
+        </div>
+
+        <div class="detail">
+          <div class="label">Family</div>
+          <div class="value" id="familyType">Educated Family</div>
+        </div>
+      </section>
+
+      <section class="text-row">
+        <div class="text-box">
+          <div class="label">Family Background</div>
+          <p id="familyText">Respectable, educated and family-oriented household.</p>
+        </div>
+
+        <div class="text-box">
+          <div class="label">Looking For</div>
+          <p id="looking">Educated, responsible and family-oriented partner.</p>
+        </div>
+      </section>
+
+      <footer class="bottom">
+        <div class="cta">
+          <span class="cta-dot"></span>
+          <span>View profile on RaabtaNow</span>
+        </div>
+        <div class="site">
+          <strong>RaabtaNow.com</strong>
+          <span class="code" id="code">PROFILE RN-1024</span>
+        </div>
+      </footer>
+
+    </div>
+  </div>
+
+  <div class="controls-note">Switch Groom / Bride above to preview the card with the updated avatars.</div>
+</div>
+
+<script>
+const profiles = {
+  groom: {
+    role: "GROOM PROFILE",
+    age: "29 YEARS",
+    location: `5'8" &nbsp;•&nbsp; Karachi`,
+    community: "Muslim • Sunni",
+    education: "B.Com",
+    profession: "Business",
+    status: "Never Married",
+    familyType: "Educated Family",
+    familyText: "Respectable, educated and family-oriented household.",
+    looking: "Educated, responsible and family-oriented partner.",
+    code: "PROFILE RN-1024",
+    avatarSrc: "public/images/avatars/male_avatar.png"
+  },
+  bride: {
+    role: "BRIDE PROFILE",
+    age: "27 YEARS",
+    location: `5'4" &nbsp;•&nbsp; Karachi`,
+    community: "Muslim • Sunni",
+    education: "B.Sc",
+    profession: "Teacher",
+    status: "Never Married",
+    familyType: "Educated Family",
+    familyText: "Respectable, educated and family-oriented household.",
+    looking: "Educated, respectful and family-oriented partner.",
+    code: "PROFILE RN-1187",
+    avatarSrc: "public/images/avatars/female_avatar.png"
+  }
+};
+
+function setGender(gender){
+  const p = profiles[gender];
+  const card = document.getElementById("card");
+
+  card.className = "card " + gender;
+
+  document.getElementById("role").textContent = p.role;
+  document.getElementById("age").textContent = p.age;
+  document.getElementById("location").innerHTML = p.location;
+  document.getElementById("community").textContent = p.community;
+  document.getElementById("education").textContent = p.education;
+  document.getElementById("profession").textContent = p.profession;
+  document.getElementById("status").textContent = p.status;
+  document.getElementById("familyType").textContent = p.familyType;
+  document.getElementById("familyText").textContent = p.familyText;
+  document.getElementById("looking").textContent = p.looking;
+  document.getElementById("code").textContent = p.code;
+
+  const imgEl = document.getElementById("avatarImg");
+  imgEl.src = p.avatarSrc;
+  imgEl.onerror = () => { imgEl.src = gender === 'groom' ? '/images/avatars/male_avatar.png' : '/images/avatars/female_avatar.png'; };
+
+  document.getElementById("groomBtn").classList.toggle("active", gender === "groom");
+  document.getElementById("brideBtn").classList.toggle("active", gender === "bride");
+}
+
+setGender("groom");
+</script>
+
+</body>
+</html>

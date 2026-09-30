@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { CheckCircle2, XCircle, Share2, Eye } from 'lucide-react';
+import { CheckCircle2, XCircle, Share2, Eye, Sparkles } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
+import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 
 export default function AdminSocialMediaTab() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedRequest, setSelectedRequest] = useState(null);
+  const [cardCandidate, setCardCandidate] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
   const [filter, setFilter] = useState('pending');
@@ -163,12 +165,21 @@ export default function AdminSocialMediaTab() {
                     } size="sm">{req.status.replace('_', ' ')}</Badge>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button 
-                      onClick={() => setSelectedRequest(req)}
-                      className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1 ml-auto"
-                    >
-                      <Eye className="w-3.5 h-3.5" /> View
-                    </button>
+                    <div className="flex items-center justify-end gap-2">
+                      <button 
+                        onClick={() => setCardCandidate(req.public_profile_snapshot || req.profile || { profile_code: req.profile?.profile_code })}
+                        className="px-2.5 py-1.5 bg-magenta-500/20 hover:bg-magenta-500/30 text-magenta-300 rounded-lg text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+                        title="Generate 1080x1080 Card"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" /> Card
+                      </button>
+                      <button 
+                        onClick={() => setSelectedRequest(req)}
+                        className="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white rounded-lg text-xs font-bold transition flex items-center gap-1"
+                      >
+                        <Eye className="w-3.5 h-3.5" /> View
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -318,6 +329,14 @@ export default function AdminSocialMediaTab() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Social Card Generator Modal */}
+      {cardCandidate && (
+        <AdminSocialCardModal
+          candidate={cardCandidate}
+          onClose={() => setCardCandidate(null)}
+        />
       )}
     </div>
   );
