@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { 
   Plus, Search, Edit, FileText, CheckCircle, 
-  XCircle, Filter, FileSearch, ShieldCheck, UserPlus, Sparkles, Trash2 
+  XCircle, Filter, FileSearch, ShieldCheck, UserPlus, Sparkles, Trash2, Heart 
 } from 'lucide-react';
 import CreateAssistedListingModal from './CreateAssistedListingModal';
 import ListingConversionModal from './ListingConversionModal';
@@ -12,6 +12,7 @@ import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 export default function AdminAssistedListingsTab() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [interestFilter, setInterestFilter] = useState('');
   const [page, setPage] = useState(1);
 
   // Data fetching state
@@ -32,7 +33,8 @@ export default function AdminAssistedListingsTab() {
       const queryParams = new URLSearchParams({
         page,
         search: searchTerm,
-        status: statusFilter
+        status: statusFilter,
+        interest_filter: interestFilter
       }).toString();
       const res = await axios.get(`/api/admin/listings?${queryParams}`);
       setData(res.data);
@@ -41,7 +43,7 @@ export default function AdminAssistedListingsTab() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, searchTerm, statusFilter]);
+  }, [page, searchTerm, statusFilter, interestFilter]);
 
   useEffect(() => {
     fetchListings();
@@ -109,7 +111,10 @@ export default function AdminAssistedListingsTab() {
             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => {
+                setStatusFilter(e.target.value);
+                setPage(1);
+              }}
               className="pl-9 pr-8 py-2 bg-navy-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 appearance-none transition"
             >
               <option value="">All Statuses</option>
@@ -117,6 +122,24 @@ export default function AdminAssistedListingsTab() {
               <option value="published">Published</option>
               <option value="unpublished">Unpublished</option>
               <option value="converted">Converted</option>
+            </select>
+          </div>
+          <div className="relative">
+            <Heart className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <select
+              value={interestFilter}
+              onChange={(e) => {
+                setInterestFilter(e.target.value);
+                setPage(1);
+              }}
+              className="pl-9 pr-8 py-2 bg-navy-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 appearance-none transition"
+            >
+              <option value="">All Inquiries</option>
+              <option value="has_new">⚡ Needs Action (New)</option>
+              <option value="in_progress">📞 In Progress / Contacted</option>
+              <option value="introduced">🤝 Introduced / Matched</option>
+              <option value="has_any">Has Any Inquiries</option>
+              <option value="none">No Inquiries Yet</option>
             </select>
           </div>
         </div>
@@ -197,19 +220,23 @@ export default function AdminAssistedListingsTab() {
                       <button 
                         onClick={() => setViewingListing(listing)}
                         className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border transition ${
-                          (listing.interests_count || 0) > 0
+                          (listing.new_interests_count || 0) > 0
+                            ? 'bg-rose-500/15 border-rose-500/40 text-rose-300 hover:bg-rose-500/25 ring-1 ring-rose-500/30'
+                            : (listing.interests_count || 0) > 0
                             ? 'bg-amber-500/10 border-amber-500/40 text-amber-300 hover:bg-amber-500/20'
                             : 'bg-navy-900 border-white/10 text-slate-400 hover:text-white hover:border-slate-600'
                         }`}
-                        title={`Manage / View Detail (${listing.interests_count || 0} received interests)`}
+                        title={`Manage / View Detail (${listing.interests_count || 0} total, ${listing.new_interests_count || 0} new)`}
                       >
                         <ShieldCheck className="w-4 h-4 shrink-0" />
                         <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded-full ${
-                          (listing.interests_count || 0) > 0 
+                          (listing.new_interests_count || 0) > 0
+                            ? 'bg-rose-500 text-white font-black shadow-xs'
+                            : (listing.interests_count || 0) > 0 
                             ? 'bg-amber-500 text-slate-950 font-black shadow-xs' 
                             : 'text-slate-500 bg-white/5'
                         }`}>
-                          {listing.interests_count || 0}
+                          {(listing.new_interests_count || 0) > 0 ? `${listing.new_interests_count} new` : (listing.interests_count || 0)}
                         </span>
                       </button>
                       <button 

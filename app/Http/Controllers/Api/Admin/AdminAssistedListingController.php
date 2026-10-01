@@ -23,7 +23,12 @@ class AdminAssistedListingController extends Controller
     public function index(Request $request)
     {
         $listings = AssistedListing::query()
-            ->withCount('interests')
+            ->withCount([
+                'interests',
+                'interests as new_interests_count' => function ($q) {
+                    $q->where('status', 'new');
+                }
+            ])
             ->when($request->search, function ($query, $search) {
                 $query->where('listing_code', 'like', "%{$search}%")
                       ->orWhere('full_name', 'like', "%{$search}%")
@@ -31,6 +36,25 @@ class AdminAssistedListingController extends Controller
             })
             ->when($request->status, function ($query, $status) {
                 $query->where('listing_status', $status);
+            })
+            ->when($request->interest_filter, function ($query, $filter) {
+                if ($filter === 'has_new') {
+                    $query->whereHas('interests', function ($q) {
+                        $q->where('status', 'new');
+                    });
+                } elseif ($filter === 'in_progress') {
+                    $query->whereHas('interests', function ($q) {
+                        $q->whereIn('status', ['contacted', 'in_progress']);
+                    });
+                } elseif ($filter === 'introduced') {
+                    $query->whereHas('interests', function ($q) {
+                        $q->where('status', 'introduced');
+                    });
+                } elseif ($filter === 'has_any') {
+                    $query->has('interests');
+                } elseif ($filter === 'none') {
+                    $query->doesntHave('interests');
+                }
             })
             ->latest()
             ->paginate($request->per_page ?? 15);
