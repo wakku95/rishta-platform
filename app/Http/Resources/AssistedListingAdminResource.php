@@ -42,6 +42,7 @@ class AssistedListingAdminResource extends JsonResource
             'admin_notes' => $this->admin_notes,
             'published_externally_at' => $this->published_externally_at,
             'external_notes' => $this->external_notes,
+            'interests_count' => (int) ($this->interests_count ?? $this->interests()->count()),
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

@@ -23,6 +23,7 @@ class AdminAssistedListingController extends Controller
     public function index(Request $request)
     {
         $listings = AssistedListing::query()
+            ->withCount('interests')
             ->when($request->search, function ($query, $search) {
                 $query->where('listing_code', 'like', "%{$search}%")
                       ->orWhere('full_name', 'like', "%{$search}%")

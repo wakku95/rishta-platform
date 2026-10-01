@@ -196,10 +196,21 @@ export default function AdminAssistedListingsTab() {
                       </button>
                       <button 
                         onClick={() => setViewingListing(listing)}
-                        className="text-slate-400 hover:text-amber-400 transition"
-                        title="Manage / View Detail"
+                        className={`inline-flex items-center gap-1.5 px-2 py-1 rounded-lg border transition ${
+                          (listing.interests_count || 0) > 0
+                            ? 'bg-amber-500/10 border-amber-500/40 text-amber-300 hover:bg-amber-500/20'
+                            : 'bg-navy-900 border-white/10 text-slate-400 hover:text-white hover:border-slate-600'
+                        }`}
+                        title={`Manage / View Detail (${listing.interests_count || 0} received interests)`}
                       >
-                        <ShieldCheck className="w-4 h-4" />
+                        <ShieldCheck className="w-4 h-4 shrink-0" />
+                        <span className={`text-xs font-mono font-bold px-1.5 py-0.5 rounded-full ${
+                          (listing.interests_count || 0) > 0 
+                            ? 'bg-amber-500 text-slate-950 font-black shadow-xs' 
+                            : 'text-slate-500 bg-white/5'
+                        }`}>
+                          {listing.interests_count || 0}
+                        </span>
                       </button>
                       <button 
                         onClick={() => setEditingListing(listing)}
