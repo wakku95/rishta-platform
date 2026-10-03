@@ -38,6 +38,7 @@ class Profile extends Model
         'confirmation_token',
         'confirmation_expires_at',
         'confirmed_at',
+        'about_approved_at',
     ];
 
     /**
@@ -52,6 +53,7 @@ class Profile extends Model
             'height' => 'integer',
             'confirmation_expires_at' => 'datetime',
             'confirmed_at' => 'datetime',
+            'about_approved_at' => 'datetime',
         ];
     }
 
@@ -69,6 +71,9 @@ class Profile extends Model
         static::saving(function (Profile $profile) {
             if ($profile->religion !== 'Islam') {
                 $profile->sect = null;
+            }
+            if ($profile->isDirty('about') && !$profile->isDirty('about_approved_at')) {
+                $profile->about_approved_at = null;
             }
         });
     }
@@ -238,6 +243,72 @@ class Profile extends Model
     public function isConfirmed(): bool
     {
         return !empty($this->confirmed_at);
+    }
+
+    /**
+     * Check if the about bio text is approved by an administrator.
+     */
+    public function isAboutApproved(): bool
+    {
+        return !empty($this->about_approved_at);
+    }
+
+    /**
+     * Check if profile meets all 3 activation requirements:
+     * 1. Email verified
+     * 2. Complete biodata
+     * 3. Partner preferences set
+     */
+    public function meetsActivationRequirements(): bool
+    {
+        $user = $this->relationLoaded('user') ? $this->user : $this->user()->first();
+        if (!$user || !$user->hasVerifiedEmail()) {
+            return false;
+        }
+
+        $mandatoryFields = [
+            'gender',
+            'date_of_birth',
+            'religion',
+            'city',
+            'education',
+            'profession',
+            'marital_status',
+            'height',
+            'managed_by',
+        ];
+
+        foreach ($mandatoryFields as $field) {
+            if (empty($this->{$field})) {
+                return false;
+            }
+        }
+
+        if ($this->religion === 'Islam' && empty($this->sect)) {
+            return false;
+        }
+
+        $preferences = $this->relationLoaded('preferences') ? $this->preferences : $this->preferences()->first();
+        if (!$preferences || empty($preferences->preferred_gender) || empty($preferences->min_age) || empty($preferences->max_age)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Automatically activate profile if it is currently draft and meets all requirements.
+     * Note: Does NOT activate if status is 'hidden' (respects user's manual choice).
+     */
+    public function maybeAutoActivate(): bool
+    {
+        if ($this->profile_status === 'draft' && $this->meetsActivationRequirements()) {
+            $this->profile_status = 'active';
+            $this->save();
+            return true;
+        }
+
+        return false;
     }
 }
 

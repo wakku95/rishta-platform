@@ -66,6 +66,7 @@ const FALLBACK_OPTIONS = {
     { value: 'divorced', label: 'Divorced' },
     { value: 'widowed', label: 'Widowed' },
     { value: 'separated', label: 'Separated' },
+    { value: 'married', label: 'Married (2nd / 3rd Marriage)' },
   ],
 };
 

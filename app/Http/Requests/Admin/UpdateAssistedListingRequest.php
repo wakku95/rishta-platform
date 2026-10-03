@@ -31,7 +31,21 @@ class UpdateAssistedListingRequest extends FormRequest
             'city' => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::CITIES))],
             'education' => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::EDUCATIONS))],
             'profession' => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::PROFESSIONS))],
-            'marital_status' => ['sometimes', 'required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MARITAL_STATUSES))],
+            'marital_status' => [
+                'sometimes',
+                'required',
+                'string',
+                \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MARITAL_STATUSES)),
+                function ($attribute, $value, $fail) {
+                    if ($value === 'married') {
+                        $listing = $this->route('assisted_listing');
+                        $gender = $this->input('gender') ?? ($listing instanceof \App\Models\AssistedListing ? $listing->gender : null);
+                        if ($gender !== 'male') {
+                            $fail('The married status is only available for male profiles.');
+                        }
+                    }
+                },
+            ],
             'height' => ['sometimes', 'required', 'integer', 'min:120', 'max:250'],
             'public_about' => ['nullable', 'string', 'max:2000'],
             'family_background' => ['nullable', 'string', 'max:2000'],

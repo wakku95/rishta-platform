@@ -60,6 +60,8 @@ export default function ProfileCard({ profile, isInitiallyShortlisted = false, o
         return 'Widowed';
       case 'separated':
         return 'Separated';
+      case 'married':
+        return 'Married (2nd/3rd Marriage)';
       default:
         return status;
     }

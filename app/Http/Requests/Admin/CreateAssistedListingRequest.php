@@ -31,7 +31,16 @@ class CreateAssistedListingRequest extends FormRequest
             'city' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::CITIES))],
             'education' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::EDUCATIONS))],
             'profession' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::PROFESSIONS))],
-            'marital_status' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MARITAL_STATUSES))],
+            'marital_status' => [
+                'required',
+                'string',
+                \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MARITAL_STATUSES)),
+                function ($attribute, $value, $fail) {
+                    if ($value === 'married' && $this->input('gender') !== 'male') {
+                        $fail('The married status is only available for male profiles.');
+                    }
+                },
+            ],
             'height' => ['required', 'integer', 'min:120', 'max:250'],
             'public_about' => ['nullable', 'string', 'max:2000'],
             'family_background' => ['nullable', 'string', 'max:2000'],

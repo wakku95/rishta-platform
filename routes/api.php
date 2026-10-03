@@ -174,6 +174,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/profiles', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'index']);
     Route::get('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'show']);
     Route::post('/profiles/{id}/status', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateStatus']);
+    Route::post('/profiles/{id}/about-approval', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateAboutApproval']);
     Route::post('/profiles/{id}/gender', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateGender']);
     Route::post('/profiles/{id}/field', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'updateField']);
     Route::delete('/profiles/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileController::class, 'destroy']);

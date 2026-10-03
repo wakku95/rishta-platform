@@ -85,6 +85,7 @@ const FALLBACK_OPTIONS = {
     { value: 'divorced', label: 'Divorced' },
     { value: 'widowed', label: 'Widowed' },
     { value: 'separated', label: 'Separated' },
+    { value: 'married', label: 'Married (2nd / 3rd Marriage)' },
   ],
   managed_by: [
     { value: 'myself', label: 'Myself (Candidate)' },
@@ -191,6 +192,9 @@ export default function EditProfilePage() {
       if (name === 'religion' && value !== 'Islam') {
         updated.sect = '';
       }
+      if (name === 'gender' && value !== 'male' && updated.marital_status === 'married') {
+        updated.marital_status = 'never_married';
+      }
       return updated;
     });
     if (errors[name]) {
@@ -269,7 +273,7 @@ export default function EditProfilePage() {
             <p className="leading-relaxed text-slate-400">
               RaabtaNow does not publish photos, exact house addresses, phone numbers, or email addresses publicly.
               Structured fields (age, height, city, education, profession) are visible to prospective matches.
-              "About" and "Family Background" are released ONLY after mutual proposal acceptance and phone verification.
+              "About Candidate" is reviewed and approved by Admin before public display, while "Family Background" is strictly confidential and released ONLY after mutual proposal acceptance and phone verification.
             </p>
           </div>
         </div>
@@ -329,7 +333,11 @@ export default function EditProfilePage() {
               value={formData.marital_status}
               onChange={handleChange}
               error={errors.marital_status?.[0]}
-              options={options.marital_statuses}
+              options={
+                formData.gender === 'male'
+                  ? options.marital_statuses
+                  : options.marital_statuses.filter((opt) => opt.value !== 'married')
+              }
               required
             />
           </div>
@@ -459,7 +467,7 @@ export default function EditProfilePage() {
               onChange={handleChange}
               error={errors.about?.[0]}
               placeholder="Describe personality, hobbies, life outlook, values, and religious practice..."
-              helperText="Optional for profile activation. Max 2,000 characters."
+              helperText="Reviewed and approved by Admin before public display. Optional for profile activation. Max 2,000 characters."
             />
 
             <Textarea
@@ -471,7 +479,7 @@ export default function EditProfilePage() {
               onChange={handleChange}
               error={errors.family_background?.[0]}
               placeholder="Describe parents, siblings, family traditions, values, and native origin..."
-              helperText="Optional for profile activation. Max 2,000 characters."
+              helperText="Strictly confidential. Released ONLY after mutual rishta acceptance and unlock. Max 2,000 characters."
             />
           </div>
         </Card>

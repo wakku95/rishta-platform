@@ -42,13 +42,19 @@ export default function AssistedProfileSubmissionPage() {
     
     if (name.startsWith('public_biodata.')) {
       const key = name.split('.')[1];
-      setFormData(prev => ({
-        ...prev,
-        public_biodata: {
+      setFormData(prev => {
+        const updatedBiodata = {
           ...prev.public_biodata,
           [key]: value
+        };
+        if (key === 'gender' && value !== 'male' && updatedBiodata.marital_status === 'married') {
+          updatedBiodata.marital_status = '';
         }
-      }));
+        return {
+          ...prev,
+          public_biodata: updatedBiodata
+        };
+      });
     } else if (type === 'checkbox') {
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
@@ -245,7 +251,7 @@ export default function AssistedProfileSubmissionPage() {
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Marital Status <span className="text-emerald-500">*</span></label>
                     <select name="public_biodata.marital_status" required value={formData.public_biodata.marital_status} onChange={handleChange} className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-emerald-500 focus:outline-none">
                       <option value="">Select Marital Status</option>
-                      {options?.marital_statuses?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                      {options?.marital_statuses?.filter(opt => formData.public_biodata.gender === 'male' || opt.value !== 'married').map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                     </select>
                   </div>
                   <div>

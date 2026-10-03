@@ -116,6 +116,7 @@ class ProfileOptions
         'divorced' => 'Divorced',
         'widowed' => 'Widowed',
         'separated' => 'Separated',
+        'married' => 'Married (2nd / 3rd Marriage)',
     ];
 
     public const MANAGED_BY = [

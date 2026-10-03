@@ -40,7 +40,17 @@ class StoreAssistedProfileSubmissionRequest extends FormRequest
             'public_biodata.city' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::CITIES))],
             'public_biodata.education' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::EDUCATIONS))],
             'public_biodata.profession' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::PROFESSIONS))],
-            'public_biodata.marital_status' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MARITAL_STATUSES))],
+            'public_biodata.marital_status' => [
+                'required',
+                'string',
+                \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MARITAL_STATUSES)),
+                function ($attribute, $value, $fail) {
+                    $gender = request()->input('public_biodata.gender');
+                    if ($value === 'married' && $gender !== 'male') {
+                        $fail('The married status is only available for male profiles.');
+                    }
+                },
+            ],
             'public_biodata.height' => ['required', 'integer', 'min:120', 'max:250'],
             'public_biodata.public_about' => ['nullable', 'string', 'max:2000'],
             'public_biodata.managed_by' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MANAGED_BY))],

@@ -14,7 +14,7 @@ class PublicProfileResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        return [
+        $data = [
             'profile_code' => $this->profile_code,
             'age' => $this->age,
             'gender' => $this->gender,
@@ -34,5 +34,12 @@ class PublicProfileResource extends JsonResource
                 'education_verified' => $this->user ? $this->user->isEducationVerified() : false,
             ],
         ];
+
+        if ($this->resource instanceof \App\Models\Profile && $this->resource->isAboutApproved()) {
+            $data['about'] = $this->about;
+            $data['is_about_approved'] = true;
+        }
+
+        return $data;
     }
 }

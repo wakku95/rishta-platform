@@ -29,6 +29,8 @@ class ProfileResource extends JsonResource
             'height' => $this->height,
             'height_formatted' => $this->height_formatted,
             'about' => $this->about,
+            'about_approved_at' => $this->about_approved_at?->toIso8601String(),
+            'is_about_approved' => $this->isAboutApproved(),
             'family_background' => $this->family_background,
             'managed_by' => $this->managed_by,
             'profile_status' => $this->profile_status,

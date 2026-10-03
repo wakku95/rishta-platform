@@ -26,7 +26,14 @@ const CreateAssistedProfileModal = ({ onClose, onSuccess }) => {
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setFormData(prev => {
+      const updated = { ...prev, [name]: value };
+      if (name === 'gender' && value !== 'male' && prev.marital_status === 'married') {
+        updated.marital_status = 'never_married';
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -166,6 +173,7 @@ const CreateAssistedProfileModal = ({ onClose, onSuccess }) => {
                 <option value="divorced">Divorced</option>
                 <option value="widowed">Widowed</option>
                 <option value="separated">Separated</option>
+                {formData.gender === 'male' && <option value="married">Married (2nd / 3rd Marriage)</option>}
               </select>
             </div>
 

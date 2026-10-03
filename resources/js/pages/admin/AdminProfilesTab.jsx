@@ -10,6 +10,7 @@ export default function AdminProfilesTab() {
   const [search, setSearch] = useState('');
   const [genderFilter, setGenderFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [aboutFilter, setAboutFilter] = useState('');
   const [loading, setLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
@@ -24,6 +25,7 @@ export default function AdminProfilesTab() {
         search: search || undefined,
         gender: genderFilter || undefined,
         status: statusFilter || undefined,
+        about_status: aboutFilter || undefined,
       });
       setProfiles(data.data || []);
       setPagination({
@@ -40,7 +42,7 @@ export default function AdminProfilesTab() {
 
   useEffect(() => {
     fetchProfiles(1);
-  }, [genderFilter, statusFilter]);
+  }, [genderFilter, statusFilter, aboutFilter]);
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -132,6 +134,17 @@ export default function AdminProfilesTab() {
             <option value="suspended">Suspended</option>
           </select>
 
+          <select
+            value={aboutFilter}
+            onChange={(e) => setAboutFilter(e.target.value)}
+            className="px-3 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-magenta-500"
+          >
+            <option value="">All Bios</option>
+            <option value="pending">⏳ Bio Pending Review</option>
+            <option value="approved">✓ Bio Approved</option>
+            <option value="no_bio">No Bio</option>
+          </select>
+
           <Button size="sm" variant="secondary" icon={RefreshCw} onClick={() => fetchProfiles(pagination.current_page)} isLoading={loading}>
             Refresh
           </Button>
@@ -156,6 +169,7 @@ export default function AdminProfilesTab() {
               <th className="px-5 py-3.5">City</th>
               <th className="px-5 py-3.5">Profession</th>
               <th className="px-5 py-3.5">Status</th>
+              <th className="px-5 py-3.5">Bio Review</th>
               <th className="px-5 py-3.5 text-right">Actions</th>
             </tr>
           </thead>
@@ -190,6 +204,28 @@ export default function AdminProfilesTab() {
                       <option value="draft">Draft</option>
                       <option value="suspended">Suspended</option>
                     </select>
+                  </td>
+                  <td className="px-5 py-3.5">
+                    {p.about ? (
+                      p.about_approved_at ? (
+                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 border border-emerald-500/30 text-emerald-300">
+                          <CheckCircle className="w-3.5 h-3.5 text-emerald-400" />
+                          Approved
+                        </span>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => handleInspect(p.id)}
+                          className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/20 border border-amber-500/40 text-amber-300 hover:bg-amber-500/30 transition-colors cursor-pointer"
+                          title="Click to inspect and review candidate bio"
+                        >
+                          <Clock className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+                          Needs Review
+                        </button>
+                      )
+                    ) : (
+                      <span className="text-xs text-slate-500 italic">No Bio</span>
+                    )}
                   </td>
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
@@ -326,9 +362,45 @@ export default function AdminProfilesTab() {
             </div>
 
             {selectedProfile.about && (
-              <div className="p-4 bg-navy-800/50 rounded-xl border border-white/5 space-y-1 text-xs">
-                <span className="font-bold text-slate-300 block uppercase tracking-wider">About</span>
-                <p className="text-slate-200 leading-relaxed">{selectedProfile.about}</p>
+              <div className="p-4 bg-navy-800/50 rounded-xl border border-white/5 space-y-2 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-slate-300 uppercase tracking-wider">About (Candidate Statement)</span>
+                  <div className="flex items-center gap-2">
+                    {selectedProfile.about_approved_at ? (
+                      <span className="text-emerald-400 text-[11px] font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded">
+                        Approved ✓
+                      </span>
+                    ) : (
+                      <span className="text-amber-400 text-[11px] font-semibold bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
+                        Pending Review
+                      </span>
+                    )}
+                    <button
+                      onClick={async () => {
+                        const newApproved = !selectedProfile.about_approved_at;
+                        try {
+                          await adminApi.updateAboutApproval(selectedProfile.id, newApproved);
+                          setSelectedProfile(prev => ({
+                            ...prev,
+                            about_approved_at: newApproved ? new Date().toISOString() : null,
+                          }));
+                          setMessage({ type: 'success', text: newApproved ? 'Candidate bio approved!' : 'Bio approval revoked.' });
+                          fetchProfiles(pagination.current_page);
+                        } catch (err) {
+                          alert(err.response?.data?.message || 'Failed to update bio approval.');
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded text-[11px] font-bold transition-colors ${
+                        selectedProfile.about_approved_at 
+                          ? 'bg-rose-500/20 text-rose-300 hover:bg-rose-500/30' 
+                          : 'bg-emerald-600 text-white hover:bg-emerald-500 shadow-sm'
+                      }`}
+                    >
+                      {selectedProfile.about_approved_at ? 'Revoke Approval' : 'Approve Bio'}
+                    </button>
+                  </div>
+                </div>
+                <p className="text-slate-200 leading-relaxed whitespace-pre-line">{selectedProfile.about}</p>
               </div>
             )}
 

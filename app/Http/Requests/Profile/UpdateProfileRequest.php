@@ -35,7 +35,20 @@ class UpdateProfileRequest extends FormRequest
             'city' => ['sometimes', 'required', 'string', Rule::in(array_keys(ProfileOptions::CITIES))],
             'education' => ['sometimes', 'required', 'string', Rule::in(array_keys(ProfileOptions::EDUCATIONS))],
             'profession' => ['sometimes', 'required', 'string', Rule::in(array_keys(ProfileOptions::PROFESSIONS))],
-            'marital_status' => ['sometimes', 'required', 'string', Rule::in(array_keys(ProfileOptions::MARITAL_STATUSES))],
+            'marital_status' => [
+                'sometimes',
+                'required',
+                'string',
+                Rule::in(array_keys(ProfileOptions::MARITAL_STATUSES)),
+                function ($attribute, $value, $fail) {
+                    if ($value === 'married') {
+                        $gender = $this->input('gender') ?? $this->user()?->profile?->gender;
+                        if ($gender !== 'male') {
+                            $fail('The married status is only available for male profiles.');
+                        }
+                    }
+                },
+            ],
             'height' => ['sometimes', 'required', 'integer', 'min:120', 'max:230'],
             'about' => ['nullable', 'string', 'max:2000'],
             'family_background' => ['nullable', 'string', 'max:2000'],

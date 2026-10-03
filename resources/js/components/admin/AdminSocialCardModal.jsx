@@ -18,6 +18,7 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
     if (str === 'divorced') return 'Divorced';
     if (str === 'widowed') return 'Widowed';
     if (str === 'separated') return 'Separated';
+    if (str === 'married') return 'Married (2nd/3rd Marriage)';
     return str;
   }
 

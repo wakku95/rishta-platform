@@ -136,10 +136,11 @@ class ProfileController extends Controller
         }
 
         $profile->load('preferences');
+        $profile->maybeAutoActivate();
 
         return $this->successResponse(
             new ProfileResource($profile),
-            $isNew ? 'Profile created successfully as draft.' : 'Profile updated successfully.',
+            $isNew ? ($profile->profile_status === 'active' ? 'Profile created and activated successfully.' : 'Profile created successfully as draft.') : 'Profile updated successfully.',
             $isNew ? Response::HTTP_CREATED : Response::HTTP_OK
         );
     }
@@ -200,6 +201,9 @@ class ProfileController extends Controller
             ['profile_id' => $profile->id],
             $prefData
         );
+
+        $profile->load('preferences');
+        $profile->maybeAutoActivate();
 
         return $this->successResponse(
             new ProfilePreferenceResource($preferences),

@@ -58,10 +58,16 @@ export default function CreateAssistedListingModal({ isOpen, listing = null, onC
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value
-    }));
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        [name]: type === 'checkbox' ? checked : value
+      };
+      if (name === 'gender' && value !== 'male' && prev.marital_status === 'married') {
+        updated.marital_status = '';
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -151,7 +157,7 @@ export default function CreateAssistedListingModal({ isOpen, listing = null, onC
                   <label className="block text-xs font-semibold text-slate-300 mb-1">Marital Status</label>
                   <select name="marital_status" required value={formData.marital_status} onChange={handleChange} className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none">
                     <option value="">Select...</option>
-                    {options?.marital_statuses?.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+                    {options?.marital_statuses?.filter(opt => formData.gender === 'male' || opt.value !== 'married').map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
                   </select>
                 </div>
                 <div>

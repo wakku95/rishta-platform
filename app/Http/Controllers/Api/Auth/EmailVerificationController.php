@@ -58,6 +58,7 @@ class EmailVerificationController extends Controller
 
         if ($user->markEmailAsVerified()) {
             event(new Verified($user));
+            $user->profile?->maybeAutoActivate();
         }
 
         if ($request->wantsJson()) {

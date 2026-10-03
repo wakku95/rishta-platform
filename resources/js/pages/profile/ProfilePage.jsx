@@ -225,6 +225,7 @@ export default function ProfilePage() {
       divorced: 'Divorced',
       widowed: 'Widowed',
       separated: 'Separated',
+      married: 'Married (2nd / 3rd Marriage)',
     };
     return map[key] || key;
   };
@@ -535,15 +536,27 @@ export default function ProfilePage() {
             </div>
 
             <div className="p-3.5 rounded-xl bg-magenta-950/30 border border-magenta-500/30 text-xs text-magenta-200 font-normal">
-              🔒 <strong className="text-white font-semibold">Privacy Assurance:</strong> About and Family Background are never visible publicly or during search.
-              They are only released after mutual rishta acceptance, unlock fee payment, and dual OTP mobile verification.
+              🔒 <strong className="text-white font-semibold">Privacy Assurance:</strong> Your Contact Details, Phone Number, Full DOB, and Family Background are strictly confidential and never visible publicly (released only after mutual rishta acceptance and unlock). Your "About Candidate" statement is only displayed after Admin review.
             </div>
 
             <div className="space-y-4">
               <div className="bg-navy-750 p-4 rounded-xl border border-slate-700 space-y-1.5">
-                <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
-                  About Candidate
-                </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-wider block">
+                    About Candidate
+                  </span>
+                  {profile.about && (
+                    profile.is_about_approved ? (
+                      <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                        Approved by Admin ✓
+                      </span>
+                    ) : (
+                      <span className="text-[10px] font-semibold text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                        Under Admin Review
+                      </span>
+                    )
+                  )}
+                </div>
                 <p className="text-sm text-slate-200 leading-relaxed font-normal whitespace-pre-line">
                   {profile.about || <em className="text-slate-500">No personal statement entered yet.</em>}
                 </p>
@@ -734,7 +747,7 @@ export default function ProfilePage() {
                 Privacy Protection Active
               </p>
               <p className="leading-relaxed">
-                Full Date of Birth, Contact Details, Email, Phone Number, About Statement, and Family Background are strictly <strong>excluded</strong> from public view.
+                Full Date of Birth, Contact Details, Email, Phone Number, and Family Background are strictly <strong>excluded</strong> from public view. About Statement is only shown once approved by Admin.
               </p>
             </div>
 

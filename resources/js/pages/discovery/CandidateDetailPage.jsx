@@ -210,6 +210,8 @@ export default function CandidateDetailPage() {
         return 'Widowed';
       case 'separated':
         return 'Separated';
+      case 'married':
+        return 'Married (2nd/3rd Marriage)';
       default:
         return status;
     }
@@ -500,6 +502,22 @@ export default function CandidateDetailPage() {
               </Link>
             </div>
           </div>
+        </Card>
+      )}
+
+      {/* Approved Candidate Bio Statement */}
+      {profile.about && (
+        <Card className="p-4 sm:p-6 lg:p-8 bg-navy-850 border border-slate-750 shadow-md rounded-2xl space-y-3">
+          <div className="flex items-center gap-2 pb-2 border-b border-white/5">
+            <span className="w-2 h-2 rounded-full bg-magenta-400"></span>
+            <h3 className="font-serif text-base font-bold text-white">About the Candidate</h3>
+            <span className="text-[10px] font-semibold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded-full ml-auto">
+              Verified Bio ✓
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-200 leading-relaxed font-normal whitespace-pre-line">
+            {profile.about}
+          </p>
         </Card>
       )}
 

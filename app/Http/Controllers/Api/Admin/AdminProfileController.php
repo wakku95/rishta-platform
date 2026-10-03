@@ -48,6 +48,20 @@ class AdminProfileController extends Controller
             $query->where('city', 'like', "%{$city}%");
         }
 
+        if ($aboutStatus = $request->input('about_status')) {
+            if ($aboutStatus === 'pending') {
+                $query->whereNotNull('about')
+                    ->where('about', '!=', '')
+                    ->whereNull('about_approved_at');
+            } elseif ($aboutStatus === 'approved') {
+                $query->whereNotNull('about_approved_at');
+            } elseif ($aboutStatus === 'no_bio') {
+                $query->where(function ($q) {
+                    $q->whereNull('about')->orWhere('about', '');
+                });
+            }
+        }
+
         $perPage = min((int) $request->input('per_page', 15), 50);
         $profiles = $query->latest()->paginate($perPage);
 
@@ -91,6 +105,33 @@ class AdminProfileController extends Controller
             'profile_code' => $profile->profile_code,
             'profile_status' => $profile->profile_status,
         ], "Profile status updated to [{$newStatus}].");
+    }
+
+    /**
+     * Approve or revoke the candidate's about bio text.
+     */
+    public function updateAboutApproval(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'approved' => 'required|boolean',
+        ]);
+
+        $profile = Profile::find($id);
+
+        if (!$profile) {
+            return $this->errorResponse('Profile not found.', [], Response::HTTP_NOT_FOUND, 'PROFILE_NOT_FOUND');
+        }
+
+        $approved = $request->boolean('approved');
+        $profile->about_approved_at = $approved ? now() : null;
+        $profile->save();
+
+        return $this->successResponse([
+            'id' => $profile->id,
+            'profile_code' => $profile->profile_code,
+            'is_about_approved' => $profile->isAboutApproved(),
+            'about_approved_at' => $profile->about_approved_at?->toIso8601String(),
+        ], $approved ? 'Candidate bio has been approved and is now publicly visible.' : 'Candidate bio approval has been revoked.');
     }
 
     /**

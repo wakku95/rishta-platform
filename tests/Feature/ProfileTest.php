@@ -6,6 +6,7 @@ use App\Constants\ProfileOptions;
 use App\Models\Profile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
 class ProfileTest extends TestCase
@@ -940,6 +941,317 @@ class ProfileTest extends TestCase
                 ],
             ]);
     }
+
+    public function test_male_profile_can_be_created_with_married_status(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/profile', [
+            'gender' => 'male',
+            'date_of_birth' => '1990-05-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => 'Master\'s',
+            'profession' => 'Business',
+            'marital_status' => 'married',
+            'height' => 175,
+            'managed_by' => 'myself',
+        ]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'gender' => 'male',
+                    'marital_status' => 'married',
+                ],
+            ]);
+    }
+
+    public function test_female_profile_cannot_be_created_with_married_status(): void
+    {
+        $user = User::factory()->create();
+
+        $response = $this->actingAs($user)->postJson('/api/profile', [
+            'gender' => 'female',
+            'date_of_birth' => '1992-05-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => 'Master\'s',
+            'profession' => 'Business',
+            'marital_status' => 'married',
+            'height' => 165,
+            'managed_by' => 'myself',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['marital_status']);
+    }
+
+    public function test_female_profile_cannot_update_to_married_status(): void
+    {
+        $user = User::factory()->create();
+        Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-FEMALE1',
+            'gender' => 'female',
+            'date_of_birth' => '1995-01-01',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Karachi',
+            'education' => 'Bachelor\'s Degree',
+            'profession' => 'IT / Software',
+            'marital_status' => 'never_married',
+            'height' => 160,
+            'managed_by' => 'myself',
+            'profile_status' => 'active',
+        ]);
+
+        $response = $this->actingAs($user)->putJson('/api/profile', [
+            'marital_status' => 'married',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['marital_status']);
+    }
+
+    public function test_profile_auto_activates_when_all_three_requirements_are_completed(): void
+    {
+        // 1. User with verified email creates profile
+        $user = User::factory()->create(); // email_verified_at is set
+
+        $createResponse = $this->actingAs($user)->postJson('/api/profile', [
+            'gender' => 'male',
+            'date_of_birth' => '1993-04-12',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Islamabad',
+            'education' => "Master's",
+            'profession' => 'Finance / Banking',
+            'marital_status' => 'never_married',
+            'height' => 178,
+            'managed_by' => 'myself',
+        ]);
+
+        $createResponse->assertStatus(201);
+        $profile = $user->fresh()->profile;
+        // Without preferences, it remains draft
+        $this->assertEquals('draft', $profile->profile_status);
+
+        // 2. User sets partner preferences -> ALL 3 requirements are now complete!
+        $prefResponse = $this->actingAs($user)->putJson('/api/profile/preferences', [
+            'preferred_gender' => 'female',
+            'min_age' => 22,
+            'max_age' => 30,
+        ]);
+
+        $prefResponse->assertStatus(200);
+
+        // Profile should now be automatically active!
+        $this->assertEquals('active', $profile->fresh()->profile_status);
+    }
+
+    public function test_hidden_profile_does_not_auto_activate_on_preference_update(): void
+    {
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-HIDDEN1',
+            'gender' => 'female',
+            'date_of_birth' => '1994-06-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Education',
+            'marital_status' => 'never_married',
+            'height' => 162,
+            'managed_by' => 'parent',
+            'profile_status' => 'hidden', // User manually hid their profile
+        ]);
+
+        // Updating preferences should NOT force a hidden profile back to active
+        $this->actingAs($user)->putJson('/api/profile/preferences', [
+            'preferred_gender' => 'male',
+            'min_age' => 26,
+            'max_age' => 34,
+        ]);
+
+        $this->assertEquals('hidden', $profile->fresh()->profile_status);
+    }
+
+    public function test_about_text_requires_admin_approval_before_public_exposure(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create();
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-ABOUT01',
+            'gender' => 'male',
+            'date_of_birth' => '1992-08-20',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Multan',
+            'education' => "Bachelor's",
+            'profession' => 'Business',
+            'marital_status' => 'never_married',
+            'height' => 174,
+            'managed_by' => 'myself',
+            'about' => 'Looking for an understanding life partner with traditional values.',
+            'profile_status' => 'active',
+        ]);
+
+        // 1. Before approval, PublicProfileResource does not expose about text
+        $viewer = User::factory()->create();
+        $resBefore = $this->actingAs($viewer)->getJson('/api/discovery/profiles/RK-ABOUT01');
+        $resBefore->assertStatus(200);
+        $this->assertArrayNotHasKey('about', $resBefore->json('data'));
+
+        // 2. Admin approves candidate bio
+        Sanctum::actingAs($admin, ['*']);
+        $approveRes = $this->postJson("/api/admin/profiles/{$profile->id}/about-approval", [
+            'approved' => true,
+        ]);
+        $approveRes->assertStatus(200)
+            ->assertJsonPath('data.is_about_approved', true);
+
+        // 3. After approval, PublicProfileResource exposes about text and is_about_approved
+        Sanctum::actingAs($viewer, ['*']);
+        $resAfter = $this->getJson('/api/discovery/profiles/RK-ABOUT01');
+        $resAfter->assertStatus(200);
+        $this->assertEquals('Looking for an understanding life partner with traditional values.', $resAfter->json('data.about'));
+        $this->assertTrue($resAfter->json('data.is_about_approved'));
+
+        // 4. If admin revokes approval, about text is hidden again
+        Sanctum::actingAs($admin, ['*']);
+        $revokeRes = $this->postJson("/api/admin/profiles/{$profile->id}/about-approval", [
+            'approved' => false,
+        ]);
+        $revokeRes->assertStatus(200)
+            ->assertJsonPath('data.is_about_approved', false);
+
+        Sanctum::actingAs($viewer, ['*']);
+        $resRevoked = $this->getJson('/api/discovery/profiles/RK-ABOUT01');
+        $resRevoked->assertStatus(200);
+        $this->assertArrayNotHasKey('about', $resRevoked->json('data'));
+
+        // 5. If profile owner edits their about text, about_approved_at is automatically reset to null
+        Sanctum::actingAs($admin, ['*']);
+        $this->postJson("/api/admin/profiles/{$profile->id}/about-approval", ['approved' => true]);
+        $this->assertTrue($profile->fresh()->isAboutApproved());
+
+        Sanctum::actingAs($user, ['*']);
+        $updateRes = $this->postJson('/api/profile', [
+            'gender' => 'male',
+            'date_of_birth' => '1992-05-15',
+            'marital_status' => 'never_married',
+            'city' => 'Multan',
+            'education' => "Bachelor's",
+            'profession' => 'Business',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'height' => 174,
+            'managed_by' => 'myself',
+            'about' => 'Updated about details waiting for approval.',
+        ]);
+        $updateRes->assertStatus(200);
+        $this->assertFalse($profile->fresh()->isAboutApproved());
+    }
+
+    public function test_admin_can_filter_candidate_profiles_by_about_status(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // Profile 1: Pending review (has about, about_approved_at is null)
+        $user1 = User::factory()->create();
+        $p1 = Profile::create([
+            'user_id' => $user1->id,
+            'profile_code' => 'RK-PENDING01',
+            'gender' => 'male',
+            'date_of_birth' => '1992-05-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Engineer',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'about' => 'Bio needing review.',
+            'about_approved_at' => null,
+            'profile_status' => 'active',
+        ]);
+
+        // Profile 2: Approved (has about, about_approved_at is set)
+        $user2 = User::factory()->create();
+        $p2 = Profile::create([
+            'user_id' => $user2->id,
+            'profile_code' => 'RK-APPRVD02',
+            'gender' => 'female',
+            'date_of_birth' => '1994-06-20',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Karachi',
+            'education' => "Master's",
+            'profession' => 'Doctor',
+            'marital_status' => 'never_married',
+            'height' => 162,
+            'managed_by' => 'parents',
+            'about' => 'Approved bio.',
+            'about_approved_at' => now(),
+            'profile_status' => 'active',
+        ]);
+
+        // Profile 3: No bio (about is null)
+        $user3 = User::factory()->create();
+        $p3 = Profile::create([
+            'user_id' => $user3->id,
+            'profile_code' => 'RK-NOBIO03',
+            'gender' => 'male',
+            'date_of_birth' => '1990-01-10',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Islamabad',
+            'education' => "Bachelor's",
+            'profession' => 'Business',
+            'marital_status' => 'never_married',
+            'height' => 178,
+            'managed_by' => 'myself',
+            'about' => null,
+            'about_approved_at' => null,
+            'profile_status' => 'active',
+        ]);
+
+        Sanctum::actingAs($admin, ['*']);
+
+        // Filter: pending
+        $resPending = $this->getJson('/api/admin/profiles?about_status=pending');
+        $resPending->assertStatus(200);
+        $pendingCodes = collect($resPending->json('data.data'))->pluck('profile_code')->toArray();
+        $this->assertContains('RK-PENDING01', $pendingCodes);
+        $this->assertNotContains('RK-APPRVD02', $pendingCodes);
+        $this->assertNotContains('RK-NOBIO03', $pendingCodes);
+
+        // Filter: approved
+        $resApproved = $this->getJson('/api/admin/profiles?about_status=approved');
+        $resApproved->assertStatus(200);
+        $approvedCodes = collect($resApproved->json('data.data'))->pluck('profile_code')->toArray();
+        $this->assertNotContains('RK-PENDING01', $approvedCodes);
+        $this->assertContains('RK-APPRVD02', $approvedCodes);
+        $this->assertNotContains('RK-NOBIO03', $approvedCodes);
+
+        // Filter: no_bio
+        $resNoBio = $this->getJson('/api/admin/profiles?about_status=no_bio');
+        $resNoBio->assertStatus(200);
+        $noBioCodes = collect($resNoBio->json('data.data'))->pluck('profile_code')->toArray();
+        $this->assertNotContains('RK-PENDING01', $noBioCodes);
+        $this->assertNotContains('RK-APPRVD02', $noBioCodes);
+        $this->assertContains('RK-NOBIO03', $noBioCodes);
+    }
 }
+
+
 
 
