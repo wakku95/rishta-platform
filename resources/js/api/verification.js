@@ -16,4 +16,10 @@ export const verificationApi = {
 
   // Withdraw pending verification
   withdraw: (id) => api.delete(`/verifications/${id}`).then(r => r.data),
+
+  // Public Magic Link Document Verification
+  getPublicVerificationDoc: (token) => api.get(`/public/verify-doc/${token}`).then(r => r.data.data),
+  submitPublicVerificationDoc: (token, formData) => api.post(`/public/verify-doc/${token}/submit`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }).then(r => r.data),
 };

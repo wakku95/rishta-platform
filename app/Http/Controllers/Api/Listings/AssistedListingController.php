@@ -77,6 +77,19 @@ class AssistedListingController extends Controller
             $query->where('height', '<=', $request->integer('max_height'));
         }
 
+        // Filter out listings hidden by the authenticated user
+        $user = $request->user('sanctum');
+        if ($user && $user->profile) {
+            $excludedListingIds = \App\Models\MatchExclusion::where('source_type', 'profile')
+                ->where('source_id', $user->profile->id)
+                ->where('target_type', 'assisted')
+                ->pluck('target_id');
+
+            if ($excludedListingIds->isNotEmpty()) {
+                $query->whereNotIn('id', $excludedListingIds);
+            }
+        }
+
         $listings = $query->latest()->paginate($request->per_page ?? 15);
 
         return AssistedListingPublicResource::collection($listings);

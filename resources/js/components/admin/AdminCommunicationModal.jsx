@@ -132,6 +132,18 @@ export default function AdminCommunicationModal({ candidate, onClose, initialMat
     const encoded = encodeURIComponent(waMessage);
     const url = `https://wa.me/${cleanNum}?text=${encoded}`;
     window.open(url, '_blank');
+
+    if (candidate?.id) {
+      const cType = candidate.type || (candidate.source === 'assisted' ? 'assisted' : 'profile');
+      adminApi.logContact({
+        candidate_type: cType,
+        candidate_id: candidate.id,
+        channel: 'whatsapp',
+        recipient_name: candName,
+        recipient_contact: cleanNum,
+        subject_or_template: selectedTemplateKey,
+      }).catch(err => console.error('Failed to log WhatsApp contact:', err));
+    }
   };
 
   // Copy WhatsApp message to clipboard
@@ -182,6 +194,12 @@ export default function AdminCommunicationModal({ candidate, onClose, initialMat
       formData.append('message', emailBody);
       formData.append('cta_url', 'https://raabtanow.com');
       formData.append('cta_text', 'Visit Raabta Matrimonial');
+
+      if (candidate?.id) {
+        const cType = candidate.type || (candidate.source === 'assisted' ? 'assisted' : 'profile');
+        formData.append('candidate_type', cType);
+        formData.append('candidate_id', candidate.id);
+      }
 
       attachments.forEach((file) => {
         formData.append('attachments[]', file);

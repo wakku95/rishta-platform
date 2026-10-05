@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Filter, RotateCcw, Search, SlidersHorizontal, Users, Sparkles } from 'lucide-react';
-import { searchProfiles } from '../../api/discovery';
+import { Filter, RotateCcw, Search, SlidersHorizontal, Users, Sparkles, EyeOff, X } from 'lucide-react';
+import { searchProfiles, hideProfile, unhideProfile, getHiddenProfiles } from '../../api/discovery';
 import { getProfileOptions, getProfile } from '../../api/profile';
 import { AuthContext } from '../../contexts/AuthContext';
 import Card from '../../components/ui/Card';
@@ -12,6 +12,7 @@ import Pagination from '../../components/ui/Pagination';
 import EmptyState from '../../components/ui/EmptyState';
 import LoadingState from '../../components/ui/LoadingState';
 import Alert from '../../components/ui/Alert';
+import Modal from '../../components/ui/Modal';
 import ProfileCard from '../../components/profile/ProfileCard';
 import AssistedListingCard from '../../components/profile/AssistedListingCard';
 
@@ -62,6 +63,10 @@ export default function SearchProfilesPage() {
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+  const [undoToast, setUndoToast] = useState(null);
+  const [hiddenModalOpen, setHiddenModalOpen] = useState(false);
+  const [hiddenList, setHiddenList] = useState([]);
+  const [hiddenLoading, setHiddenLoading] = useState(false);
 
   // Registered User Auto Match state
   const { user } = useContext(AuthContext);
@@ -250,6 +255,70 @@ export default function SearchProfilesPage() {
     }
     setSearchParams(params);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleHideProfile = async (profileCode, candidateObj) => {
+    try {
+      await hideProfile(profileCode);
+      setProfiles((prev) => prev.filter((p) => (p.profile_code || p.listing_code) !== profileCode));
+
+      if (undoToast?.timerId) {
+        clearTimeout(undoToast.timerId);
+      }
+
+      const timerId = setTimeout(() => {
+        setUndoToast(null);
+      }, 8000);
+
+      setUndoToast({
+        code: profileCode,
+        item: candidateObj,
+        timerId,
+      });
+    } catch (err) {
+      console.error('Failed to hide profile:', err);
+    }
+  };
+
+  const handleUndoHide = async () => {
+    if (!undoToast) return;
+    const { code, item, timerId } = undoToast;
+    if (timerId) clearTimeout(timerId);
+
+    try {
+      await unhideProfile(code);
+      if (item) {
+        setProfiles((prev) => [item, ...prev]);
+      } else {
+        fetchProfiles(activeFilters);
+      }
+      setUndoToast(null);
+    } catch (err) {
+      console.error('Failed to undo hide:', err);
+    }
+  };
+
+  const handleOpenHiddenModal = async () => {
+    setHiddenModalOpen(true);
+    setHiddenLoading(true);
+    try {
+      const res = await getHiddenProfiles();
+      setHiddenList(res.data || []);
+    } catch (err) {
+      console.error('Failed to load hidden profiles:', err);
+    } finally {
+      setHiddenLoading(false);
+    }
+  };
+
+  const handleUnhideFromModal = async (code) => {
+    try {
+      await unhideProfile(code);
+      setHiddenList((prev) => prev.filter((item) => item.code !== code));
+      fetchProfiles(activeFilters);
+    } catch (err) {
+      console.error('Failed to unhide profile:', err);
+    }
   };
 
   // Count active non-empty filters (excluding page)
@@ -583,8 +652,8 @@ export default function SearchProfilesPage() {
         </form>
       </Card>
 
-      {/* Results Header: Profiles Count */}
-      <div className="flex items-center justify-between pt-2">
+      {/* Results Header: Profiles Count & Hidden Profiles */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-magenta-400" />
           <span className="text-sm font-bold text-white">
@@ -592,15 +661,29 @@ export default function SearchProfilesPage() {
           </span>
         </div>
 
-        {activeFilterCount > 0 && !loading && (
-          <button
-            type="button"
-            onClick={handleClearFilters}
-            className="text-xs font-semibold text-magenta-400 hover:text-magenta-300 underline cursor-pointer"
-          >
-            Reset all filters
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {user && (
+            <button
+              type="button"
+              onClick={handleOpenHiddenModal}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-white transition px-2.5 py-1 rounded-lg bg-navy-800 border border-white/5 hover:border-white/10"
+              title="View and unhide candidates you marked as Not Interested"
+            >
+              <EyeOff className="w-3.5 h-3.5 text-slate-400" />
+              <span>Hidden Profiles</span>
+            </button>
+          )}
+
+          {activeFilterCount > 0 && !loading && (
+            <button
+              type="button"
+              onClick={handleClearFilters}
+              className="text-xs font-semibold text-magenta-400 hover:text-magenta-300 underline cursor-pointer"
+            >
+              Reset all filters
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Main Results Content */}
@@ -623,9 +706,17 @@ export default function SearchProfilesPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {profiles.map((candidate) => (
               candidate.is_assisted_listing ? (
-                <AssistedListingCard key={`listing-${candidate.listing_code}`} listing={candidate} />
+                <AssistedListingCard 
+                  key={`listing-${candidate.listing_code}`} 
+                  listing={candidate} 
+                  onHide={handleHideProfile}
+                />
               ) : (
-                <ProfileCard key={`profile-${candidate.profile_code}`} profile={candidate} />
+                <ProfileCard 
+                  key={`profile-${candidate.profile_code}`} 
+                  profile={candidate} 
+                  onHide={handleHideProfile}
+                />
               )
             ))}
           </div>
@@ -639,6 +730,93 @@ export default function SearchProfilesPage() {
           />
         </div>
       )}
+
+      {/* Undo Floating Toast */}
+      {undoToast && (
+        <div className="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-navy-900/95 text-white px-4 py-3 rounded-2xl shadow-2xl border border-magenta-500/40 backdrop-blur-md animate-in fade-in slide-in-from-bottom-4 duration-300 max-w-sm">
+          <div className="flex-1 text-xs">
+            <span className="font-semibold text-slate-200">
+              #{undoToast.code} marked as Not Interested.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleUndoHide}
+            className="inline-flex items-center gap-1 text-xs font-bold text-magenta-400 hover:text-magenta-300 px-2.5 py-1 rounded-lg bg-magenta-500/10 hover:bg-magenta-500/20 border border-magenta-500/30 transition shrink-0"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            Show Back
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (undoToast.timerId) clearTimeout(undoToast.timerId);
+              setUndoToast(null);
+            }}
+            className="text-slate-500 hover:text-white transition p-1"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* Hidden Profiles Management Modal */}
+      <Modal
+        isOpen={hiddenModalOpen}
+        onClose={() => setHiddenModalOpen(false)}
+        title="Hidden Candidates & Listings"
+        subtitle="Profiles you previously marked as Not Interested. Click Show Back to restore them to your discovery feed."
+        maxWidth="max-w-xl"
+      >
+        <div className="space-y-4">
+          {hiddenLoading ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              Loading hidden candidates...
+            </div>
+          ) : hiddenList.length === 0 ? (
+            <div className="py-8 text-center text-xs text-slate-400">
+              You haven&apos;t hidden any candidates yet.
+            </div>
+          ) : (
+            <div className="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
+              {hiddenList.map((item) => (
+                <div
+                  key={item.code}
+                  className="flex items-center justify-between p-3 rounded-xl bg-navy-800/80 border border-white/5 hover:border-white/10 transition"
+                >
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs font-bold text-white">
+                        #{item.code}
+                      </span>
+                      <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
+                        item.type === 'assisted' 
+                          ? 'bg-amber-500/10 text-amber-300 border border-amber-500/20' 
+                          : 'bg-magenta-500/10 text-magenta-300 border border-magenta-500/20'
+                      }`}>
+                        {item.type}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-300 capitalize">
+                      {item.gender} • {item.age} yrs • {item.city || 'N/A'} • {item.profession || 'N/A'}
+                    </div>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleUnhideFromModal(item.code)}
+                    className="text-xs text-magenta-400 hover:text-magenta-300 border-magenta-500/30 shrink-0"
+                  >
+                    <RotateCcw className="w-3 h-3 mr-1" />
+                    Show Back
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 }

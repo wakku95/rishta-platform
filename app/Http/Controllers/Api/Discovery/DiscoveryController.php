@@ -53,9 +53,20 @@ class DiscoveryController extends Controller
                     ->whereNotNull('email_verified_at');
             });
 
-        // Exclude current user's own profile if authenticated
+        // Exclude current user's own profile and any hidden profiles if authenticated
         if ($user) {
             $query->where('user_id', '!=', $user->id);
+
+            if ($user->profile) {
+                $hiddenProfileIds = \App\Models\MatchExclusion::where('source_type', 'profile')
+                    ->where('source_id', $user->profile->id)
+                    ->where('target_type', 'profile')
+                    ->pluck('target_id');
+
+                if ($hiddenProfileIds->isNotEmpty()) {
+                    $query->whereNotIn('id', $hiddenProfileIds);
+                }
+            }
         }
 
         // 3. Demographic & Code Filters
@@ -246,5 +257,134 @@ class DiscoveryController extends Controller
             $profileData,
             'Candidate profile retrieved successfully.'
         );
+    }
+
+    /**
+     * Privately hide a candidate profile or assisted listing from discovery feed.
+     */
+    public function hideProfile(Request $request, string $profile_code): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !$user->profile) {
+            return $this->errorResponse('A completed profile is required to hide candidates.', [], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $targetProfile = Profile::where('profile_code', $profile_code)->first();
+        if ($targetProfile) {
+            \App\Models\MatchExclusion::firstOrCreate([
+                'source_type' => 'profile',
+                'source_id'   => $user->profile->id,
+                'target_type' => 'profile',
+                'target_id'   => $targetProfile->id,
+            ], [
+                'excluded_by_user_id' => $user->id,
+                'reason'              => 'not_interested',
+            ]);
+
+            return $this->successResponse(null, 'Profile hidden from your discovery feed.');
+        }
+
+        $targetListing = \App\Models\AssistedListing::where('listing_code', $profile_code)->first();
+        if ($targetListing) {
+            \App\Models\MatchExclusion::firstOrCreate([
+                'source_type' => 'profile',
+                'source_id'   => $user->profile->id,
+                'target_type' => 'assisted',
+                'target_id'   => $targetListing->id,
+            ], [
+                'excluded_by_user_id' => $user->id,
+                'reason'              => 'not_interested',
+            ]);
+
+            return $this->successResponse(null, 'Listing hidden from your discovery feed.');
+        }
+
+        return $this->errorResponse('Candidate profile or listing not found.', [], Response::HTTP_NOT_FOUND);
+    }
+
+    /**
+     * Unhide a previously hidden candidate profile or assisted listing.
+     */
+    public function unhideProfile(Request $request, string $profile_code): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !$user->profile) {
+            return $this->errorResponse('A completed profile is required.', [], Response::HTTP_UNPROCESSABLE_ENTITY);
+        }
+
+        $targetProfile = Profile::where('profile_code', $profile_code)->first();
+        if ($targetProfile) {
+            \App\Models\MatchExclusion::where('source_type', 'profile')
+                ->where('source_id', $user->profile->id)
+                ->where('target_type', 'profile')
+                ->where('target_id', $targetProfile->id)
+                ->delete();
+
+            return $this->successResponse(null, 'Profile unhidden.');
+        }
+
+        $targetListing = \App\Models\AssistedListing::where('listing_code', $profile_code)->first();
+        if ($targetListing) {
+            \App\Models\MatchExclusion::where('source_type', 'profile')
+                ->where('source_id', $user->profile->id)
+                ->where('target_type', 'assisted')
+                ->where('target_id', $targetListing->id)
+                ->delete();
+
+            return $this->successResponse(null, 'Listing unhidden.');
+        }
+
+        return $this->successResponse(null, 'No exclusion record found.');
+    }
+
+    /**
+     * List all candidate profiles and listings hidden by the user.
+     */
+    public function hiddenProfiles(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        if (!$user || !$user->profile) {
+            return $this->successResponse([], 'No hidden profiles.');
+        }
+
+        $exclusions = \App\Models\MatchExclusion::where('source_type', 'profile')
+            ->where('source_id', $user->profile->id)
+            ->latest()
+            ->get();
+
+        $items = [];
+        foreach ($exclusions as $ex) {
+            if ($ex->target_type === 'profile') {
+                $p = Profile::find($ex->target_id);
+                if ($p) {
+                    $items[] = [
+                        'code' => $p->profile_code,
+                        'type' => 'registered',
+                        'gender' => $p->gender,
+                        'age' => $p->age,
+                        'city' => $p->city,
+                        'profession' => $p->profession,
+                        'education' => $p->education,
+                        'hidden_at' => $ex->created_at->toIso8601String(),
+                    ];
+                }
+            } elseif ($ex->target_type === 'assisted') {
+                $l = \App\Models\AssistedListing::find($ex->target_id);
+                if ($l) {
+                    $items[] = [
+                        'code' => $l->listing_code,
+                        'type' => 'assisted',
+                        'gender' => $l->gender,
+                        'age' => $l->age,
+                        'city' => $l->city,
+                        'profession' => $l->profession,
+                        'education' => $l->education,
+                        'hidden_at' => $ex->created_at->toIso8601String(),
+                    ];
+                }
+            }
+        }
+
+        return $this->successResponse($items, 'Hidden profiles retrieved successfully.');
     }
 }

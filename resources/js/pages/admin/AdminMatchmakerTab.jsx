@@ -2,13 +2,14 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   Sparkles, Search, Filter, Download, ArrowRight, 
   Users, CheckCircle2, HeartHandshake, Eye, RotateCcw, 
-  MapPin, GraduationCap, Briefcase, Ruler, Heart, MessageCircle, Send
+  MapPin, GraduationCap, Briefcase, Ruler, Heart, MessageCircle, Send, XCircle, ShieldCheck
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 import AdminCommunicationModal from '../../components/admin/AdminCommunicationModal';
+import AdminVerificationLinkModal from '../../components/admin/AdminVerificationLinkModal';
 
 export default function AdminMatchmakerTab() {
   // Source candidate filters
@@ -40,6 +41,7 @@ export default function AdminMatchmakerTab() {
   const [matchesLoading, setMatchesLoading] = useState(false);
   const [cardModalCandidate, setCardModalCandidate] = useState(null);
   const [commModalCandidate, setCommModalCandidate] = useState(null);
+  const [verifyModalCandidate, setVerifyModalCandidate] = useState(null);
   const [batchDownloading, setBatchDownloading] = useState(false);
 
   // Fetch candidates list whenever type, gender, or search changes
@@ -189,6 +191,26 @@ export default function AdminMatchmakerTab() {
     setBatchDownloading(false);
   };
 
+  // Exclude a match so it will not be suggested again
+  const handleExcludeMatch = async (match) => {
+    if (!selectedCandidate) return;
+    const confirmMsg = `Mark ${match.code} as "Not Interested / Pass" for ${selectedCandidate.code}? It will be permanently removed from suggestions.`;
+    if (window.confirm(confirmMsg)) {
+      try {
+        await adminApi.excludeMatch({
+          source_type: selectedCandidate.type,
+          source_id: selectedCandidate.id,
+          target_type: match.source,
+          target_id: match.id,
+          reason: 'not_interested',
+        });
+        setMatches(prev => prev.filter(m => !(m.source === match.source && m.id === match.id)));
+      } catch (err) {
+        alert(err.response?.data?.message || 'Failed to exclude match.');
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Top Banner */}
@@ -333,6 +355,12 @@ export default function AdminMatchmakerTab() {
                         <span>•</span>
                         <span>{c.education || 'Education N/A'}</span>
                       </div>
+                      {c.last_contacted && (
+                        <div className="flex items-center gap-1 mt-1.5 text-[10px] text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md w-fit">
+                          <span>💬 Contacted {c.last_contacted.time}</span>
+                          <span className="capitalize text-slate-400 font-normal">({c.last_contacted.channel})</span>
+                        </div>
+                      )}
                     </div>
                   );
                 })
@@ -362,9 +390,23 @@ export default function AdminMatchmakerTab() {
                     <p className="text-xs text-slate-400 mt-1">
                       {selectedCandidate.city} • {selectedCandidate.education} • {selectedCandidate.profession} • {selectedCandidate.religion} {selectedCandidate.sect ? `(${selectedCandidate.sect})` : ''}
                     </p>
+                    {selectedCandidate.last_contacted && (
+                      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium mt-1.5">
+                        <span>💬 Last contacted {selectedCandidate.last_contacted.time} via <strong className="capitalize">{selectedCandidate.last_contacted.channel}</strong></span>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setVerifyModalCandidate(selectedCandidate)}
+                      className="text-xs text-cyan-400 border-cyan-500/30 hover:bg-cyan-500/10 font-bold"
+                    >
+                      <ShieldCheck className="w-3.5 h-3.5 mr-1" />
+                      Verify Link
+                    </Button>
                     <Button
                       size="sm"
                       variant="primary"
@@ -551,6 +593,12 @@ export default function AdminMatchmakerTab() {
                               <h4 className="text-sm font-bold text-white mt-1.5">
                                 {m.gender === 'male' ? 'Groom' : 'Bride'} ({m.age} yrs)
                               </h4>
+                              {m.last_contacted && (
+                                <div className="text-[11px] text-amber-300/90 font-medium flex items-center gap-1 mt-1">
+                                  <span>💬 Contacted {new Date(m.last_contacted.contacted_at).toLocaleDateString()}</span>
+                                  <span className="capitalize text-slate-400">({m.last_contacted.channel})</span>
+                                </div>
+                              )}
                             </div>
 
                             {/* Match Score Badge */}
@@ -604,14 +652,34 @@ export default function AdminMatchmakerTab() {
                             <Download className="w-3.5 h-3.5" />
                             Download Card
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => setCommModalCandidate(m)}
-                            className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition"
-                          >
-                            <MessageCircle className="w-3.5 h-3.5" />
-                            WhatsApp / Email
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={() => setVerifyModalCandidate({ ...m, type: m.source === 'assisted' ? 'assisted' : 'profile' })}
+                              title="Generate Verification Link for WhatsApp"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition hover:bg-cyan-500/10 px-2 py-1 rounded"
+                            >
+                              <ShieldCheck className="w-3.5 h-3.5" />
+                              Verify
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleExcludeMatch(m)}
+                              title="Mark Not Interested / Pass (permanently removes from suggestions)"
+                              className="inline-flex items-center gap-1 text-xs font-semibold text-rose-400/80 hover:text-rose-300 transition hover:bg-rose-500/10 px-2 py-1 rounded"
+                            >
+                              <XCircle className="w-3.5 h-3.5" />
+                              Pass
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setCommModalCandidate(m)}
+                              className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition"
+                            >
+                              <MessageCircle className="w-3.5 h-3.5" />
+                              WhatsApp / Email
+                            </button>
+                          </div>
                         </div>
                       </Card>
                     ))}
@@ -645,6 +713,15 @@ export default function AdminMatchmakerTab() {
           candidate={commModalCandidate}
           initialMatches={matches}
           onClose={() => setCommModalCandidate(null)}
+        />
+      )}
+
+      {/* Candidate Verification Link Modal */}
+      {verifyModalCandidate && (
+        <AdminVerificationLinkModal
+          isOpen={!!verifyModalCandidate}
+          candidate={verifyModalCandidate}
+          onClose={() => setVerifyModalCandidate(null)}
         />
       )}
     </div>

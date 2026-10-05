@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { MapPin, GraduationCap, Briefcase, Ruler, ShieldCheck, HeartHandshake, Eye, Bookmark } from 'lucide-react';
+import { MapPin, GraduationCap, Briefcase, Ruler, ShieldCheck, HeartHandshake, Eye, Bookmark, EyeOff } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
@@ -12,7 +12,7 @@ import useAuth from '../../hooks/useAuth';
  * Matrimonial candidate summary card for search discovery results.
  * Strictly respects privacy: displays only public demographics without private statements or contacts.
  */
-export default function ProfileCard({ profile, isInitiallyShortlisted = false, onShortlistChange }) {
+export default function ProfileCard({ profile, isInitiallyShortlisted = false, onShortlistChange, onHide }) {
   if (!profile) return null;
 
   const navigate = useNavigate();
@@ -223,6 +223,24 @@ export default function ProfileCard({ profile, isInitiallyShortlisted = false, o
             View Candidate Biodata
           </Button>
         </Link>
+
+        {onHide && authenticated && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.confirm(`Hide ${profile.profile_code} from your discovery results?`)) {
+                onHide(profile.profile_code);
+              }
+            }}
+            className="w-full text-center text-[11px] text-slate-500 hover:text-rose-400 transition flex items-center justify-center gap-1.5 py-0.5"
+            title="Hide this profile from your discovery feed"
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+            <span>Not Interested / Hide</span>
+          </button>
+        )}
       </div>
     </Card>
   );

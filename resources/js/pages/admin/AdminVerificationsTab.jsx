@@ -1,23 +1,37 @@
 import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, ShieldAlert, CheckCircle2, XCircle, 
-  Eye, RefreshCw, FileText, Search, AlertCircle, ExternalLink, Trash2 
+  Eye, RefreshCw, FileText, Search, AlertCircle, ExternalLink, Trash2,
+  Link as LinkIcon, Clock, Copy, Check, UserCheck, PhoneCall, AlertTriangle
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
 
 export default function AdminVerificationsTab() {
+  const [activeSection, setActiveSection] = useState('registered'); // 'registered' | 'magic_links'
+  
+  // Registered users state
   const [verifications, setVerifications] = useState([]);
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
   const [typeFilter, setTypeFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('pending');
   const [search, setSearch] = useState('');
+
+  // Magic verification links state
+  const [magicLinks, setMagicLinks] = useState([]);
+  const [magicPagination, setMagicPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
+  const [magicStatusFilter, setMagicStatusFilter] = useState('');
+  const [magicSearch, setMagicSearch] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
+
+  // Common UI state
   const [loading, setLoading] = useState(false);
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [message, setMessage] = useState(null);
 
   // Detail / Review Modal
   const [selectedItem, setSelectedItem] = useState(null);
+  const [modalType, setModalType] = useState('registered'); // 'registered' | 'magic_link'
   const [rejectReason, setRejectReason] = useState('');
   const [showRejectForm, setShowRejectForm] = useState(false);
 
@@ -56,12 +70,15 @@ export default function AdminVerificationsTab() {
     setRejectReason('');
   };
 
-  const handleLoadDoc = async (item, side, label) => {
+  const handleLoadDoc = async (item, side, label, isMagicLink = false) => {
     if (!item) return;
     setDocLoading(side);
     setDocError(null);
     try {
-      const response = await adminApi.getDocumentBlob(item.id, side);
+      const response = isMagicLink
+        ? await adminApi.getVerificationLinkDocBlob(item.id, side)
+        : await adminApi.getDocumentBlob(item.id, side);
+        
       const mime = response.headers['content-type'] || 'application/octet-stream';
       const blob = new Blob([response.data], { type: mime });
       const url = URL.createObjectURL(blob);
@@ -77,13 +94,23 @@ export default function AdminVerificationsTab() {
     }
   };
 
-  const openReviewModal = (item) => {
+  const openReviewModal = (item, type = 'registered') => {
     setSelectedItem(item);
+    setModalType(type);
     setShowRejectForm(false);
     setRejectReason('');
-    if (!item.documents_purged_at && (item.document_front_path || item.document_back_path)) {
-      const defaultLabel = item.type === 'identity' ? 'CNIC Front Side' : (item.document_name || 'Education Certificate');
-      handleLoadDoc(item, 'front', defaultLabel);
+
+    if (type === 'magic_link') {
+      if (item.document_front_path) {
+        handleLoadDoc(item, 'front', 'Document Front Side', true);
+      } else if (item.document_back_path) {
+        handleLoadDoc(item, 'back', 'Document Back Side', true);
+      }
+    } else {
+      if (!item.documents_purged_at && (item.document_front_path || item.document_back_path)) {
+        const defaultLabel = item.type === 'identity' ? 'CNIC Front Side' : (item.document_name || 'Education Certificate');
+        handleLoadDoc(item, 'front', defaultLabel, false);
+      }
     }
   };
 
@@ -125,19 +152,51 @@ export default function AdminVerificationsTab() {
     }
   };
 
+  const fetchMagicLinks = async (page = 1) => {
+    setLoading(true);
+    try {
+      const data = await adminApi.getVerificationLinks({
+        page,
+        status: magicStatusFilter || undefined,
+        search: magicSearch || undefined,
+      });
+      setMagicLinks(data.data || []);
+      setMagicPagination({
+        current_page: data.current_page,
+        last_page: data.last_page,
+        total: data.total,
+      });
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchVerifications(1);
-  }, [typeFilter, statusFilter]);
+    if (activeSection === 'registered') {
+      fetchVerifications(1);
+    } else {
+      fetchMagicLinks(1);
+    }
+  }, [activeSection, typeFilter, statusFilter, magicStatusFilter]);
 
   const handleApprove = async (id) => {
     if (!window.confirm('Approve this verification submission?')) return;
     setActionLoadingId(id);
     setMessage(null);
     try {
-      const res = await adminApi.approveVerification(id);
-      setMessage({ type: 'success', text: res.message });
-      closeReviewModal();
-      fetchVerifications(pagination.current_page);
+      if (modalType === 'magic_link') {
+        const res = await adminApi.approveVerificationLink(id);
+        setMessage({ type: 'success', text: res.message || 'Candidate verification approved successfully.' });
+        closeReviewModal();
+        fetchMagicLinks(magicPagination.current_page);
+      } else {
+        const res = await adminApi.approveVerification(id);
+        setMessage({ type: 'success', text: res.message });
+        closeReviewModal();
+        fetchVerifications(pagination.current_page);
+      }
     } catch (err) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Approval failed.' });
     } finally {
@@ -156,15 +215,30 @@ export default function AdminVerificationsTab() {
     setActionLoadingId(selectedItem.id);
     setMessage(null);
     try {
-      const res = await adminApi.rejectVerification(selectedItem.id, rejectReason);
-      setMessage({ type: 'success', text: res.message });
-      closeReviewModal();
-      fetchVerifications(pagination.current_page);
+      if (modalType === 'magic_link') {
+        const res = await adminApi.rejectVerificationLink(selectedItem.id, rejectReason);
+        setMessage({ type: 'success', text: res.message || 'Candidate verification rejected.' });
+        closeReviewModal();
+        fetchMagicLinks(magicPagination.current_page);
+      } else {
+        const res = await adminApi.rejectVerification(selectedItem.id, rejectReason);
+        setMessage({ type: 'success', text: res.message });
+        closeReviewModal();
+        fetchVerifications(pagination.current_page);
+      }
     } catch (err) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Rejection failed.' });
     } finally {
       setActionLoadingId(null);
     }
+  };
+
+  const copyMagicLink = (linkItem) => {
+    const fullUrl = `${window.location.origin}/verify-doc/${linkItem.token}`;
+    navigator.clipboard.writeText(fullUrl).then(() => {
+      setCopiedId(linkItem.id);
+      setTimeout(() => setCopiedId(null), 2500);
+    });
   };
 
   const renderStatusBadge = (status) => {
@@ -174,63 +248,64 @@ export default function AdminVerificationsTab() {
     if (status === 'rejected') {
       return <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-rose-500/20 text-rose-400 border border-rose-500/30">Rejected</span>;
     }
+    if (status === 'submitted') {
+      return <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 flex items-center gap-1 w-max"><CheckCircle2 className="w-3 h-3" /> Submitted</span>;
+    }
+    if (status === 'expired') {
+      return <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-slate-500/20 text-slate-400 border border-slate-500/30">Expired</span>;
+    }
     return <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">Pending</span>;
   };
 
   return (
     <div className="space-y-6">
-      {/* Search & Filter Bar */}
-      <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-        <form onSubmit={(e) => { e.preventDefault(); fetchVerifications(1); }} className="flex-1 flex gap-2">
-          <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-            <input
-              type="text"
-              placeholder="Search user name or email..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-magenta-500"
-            />
-          </div>
-          <Button type="submit" size="sm" variant="primary">Search</Button>
-        </form>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={typeFilter}
-            onChange={(e) => setTypeFilter(e.target.value)}
-            className="px-3 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-magenta-500"
+      {/* Sub-Navigation Switcher */}
+      <div className="flex flex-wrap items-center justify-between gap-4 p-2 bg-navy-900/70 border border-white/10 rounded-2xl">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setActiveSection('registered')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              activeSection === 'registered'
+                ? 'bg-gradient-to-r from-magenta-600 to-pink-600 text-white shadow-lg shadow-magenta-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
           >
-            <option value="">All Types</option>
-            <option value="identity">Identity (CNIC)</option>
-            <option value="education">Education</option>
-          </select>
+            <ShieldCheck className="w-4 h-4" />
+            <span>Registered Users (In-App Submissions)</span>
+            <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-white/20">
+              {pagination.total || 0}
+            </span>
+          </button>
 
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-magenta-500"
+          <button
+            type="button"
+            onClick={() => setActiveSection('magic_links')}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all ${
+              activeSection === 'magic_links'
+                ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg shadow-cyan-500/25'
+                : 'text-slate-400 hover:text-white hover:bg-white/5'
+            }`}
           >
-            <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </select>
+            <LinkIcon className="w-4 h-4" />
+            <span>Candidate Magic Links (WhatsApp Submissions)</span>
+            <span className="ml-1 px-2 py-0.5 rounded-full text-[10px] bg-white/20">
+              {magicPagination.total || 0}
+            </span>
+          </button>
+        </div>
 
-          <Button size="sm" variant="secondary" icon={RefreshCw} onClick={() => fetchVerifications(pagination.current_page)} isLoading={loading}>
-            Refresh
-          </Button>
-
+        {activeSection === 'registered' && (
           <Button
             size="sm"
             variant="secondary"
             icon={Trash2}
             onClick={() => setShowPurgeModal(true)}
-            className="border-rose-500/30 text-rose-300 hover:bg-rose-500/10"
+            className="border-rose-500/30 text-rose-300 hover:bg-rose-500/10 text-xs"
           >
             Purge Storage
           </Button>
-        </div>
+        )}
       </div>
 
       {message && (
@@ -241,117 +316,372 @@ export default function AdminVerificationsTab() {
         </div>
       )}
 
-      {/* Verifications Table */}
-      <div className="overflow-x-auto rounded-2xl border border-white/10 bg-navy-800/60 shadow-sm">
-        <table className="w-full text-left text-sm text-slate-300">
-          <thead className="bg-navy-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-white/10">
-            <tr>
-              <th className="px-5 py-3.5">User</th>
-              <th className="px-5 py-3.5">Type</th>
-              <th className="px-5 py-3.5">Status</th>
-              <th className="px-5 py-3.5">Submitted</th>
-              <th className="px-5 py-3.5">Reviewer</th>
-              <th className="px-5 py-3.5 text-right">Review</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-white/5">
-            {verifications.length > 0 ? (
-              verifications.map((v) => (
-                <tr key={v.id} className="hover:bg-white/[0.02] transition-colors">
-                  <td className="px-5 py-3.5">
-                    <div className="font-semibold text-white">{v.user?.name || 'User'}</div>
-                    <div className="text-xs text-slate-400 font-mono">{v.user?.email}</div>
-                  </td>
-                  <td className="px-5 py-3.5 capitalize font-semibold text-white">
-                    {v.type === 'identity' ? 'Identity (CNIC)' : 'Education'}
-                  </td>
-                  <td className="px-5 py-3.5">{renderStatusBadge(v.status)}</td>
-                  <td className="px-5 py-3.5 text-xs text-slate-400">
-                    {v.submitted_at ? new Date(v.submitted_at).toLocaleDateString() : 'N/A'}
-                  </td>
-                  <td className="px-5 py-3.5 text-xs text-slate-300">
-                    {v.reviewer ? v.reviewer.name : '—'}
-                  </td>
-                  <td className="px-5 py-3.5 text-right">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      icon={Eye}
-                      onClick={() => openReviewModal(v)}
-                    >
-                      Review
-                    </Button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="6" className="px-5 py-8 text-center text-slate-500 text-sm">
-                  {loading ? 'Loading verifications...' : 'No verification requests found.'}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+      {/* SECTION 1: REGISTERED USERS */}
+      {activeSection === 'registered' && (
+        <div className="space-y-4">
+          {/* Search & Filter Bar */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <form onSubmit={(e) => { e.preventDefault(); fetchVerifications(1); }} className="flex-1 flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search user name or email..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-magenta-500"
+                />
+              </div>
+              <Button type="submit" size="sm" variant="primary">Search</Button>
+            </form>
 
-      {pagination.last_page > 1 && (
-        <div className="flex items-center justify-between text-xs text-slate-400">
-          <span>Showing page {pagination.current_page} of {pagination.last_page}</span>
-          <div className="flex gap-2">
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={pagination.current_page <= 1}
-              onClick={() => fetchVerifications(pagination.current_page - 1)}
-            >
-              Previous
-            </Button>
-            <Button
-              size="sm"
-              variant="secondary"
-              disabled={pagination.current_page >= pagination.last_page}
-              onClick={() => fetchVerifications(pagination.current_page + 1)}
-            >
-              Next
-            </Button>
+            <div className="flex items-center gap-3">
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="px-3 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-magenta-500"
+              >
+                <option value="">All Types</option>
+                <option value="identity">Identity (CNIC)</option>
+                <option value="education">Education</option>
+              </select>
+
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-magenta-500"
+              >
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="approved">Approved</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              <Button size="sm" variant="secondary" icon={RefreshCw} onClick={() => fetchVerifications(pagination.current_page)} isLoading={loading}>
+                Refresh
+              </Button>
+            </div>
           </div>
+
+          {/* Registered Verifications Table */}
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-navy-800/60 shadow-sm">
+            <table className="w-full text-left text-sm text-slate-300">
+              <thead className="bg-navy-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-white/10">
+                <tr>
+                  <th className="px-5 py-3.5">User</th>
+                  <th className="px-5 py-3.5">Type</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5">Submitted</th>
+                  <th className="px-5 py-3.5">Reviewer</th>
+                  <th className="px-5 py-3.5 text-right">Review</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {verifications.length > 0 ? (
+                  verifications.map((v) => (
+                    <tr key={v.id} className="hover:bg-white/[0.02] transition-colors">
+                      <td className="px-5 py-3.5">
+                        <div className="font-semibold text-white">{v.user?.name || 'User'}</div>
+                        <div className="text-xs text-slate-400 font-mono">{v.user?.email}</div>
+                      </td>
+                      <td className="px-5 py-3.5 capitalize font-semibold text-white">
+                        {v.type === 'identity' ? 'Identity (CNIC)' : 'Education'}
+                      </td>
+                      <td className="px-5 py-3.5">{renderStatusBadge(v.status)}</td>
+                      <td className="px-5 py-3.5 text-xs text-slate-400">
+                        {v.submitted_at ? new Date(v.submitted_at).toLocaleDateString() : 'N/A'}
+                      </td>
+                      <td className="px-5 py-3.5 text-xs text-slate-300">
+                        {v.reviewer ? v.reviewer.name : '—'}
+                      </td>
+                      <td className="px-5 py-3.5 text-right">
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          icon={Eye}
+                          onClick={() => openReviewModal(v, 'registered')}
+                        >
+                          Review
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="6" className="px-5 py-8 text-center text-slate-500 text-sm">
+                      {loading ? 'Loading verifications...' : 'No verification requests found.'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {pagination.last_page > 1 && (
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>Showing page {pagination.current_page} of {pagination.last_page}</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={pagination.current_page <= 1}
+                  onClick={() => fetchVerifications(pagination.current_page - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={pagination.current_page >= pagination.last_page}
+                  onClick={() => fetchVerifications(pagination.current_page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Review Modal */}
+      {/* SECTION 2: CANDIDATE MAGIC LINKS (WHATSAPP VERIFICATIONS) */}
+      {activeSection === 'magic_links' && (
+        <div className="space-y-4">
+          {/* Info Notice */}
+          <div className="p-3.5 rounded-xl bg-cyan-950/40 border border-cyan-800/40 text-xs text-cyan-200 flex items-center justify-between flex-wrap gap-2">
+            <div className="flex items-center gap-2">
+              <LinkIcon className="w-4 h-4 text-cyan-400 flex-shrink-0" />
+              <span>
+                These are single-use document verification links generated from <strong>Matchmaker Engine</strong> and sent via WhatsApp to candidates. Candidates upload their CNIC or documents directly without needing an account.
+              </span>
+            </div>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+            <form onSubmit={(e) => { e.preventDefault(); fetchMagicLinks(1); }} className="flex-1 flex gap-2">
+              <div className="relative flex-1">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search candidate code, name or phone..."
+                  value={magicSearch}
+                  onChange={(e) => setMagicSearch(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+              </div>
+              <Button type="submit" size="sm" variant="primary">Search</Button>
+            </form>
+
+            <div className="flex items-center gap-3">
+              <select
+                value={magicStatusFilter}
+                onChange={(e) => setMagicStatusFilter(e.target.value)}
+                className="px-3 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-slate-300 focus:outline-none focus:border-cyan-500"
+              >
+                <option value="">All Statuses</option>
+                <option value="submitted">Submitted (Needs Review)</option>
+                <option value="approved">Approved</option>
+                <option value="pending">Pending (Waiting on Candidate)</option>
+                <option value="rejected">Rejected</option>
+              </select>
+
+              <Button size="sm" variant="secondary" icon={RefreshCw} onClick={() => fetchMagicLinks(magicPagination.current_page)} isLoading={loading}>
+                Refresh
+              </Button>
+            </div>
+          </div>
+
+          {/* Magic Links Table */}
+          <div className="overflow-x-auto rounded-2xl border border-white/10 bg-navy-800/60 shadow-sm">
+            <table className="w-full text-left text-sm text-slate-300">
+              <thead className="bg-navy-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-white/10">
+                <tr>
+                  <th className="px-5 py-3.5">Candidate</th>
+                  <th className="px-5 py-3.5">Phone / Contact</th>
+                  <th className="px-5 py-3.5">Doc Type</th>
+                  <th className="px-5 py-3.5">Status</th>
+                  <th className="px-5 py-3.5">Photos Submitted</th>
+                  <th className="px-5 py-3.5">Reviewer</th>
+                  <th className="px-5 py-3.5 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {magicLinks.length > 0 ? (
+                  magicLinks.map((link) => {
+                    const hasPhotos = !!(link.document_front_path || link.document_back_path);
+                    return (
+                      <tr key={link.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-5 py-3.5">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold text-white">
+                              {link.candidate_name || `Candidate #${link.candidate_code}`}
+                            </span>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-800 text-cyan-300 border border-slate-700">
+                              {link.candidate_code}
+                            </span>
+                          </div>
+                          <div className="text-xs text-slate-400 capitalize">
+                            Source: {link.candidate_type === 'assisted' ? 'Assisted Matchmaker' : 'Registered Profile'}
+                          </div>
+                        </td>
+
+                        <td className="px-5 py-3.5 text-xs">
+                          {link.phone ? (
+                            <span className="font-mono text-slate-300 flex items-center gap-1">
+                              <PhoneCall className="w-3 h-3 text-emerald-400" />
+                              {link.phone}
+                            </span>
+                          ) : (
+                            <span className="text-slate-500">—</span>
+                          )}
+                        </td>
+
+                        <td className="px-5 py-3.5 uppercase text-xs font-bold text-slate-300">
+                          {link.document_type || 'CNIC'}
+                        </td>
+
+                        <td className="px-5 py-3.5">
+                          {renderStatusBadge(link.status)}
+                        </td>
+
+                        <td className="px-5 py-3.5 text-xs">
+                          {hasPhotos ? (
+                            <span className="inline-flex items-center gap-1 text-emerald-400 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              Uploaded ({link.submitted_at ? new Date(link.submitted_at).toLocaleDateString() : 'Yes'})
+                            </span>
+                          ) : (
+                            <span className="text-slate-500 flex items-center gap-1">
+                              <Clock className="w-3.5 h-3.5" />
+                              Awaiting upload
+                            </span>
+                          )}
+                        </td>
+
+                        <td className="px-5 py-3.5 text-xs text-slate-300">
+                          {link.reviewer ? link.reviewer.name : '—'}
+                        </td>
+
+                        <td className="px-5 py-3.5 text-right space-x-2">
+                          <Button
+                            size="sm"
+                            variant={hasPhotos && link.status === 'submitted' ? 'primary' : 'secondary'}
+                            icon={Eye}
+                            onClick={() => openReviewModal(link, 'magic_link')}
+                          >
+                            {hasPhotos ? 'Review Photos' : 'Details'}
+                          </Button>
+
+                          <button
+                            type="button"
+                            onClick={() => copyMagicLink(link)}
+                            title="Copy candidate verification link"
+                            className="p-1.5 rounded-lg bg-navy-700 hover:bg-navy-600 text-slate-300 hover:text-white transition inline-flex items-center justify-center border border-white/10"
+                          >
+                            {copiedId === link.id ? (
+                              <Check className="w-4 h-4 text-emerald-400" />
+                            ) : (
+                              <Copy className="w-4 h-4" />
+                            )}
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="px-5 py-8 text-center text-slate-500 text-sm">
+                      {loading ? 'Loading candidate magic links...' : 'No candidate verification links found.'}
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {magicPagination.last_page > 1 && (
+            <div className="flex items-center justify-between text-xs text-slate-400">
+              <span>Showing page {magicPagination.current_page} of {magicPagination.last_page}</span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={magicPagination.current_page <= 1}
+                  onClick={() => fetchMagicLinks(magicPagination.current_page - 1)}
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={magicPagination.current_page >= magicPagination.last_page}
+                  onClick={() => fetchMagicLinks(magicPagination.current_page + 1)}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* REVIEW & DETAIL MODAL (Supports both Registered & Magic Links) */}
       {selectedItem && (
         <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-start justify-center p-4 sm:p-6 pt-20 sm:pt-24 pb-8 overflow-y-auto">
           <div className="bg-navy-900 border border-white/15 rounded-2xl max-w-2xl w-full p-6 space-y-5 shadow-2xl my-auto">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-white capitalize flex items-center gap-2">
-                  <span>Review {selectedItem.type} Verification</span>
-                  {selectedItem.user?.profile?.date_of_birth && (
+                  <span>
+                    {modalType === 'magic_link'
+                      ? `Candidate Verification Document (${selectedItem.document_type || 'CNIC'})`
+                      : `Review ${selectedItem.type} Verification`}
+                  </span>
+                  {modalType === 'registered' && selectedItem.user?.profile?.date_of_birth && (
                     <span className="text-xs px-2.5 py-0.5 rounded-full bg-magenta-500/20 text-magenta-300 border border-magenta-500/30 font-semibold tracking-wide">
                       Age: {calculateAge(selectedItem.user.profile.date_of_birth)} yrs
                     </span>
                   )}
                 </h3>
-                <p className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-3">
-                  <span>User: <strong className="text-slate-200">{selectedItem.user?.name}</strong> ({selectedItem.user?.email})</span>
-                  {selectedItem.user?.profile?.education && (
-                    <span className="text-cyan-300 font-semibold bg-cyan-500/15 px-2 py-0.5 rounded border border-cyan-500/30">
-                      Education: {selectedItem.user.profile.education}
+
+                {modalType === 'magic_link' ? (
+                  <div className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-3">
+                    <span>Candidate: <strong className="text-slate-200">{selectedItem.candidate_name || `#${selectedItem.candidate_code}`}</strong></span>
+                    <span className="font-mono text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
+                      Code: {selectedItem.candidate_code}
                     </span>
-                  )}
-                  {selectedItem.user?.profile?.date_of_birth && (
-                    <span className="text-emerald-300 font-mono">
-                      DOB: {selectedItem.user.profile.date_of_birth}
+                    {selectedItem.phone && (
+                      <span className="text-emerald-300 font-mono flex items-center gap-1">
+                        <PhoneCall className="w-3 h-3" />
+                        {selectedItem.phone}
+                      </span>
+                    )}
+                    <span className="capitalize text-slate-400">
+                      Status: {selectedItem.status}
                     </span>
-                  )}
-                  {selectedItem.user?.profile?.gender && (
-                    <span className="capitalize text-slate-300">
-                      Gender: {selectedItem.user.profile.gender}
-                    </span>
-                  )}
-                </p>
+                  </div>
+                ) : (
+                  <p className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-3">
+                    <span>User: <strong className="text-slate-200">{selectedItem.user?.name}</strong> ({selectedItem.user?.email})</span>
+                    {selectedItem.user?.profile?.education && (
+                      <span className="text-cyan-300 font-semibold bg-cyan-500/15 px-2 py-0.5 rounded border border-cyan-500/30">
+                        Education: {selectedItem.user.profile.education}
+                      </span>
+                    )}
+                    {selectedItem.user?.profile?.date_of_birth && (
+                      <span className="text-emerald-300 font-mono">
+                        DOB: {selectedItem.user.profile.date_of_birth}
+                      </span>
+                    )}
+                    {selectedItem.user?.profile?.gender && (
+                      <span className="capitalize text-slate-300">
+                        Gender: {selectedItem.user.profile.gender}
+                      </span>
+                    )}
+                  </p>
+                )}
               </div>
+
               <button 
                 onClick={closeReviewModal} 
                 className="text-slate-400 hover:text-white text-xs px-2.5 py-1 rounded-lg bg-navy-800 transition"
@@ -360,99 +690,102 @@ export default function AdminVerificationsTab() {
               </button>
             </div>
 
-            {/* Document Links & Secure Inline Preview */}
-            {selectedItem.documents_purged_at ? (
+            {/* Document Content / Photos */}
+            {modalType === 'magic_link' && !selectedItem.document_front_path && !selectedItem.document_back_path ? (
+              <div className="p-6 rounded-xl bg-navy-800/80 border border-white/5 text-center space-y-3">
+                <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
+                <div className="text-sm font-bold text-white">No Photos Uploaded Yet</div>
+                <p className="text-xs text-slate-400 max-w-md mx-auto">
+                  The candidate has received this verification link via WhatsApp, but has not yet uploaded their document pictures.
+                </p>
+                <div className="pt-2">
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    icon={Copy}
+                    onClick={() => copyMagicLink(selectedItem)}
+                  >
+                    {copiedId === selectedItem.id ? 'Copied Verification Link!' : 'Copy Magic Link for Candidate'}
+                  </Button>
+                </div>
+              </div>
+            ) : selectedItem.documents_purged_at ? (
               <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 text-xs text-amber-200 space-y-1.5">
                 <div className="flex items-center gap-2 font-bold text-amber-300">
                   <ShieldCheck className="w-4 h-4 text-emerald-400" />
                   <span>Physical Document Images Purged (Storage Cleared)</span>
                 </div>
                 <p className="text-slate-300 leading-relaxed">
-                  The original uploaded image files were permanently deleted on{' '}
-                  <strong className="text-white">{new Date(selectedItem.documents_purged_at).toLocaleDateString()}</strong>{' '}
-                  to free server disk space per retention policy. The verification status and audit record remain 100% active.
+                  The original uploaded image files were permanently deleted to free server disk space per retention policy.
                 </p>
               </div>
             ) : (
               <div className="p-4 rounded-xl bg-navy-800/80 border border-white/5 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                    Verification Documents
+                    Uploaded Document Photos
                   </span>
                   {activeDoc && (
                     <button
                       type="button"
                       onClick={() => window.open(activeDoc.url, '_blank')}
-                      className="inline-flex items-center gap-1.5 text-xs text-magenta-300 hover:text-magenta-200 transition"
+                      className="inline-flex items-center gap-1.5 text-xs text-cyan-300 hover:text-cyan-200 transition"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
-                      Open in New Tab
+                      Open Full Size in New Tab
                     </button>
                   )}
                 </div>
 
                 {/* Side / Document Selectors */}
-                {selectedItem.type === 'identity' ? (
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleLoadDoc(selectedItem, 'front', 'CNIC Front Side')}
-                      disabled={docLoading === 'front'}
-                      className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
-                        activeDoc?.side === 'front'
-                          ? 'bg-magenta-600/20 border-magenta-500/60 text-white shadow-sm'
-                          : 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
-                      }`}
-                    >
-                      {docLoading === 'front' ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Eye className="w-3.5 h-3.5" />
-                      )}
-                      CNIC Front Side
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => handleLoadDoc(selectedItem, 'back', 'CNIC Back Side')}
-                      disabled={docLoading === 'back'}
-                      className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
-                        activeDoc?.side === 'back'
-                          ? 'bg-magenta-600/20 border-magenta-500/60 text-white shadow-sm'
-                          : 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
-                      }`}
-                    >
-                      {docLoading === 'back' ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <Eye className="w-3.5 h-3.5" />
-                      )}
-                      CNIC Back Side
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex">
-                    <button
-                      type="button"
-                      onClick={() => handleLoadDoc(selectedItem, 'front', selectedItem.document_name || 'Education Certificate')}
-                      disabled={docLoading === 'front'}
-                      className="w-full p-2.5 rounded-xl border border-magenta-500/60 bg-magenta-600/20 text-white text-xs font-semibold flex items-center justify-center gap-2 transition"
-                    >
-                      {docLoading === 'front' ? (
-                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      ) : (
-                        <FileText className="w-3.5 h-3.5" />
-                      )}
-                      {selectedItem.document_name || 'Education Certificate'} (Front)
-                    </button>
-                  </div>
-                )}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleLoadDoc(selectedItem, 'front', 'Document Front Side', modalType === 'magic_link')}
+                    disabled={docLoading === 'front' || !selectedItem.document_front_path}
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
+                      activeDoc?.side === 'front'
+                        ? 'bg-cyan-600/20 border-cyan-500/60 text-white shadow-sm'
+                        : selectedItem.document_front_path
+                        ? 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
+                        : 'bg-navy-950/50 border-dashed border-slate-700/50 text-slate-600 cursor-not-allowed'
+                    }`}
+                  >
+                    {docLoading === 'front' ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )}
+                    Front Side {selectedItem.document_front_path ? '✓' : '(Not Uploaded)'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleLoadDoc(selectedItem, 'back', 'Document Back Side', modalType === 'magic_link')}
+                    disabled={docLoading === 'back' || !selectedItem.document_back_path}
+                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
+                      activeDoc?.side === 'back'
+                        ? 'bg-cyan-600/20 border-cyan-500/60 text-white shadow-sm'
+                        : selectedItem.document_back_path
+                        ? 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
+                        : 'bg-navy-950/50 border-dashed border-slate-700/50 text-slate-600 cursor-not-allowed'
+                    }`}
+                  >
+                    {docLoading === 'back' ? (
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Eye className="w-3.5 h-3.5" />
+                    )}
+                    Back Side {selectedItem.document_back_path ? '✓' : '(Optional / None)'}
+                  </button>
+                </div>
 
                 {/* Live Preview Container */}
-                <div className="rounded-xl border border-white/10 bg-navy-950 p-2 min-h-[220px] flex items-center justify-center overflow-hidden">
+                <div className="rounded-xl border border-white/10 bg-navy-950 p-2 min-h-[240px] flex items-center justify-center overflow-hidden">
                   {docLoading ? (
                     <div className="flex flex-col items-center gap-2 py-8 text-slate-400 text-xs">
-                      <RefreshCw className="w-6 h-6 animate-spin text-magenta-400" />
-                      <span>Loading document securely...</span>
+                      <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
+                      <span>Loading private document photo securely...</span>
                     </div>
                   ) : docError ? (
                     <div className="flex flex-col items-center gap-2 py-6 text-rose-400 text-xs text-center px-4">
@@ -461,7 +794,7 @@ export default function AdminVerificationsTab() {
                       <Button
                         size="sm"
                         variant="secondary"
-                        onClick={() => handleLoadDoc(selectedItem, activeDoc?.side || 'front', activeDoc?.label || 'Document')}
+                        onClick={() => handleLoadDoc(selectedItem, activeDoc?.side || 'front', activeDoc?.label || 'Document', modalType === 'magic_link')}
                       >
                         Retry
                       </Button>
@@ -471,7 +804,7 @@ export default function AdminVerificationsTab() {
                       <img
                         src={activeDoc.url}
                         alt={activeDoc.label}
-                        className="max-h-[380px] max-w-full object-contain rounded"
+                        className="max-h-[380px] max-w-full object-contain rounded shadow-lg"
                       />
                     ) : activeDoc.mime === 'application/pdf' ? (
                       <iframe
@@ -485,7 +818,7 @@ export default function AdminVerificationsTab() {
                         <button
                           type="button"
                           onClick={() => window.open(activeDoc.url, '_blank')}
-                          className="px-3 py-1.5 rounded-lg bg-magenta-600 text-white font-medium hover:bg-magenta-500 transition"
+                          className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-medium hover:bg-cyan-500 transition"
                         >
                           Open Document
                         </button>
@@ -493,7 +826,7 @@ export default function AdminVerificationsTab() {
                     )
                   ) : (
                     <div className="py-8 text-center text-xs text-slate-500">
-                      Click a document button above to view
+                      Click a document button above to view photo
                     </div>
                   )}
                 </div>
@@ -510,13 +843,13 @@ export default function AdminVerificationsTab() {
             {showRejectForm ? (
               <form onSubmit={handleReject} className="space-y-3 pt-2 border-t border-white/10">
                 <label className="block text-xs font-semibold text-slate-300">
-                  Reason for Rejection (Displayed to user) *
+                  Reason for Rejection *
                 </label>
                 <textarea
                   rows="3"
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="e.g. Document image is blurry or expired. Please upload a clear photo of your original CNIC."
+                  placeholder="e.g. Image is blurry, edges are cut off, or expired document. Please re-upload a clear picture."
                   className="w-full p-3 bg-navy-850 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-rose-500"
                 />
                 <div className="flex items-center justify-end gap-2">

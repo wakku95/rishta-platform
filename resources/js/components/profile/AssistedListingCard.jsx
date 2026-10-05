@@ -1,11 +1,13 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Briefcase, GraduationCap, Ruler, AlertCircle } from 'lucide-react';
+import { MapPin, Briefcase, GraduationCap, Ruler, AlertCircle, EyeOff } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import GenderAvatar from '../ui/GenderAvatar';
+import useAuth from '../../hooks/useAuth';
 
-export default function AssistedListingCard({ listing }) {
+export default function AssistedListingCard({ listing, onHide }) {
+  const { authenticated } = useAuth();
   // Truncate public about text
   const truncateAbout = (text, maxLength = 120) => {
     if (!text) return '';
@@ -78,13 +80,31 @@ export default function AssistedListingCard({ listing }) {
         </div>
       </div>
 
-      <div className="p-4 border-t border-white/5 bg-navy-900/50">
+      <div className="p-4 border-t border-white/5 bg-navy-900/50 space-y-2">
         <Link
           to={`/listings/${listing.listing_code}`}
           className="w-full flex items-center justify-center py-2.5 bg-navy-800 hover:bg-navy-750 text-amber-400 text-sm font-bold rounded-xl border border-amber-500/30 transition-colors"
         >
           View Full Detail
         </Link>
+
+        {onHide && authenticated && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (window.confirm(`Hide listing #${listing.listing_code} from your discovery results?`)) {
+                onHide(listing.listing_code, listing);
+              }
+            }}
+            className="w-full text-center text-[11px] text-slate-500 hover:text-rose-400 transition flex items-center justify-center gap-1.5 pt-1"
+            title="Hide this listing from your discovery feed"
+          >
+            <EyeOff className="w-3.5 h-3.5" />
+            <span>Not Interested / Hide</span>
+          </button>
+        )}
       </div>
     </Card>
   );

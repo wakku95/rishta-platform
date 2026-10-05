@@ -77,6 +77,12 @@ Route::prefix('discovery')->group(function () {
         ->middleware('throttle:60,1');
     Route::get('/profiles/{profile_code}', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'show'])
         ->middleware('throttle:60,1');
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/hidden-profiles', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'hiddenProfiles']);
+        Route::post('/profiles/{profile_code}/hide', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'hideProfile']);
+        Route::delete('/profiles/{profile_code}/hide', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'unhideProfile']);
+    });
 });
 
 /*
@@ -263,12 +269,39 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::prefix('matchmaker')->group(function () {
         Route::get('/candidates', [\App\Http\Controllers\Api\Admin\AdminMatchmakerController::class, 'getCandidates']);
         Route::post('/matches', [\App\Http\Controllers\Api\Admin\AdminMatchmakerController::class, 'findMatches']);
+        Route::post('/exclude', [\App\Http\Controllers\Api\Admin\AdminMatchmakerController::class, 'excludeMatch']);
     });
 
     // Admin Communications (Email & messaging)
     Route::prefix('communications')->group(function () {
         Route::post('/send-email', [\App\Http\Controllers\Api\Admin\AdminCommunicationController::class, 'sendEmail']);
+        Route::post('/log-contact', [\App\Http\Controllers\Api\Admin\AdminCommunicationController::class, 'logContact']);
     });
+
+    // System Database Backups
+    Route::prefix('backup')->group(function () {
+        Route::get('/info', [\App\Http\Controllers\Api\Admin\AdminBackupController::class, 'info']);
+        Route::post('/create', [\App\Http\Controllers\Api\Admin\AdminBackupController::class, 'create']);
+        Route::get('/download/{filename}', [\App\Http\Controllers\Api\Admin\AdminBackupController::class, 'download']);
+        Route::delete('/{filename}', [\App\Http\Controllers\Api\Admin\AdminBackupController::class, 'delete']);
+    });
+
+    // Candidate Verification Links
+    Route::prefix('verification-links')->group(function () {
+        Route::post('/generate', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'generateLink']);
+        Route::get('/', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'listLinks']);
+        Route::get('/{id}/document/{side?}', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'viewDocument']);
+        Route::post('/{id}/approve', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'approve']);
+        Route::post('/{id}/reject', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'reject']);
+    });
+});
+
+// Public Magic Link Document Verification (Token-secured, no login needed)
+Route::prefix('public/verify-doc')->group(function () {
+    Route::get('/{token}', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'showPublic'])
+        ->middleware('throttle:30,1');
+    Route::post('/{token}/submit', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'submitPublic'])
+        ->middleware('throttle:10,1');
 });
 
 // User Social Media Publication Requests

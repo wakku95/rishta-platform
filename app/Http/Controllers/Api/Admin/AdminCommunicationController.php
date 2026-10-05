@@ -64,6 +64,20 @@ class AdminCommunicationController extends Controller
                 )
             );
 
+            // Log communication record
+            if ($request->filled('candidate_type') && $request->filled('candidate_id')) {
+                $cType = $request->input('candidate_type') === 'registered' ? 'profile' : $request->input('candidate_type');
+                \App\Models\CommunicationLog::create([
+                    'admin_id'            => $request->user()?->id,
+                    'contactable_type'    => $cType,
+                    'contactable_id'      => (int) $request->input('candidate_id'),
+                    'channel'             => 'email',
+                    'recipient_name'      => $validated['recipient_name'] ?? null,
+                    'recipient_contact'   => $validated['recipient_email'],
+                    'subject_or_template' => $validated['subject'],
+                ]);
+            }
+
             return $this->successResponse(null, 'Email sent successfully to ' . $validated['recipient_email']);
         } catch (Throwable $e) {
             Log::error('AdminCommunicationController::sendEmail failed: ' . $e->getMessage(), [
@@ -85,5 +99,38 @@ class AdminCommunicationController extends Controller
                 }
             }
         }
+    }
+
+    /**
+     * Record a communication event (e.g. WhatsApp Web open, phone call).
+     */
+    public function logContact(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'candidate_type'      => 'required|string|in:assisted,profile,registered',
+            'candidate_id'        => 'required|integer',
+            'channel'             => 'required|string|in:whatsapp,email,sms,phone',
+            'recipient_name'      => 'nullable|string|max:255',
+            'recipient_contact'   => 'nullable|string|max:255',
+            'subject_or_template' => 'nullable|string|max:255',
+        ]);
+
+        $cType = $validated['candidate_type'] === 'registered' ? 'profile' : $validated['candidate_type'];
+
+        $log = \App\Models\CommunicationLog::create([
+            'admin_id'            => $request->user()?->id,
+            'contactable_type'    => $cType,
+            'contactable_id'      => $validated['candidate_id'],
+            'channel'             => $validated['channel'],
+            'recipient_name'      => $validated['recipient_name'] ?? null,
+            'recipient_contact'   => $validated['recipient_contact'] ?? null,
+            'subject_or_template' => $validated['subject_or_template'] ?? null,
+        ]);
+
+        return $this->successResponse([
+            'id' => $log->id,
+            'channel' => $log->channel,
+            'time' => $log->created_at->diffForHumans(),
+        ], 'Contact recorded successfully.');
     }
 }

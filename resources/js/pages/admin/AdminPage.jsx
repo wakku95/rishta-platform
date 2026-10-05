@@ -14,9 +14,10 @@ import AdminAssistedTab from './AdminAssistedTab';
 import AdminAssistedListingsTab from './AdminAssistedListingsTab';
 import AdminAssistedSubmissionsTab from './AdminAssistedSubmissionsTab';
 import AdminSocialMediaTab from './AdminSocialMediaTab';
-import { ClipboardList, FileText, Share2, Briefcase, Sparkles } from 'lucide-react';
+import { ClipboardList, FileText, Share2, Briefcase, Sparkles, Database } from 'lucide-react';
 import AdminPortfolioTab from './AdminPortfolioTab';
 import AdminMatchmakerTab from './AdminMatchmakerTab';
+import AdminBackupTab from './AdminBackupTab';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -39,6 +40,7 @@ export default function AdminPage() {
     { id: 'submissions', name: 'Assisted Submissions', icon: FileText },
     { id: 'social-media', name: 'Social Media', icon: Share2 },
     { id: 'portfolio', name: 'My Portfolio', icon: Briefcase },
+    { id: 'backup', name: 'Database Backup', icon: Database },
   ];
 
   return (
@@ -102,6 +104,7 @@ export default function AdminPage() {
           {activeTab === 'submissions' && <AdminAssistedSubmissionsTab />}
           {activeTab === 'social-media' && <AdminSocialMediaTab />}
           {activeTab === 'portfolio' && <AdminPortfolioTab />}
+          {activeTab === 'backup' && <AdminBackupTab />}
         </div>
       </div>
     </div>

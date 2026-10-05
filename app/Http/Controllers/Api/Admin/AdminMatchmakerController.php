@@ -41,6 +41,11 @@ class AdminMatchmakerController extends Controller
             $candidates = $query->latest()->paginate(20);
 
             $formatted = $candidates->getCollection()->map(function ($c) {
+                $lastLog = \App\Models\CommunicationLog::where('contactable_type', 'assisted')
+                    ->where('contactable_id', $c->id)
+                    ->latest()
+                    ->first();
+
                 return [
                     'id' => $c->id,
                     'type' => 'assisted',
@@ -59,6 +64,10 @@ class AdminMatchmakerController extends Controller
                     'managed_by' => $c->managed_by,
                     'contact_number' => $c->contact_number,
                     'preferences' => null, // Assisted listings don't have a rigid preferences row
+                    'last_contacted' => $lastLog ? [
+                        'channel' => $lastLog->channel,
+                        'time' => $lastLog->created_at->diffForHumans(),
+                    ] : null,
                 ];
             });
 
@@ -92,6 +101,11 @@ class AdminMatchmakerController extends Controller
         $candidates = $query->latest()->paginate(20);
 
         $formatted = $candidates->getCollection()->map(function ($p) {
+            $lastLog = \App\Models\CommunicationLog::where('contactable_type', 'profile')
+                ->where('contactable_id', $p->id)
+                ->latest()
+                ->first();
+
             return [
                 'id' => $p->id,
                 'type' => 'registered',
@@ -119,6 +133,10 @@ class AdminMatchmakerController extends Controller
                     'preferred_marital_status' => $p->preferences->preferred_marital_status ?? [],
                     'min_height' => $p->preferences->min_height,
                     'max_height' => $p->preferences->max_height,
+                ] : null,
+                'last_contacted' => $lastLog ? [
+                    'channel' => $lastLog->channel,
+                    'time' => $lastLog->created_at->diffForHumans(),
                 ] : null,
             ];
         });
@@ -158,6 +176,29 @@ class AdminMatchmakerController extends Controller
         $excludeProfileId = $request->input('exclude_profile_id');
         $excludeListingId = $request->input('exclude_listing_id');
 
+        $sourceType = $request->input('source_type') ?? ($excludeListingId ? 'assisted' : ($excludeProfileId ? 'profile' : null));
+        $sourceId = $request->input('source_id') ?? ($excludeListingId ?: $excludeProfileId);
+        if ($sourceType === 'registered') {
+            $sourceType = 'profile';
+        }
+
+        $excludedProfiles = [];
+        $excludedListings = [];
+
+        if ($sourceType && $sourceId) {
+            $excludedProfiles = \App\Models\MatchExclusion::where(function ($q) use ($sourceType, $sourceId) {
+                $q->where('source_type', $sourceType)->where('source_id', $sourceId)->where('target_type', 'profile');
+            })->orWhere(function ($q) use ($sourceType, $sourceId) {
+                $q->where('target_type', $sourceType)->where('target_id', $sourceId)->where('source_type', 'profile');
+            })->pluck('target_id')->toArray();
+
+            $excludedListings = \App\Models\MatchExclusion::where(function ($q) use ($sourceType, $sourceId) {
+                $q->where('source_type', $sourceType)->where('source_id', $sourceId)->where('target_type', 'assisted');
+            })->orWhere(function ($q) use ($sourceType, $sourceId) {
+                $q->where('target_type', $sourceType)->where('target_id', $sourceId)->where('source_type', 'assisted');
+            })->pluck('target_id')->toArray();
+        }
+
         // 1. Query Registered Profiles
         $profileQuery = Profile::query()
             ->with('user:id,name,email')
@@ -166,6 +207,10 @@ class AdminMatchmakerController extends Controller
 
         if ($excludeProfileId) {
             $profileQuery->where('id', '!=', $excludeProfileId);
+        }
+
+        if (!empty($excludedProfiles)) {
+            $profileQuery->whereNotIn('id', $excludedProfiles);
         }
 
         if ($minAge) {
@@ -206,6 +251,10 @@ class AdminMatchmakerController extends Controller
 
         if ($excludeListingId) {
             $listingQuery->where('id', '!=', $excludeListingId);
+        }
+
+        if (!empty($excludedListings)) {
+            $listingQuery->whereNotIn('id', $excludedListings);
         }
 
         if ($minAge) {
@@ -259,6 +308,11 @@ class AdminMatchmakerController extends Controller
                 $score += 10;
             }
 
+            $lastLog = \App\Models\CommunicationLog::where('contactable_type', 'profile')
+                ->where('contactable_id', $p->id)
+                ->latest()
+                ->first();
+
             $results->push([
                 'id' => $p->id,
                 'source' => 'registered',
@@ -278,6 +332,10 @@ class AdminMatchmakerController extends Controller
                 'about' => $p->about,
                 'match_score' => min(100, $score),
                 'match_badges' => $badges,
+                'last_contacted' => $lastLog ? [
+                    'channel' => $lastLog->channel,
+                    'time' => $lastLog->created_at->diffForHumans(),
+                ] : null,
             ]);
         }
 
@@ -300,6 +358,11 @@ class AdminMatchmakerController extends Controller
 
             $age = $l->date_of_birth ? $l->date_of_birth->age : 28;
 
+            $lastLog = \App\Models\CommunicationLog::where('contactable_type', 'assisted')
+                ->where('contactable_id', $l->id)
+                ->latest()
+                ->first();
+
             $results->push([
                 'id' => $l->id,
                 'source' => 'assisted',
@@ -320,6 +383,10 @@ class AdminMatchmakerController extends Controller
                 'contact_number' => $l->contact_number,
                 'match_score' => min(100, $score),
                 'match_badges' => $badges,
+                'last_contacted' => $lastLog ? [
+                    'channel' => $lastLog->channel,
+                    'time' => $lastLog->created_at->diffForHumans(),
+                ] : null,
             ]);
         }
 
@@ -329,5 +396,34 @@ class AdminMatchmakerController extends Controller
             'matches' => $sorted,
             'total' => $sorted->count(),
         ], 'Matches calculated successfully.');
+    }
+
+    /**
+     * Exclude a match so it will never be suggested again for this candidate.
+     */
+    public function excludeMatch(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'source_type' => 'required|string|in:assisted,profile,registered',
+            'source_id'   => 'required|integer',
+            'target_type' => 'required|string|in:assisted,profile,registered',
+            'target_id'   => 'required|integer',
+            'reason'      => 'nullable|string|max:100',
+        ]);
+
+        $sourceType = $validated['source_type'] === 'registered' ? 'profile' : $validated['source_type'];
+        $targetType = $validated['target_type'] === 'registered' ? 'profile' : $validated['target_type'];
+
+        \App\Models\MatchExclusion::firstOrCreate([
+            'source_type' => $sourceType,
+            'source_id'   => $validated['source_id'],
+            'target_type' => $targetType,
+            'target_id'   => $validated['target_id'],
+        ], [
+            'excluded_by_user_id' => $request->user()?->id,
+            'reason'              => $validated['reason'] ?? 'not_interested',
+        ]);
+
+        return $this->successResponse(null, 'Match marked as not interested and hidden from future suggestions.');
     }
 }

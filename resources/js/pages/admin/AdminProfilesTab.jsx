@@ -430,9 +430,9 @@ export default function AdminProfilesTab() {
                 <span className="font-bold text-purple-400 block uppercase tracking-wider">Partner Preferences</span>
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-slate-300">
                   <div>Age Range: <strong className="text-white">{selectedProfile.preferences.min_age || 'Any'} - {selectedProfile.preferences.max_age || 'Any'} yrs</strong></div>
-                  <div>Preferred City: <strong className="text-white capitalize">{selectedProfile.preferences.preferred_city || 'Any'}</strong></div>
+                  <div>Preferred Cities: <strong className="text-white capitalize">{Array.isArray(selectedProfile.preferences.preferred_cities) && selectedProfile.preferences.preferred_cities.length > 0 ? selectedProfile.preferences.preferred_cities.join(', ') : 'Any'}</strong></div>
                   <div>Preferred Religion: <strong className="text-white capitalize">{selectedProfile.preferences.preferred_religion || 'Any'}</strong></div>
-                  <div>Preferred Marital: <strong className="text-white capitalize">{selectedProfile.preferences.preferred_marital_status || 'Any'}</strong></div>
+                  <div>Preferred Marital: <strong className="text-white capitalize">{Array.isArray(selectedProfile.preferences.preferred_marital_status) && selectedProfile.preferences.preferred_marital_status.length > 0 ? selectedProfile.preferences.preferred_marital_status.map(s => String(s).replace('_', ' ')).join(', ') : (selectedProfile.preferences.preferred_marital_status || 'Any')}</strong></div>
                 </div>
               </div>
             )}

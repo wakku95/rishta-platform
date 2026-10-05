@@ -58,9 +58,28 @@ export const adminApi = {
   // Matchmaker Engine
   getMatchmakerCandidates: (params) => api.get('/admin/matchmaker/candidates', { params }).then(r => r.data.data),
   findMatchmakerMatches: (data) => api.post('/admin/matchmaker/matches', data).then(r => r.data.data),
+  excludeMatch: (data) => api.post('/admin/matchmaker/exclude', data).then(r => r.data),
 
   // Communications
   sendCommunicationEmail: (formData) => api.post('/admin/communications/send-email', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   }).then(r => r.data),
+  logContact: (data) => api.post('/admin/communications/log-contact', data).then(r => r.data),
+
+  // Database Backups
+  getBackupInfo: () => api.get('/admin/backup/info').then(r => r.data.data),
+  createBackup: (params = {}) => api.post('/admin/backup/create', params).then(r => r.data.data),
+  downloadBackupBlob: (filename) => api.get(`/admin/backup/download/${filename}`, {
+    responseType: 'blob',
+  }),
+  deleteBackup: (filename) => api.delete(`/admin/backup/${filename}`).then(r => r.data),
+
+  // Candidate Verification Links
+  generateVerificationLink: (data) => api.post('/admin/verification-links/generate', data).then(r => r.data.data),
+  getVerificationLinks: (params) => api.get('/admin/verification-links', { params }).then(r => r.data.data),
+  approveVerificationLink: (id, notes) => api.post(`/admin/verification-links/${id}/approve`, { notes }).then(r => r.data),
+  rejectVerificationLink: (id, reason) => api.post(`/admin/verification-links/${id}/reject`, { reason }).then(r => r.data),
+  getVerificationLinkDocBlob: (id, side = 'front') => api.get(`/admin/verification-links/${id}/document/${side}`, {
+    responseType: 'blob',
+  }),
 };
