@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Search, Eye, Trash2, ShieldAlert, RefreshCw, CheckCircle, Clock, Sparkles } from 'lucide-react';
+import { Search, Eye, Trash2, ShieldAlert, RefreshCw, CheckCircle, Clock, Sparkles, MessageCircle } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
 import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
+import AdminCommunicationModal from '../../components/admin/AdminCommunicationModal';
 
 export default function AdminProfilesTab() {
   const [profiles, setProfiles] = useState([]);
@@ -15,6 +16,7 @@ export default function AdminProfilesTab() {
   const [actionLoadingId, setActionLoadingId] = useState(null);
   const [selectedProfile, setSelectedProfile] = useState(null);
   const [cardCandidate, setCardCandidate] = useState(null);
+  const [commCandidate, setCommCandidate] = useState(null);
   const [message, setMessage] = useState(null);
 
   const fetchProfiles = async (page = 1) => {
@@ -230,6 +232,18 @@ export default function AdminProfilesTab() {
                   <td className="px-5 py-3.5 text-right">
                     <div className="flex items-center justify-end gap-1.5">
                       <button
+                        onClick={() => setCommCandidate({
+                          ...p,
+                          name: p.user?.name || 'Candidate',
+                          code: p.profile_code,
+                          type: 'registered',
+                        })}
+                        title="Send WhatsApp or Email Message"
+                        className="p-1.5 rounded-lg text-emerald-400 hover:text-white hover:bg-emerald-500/20 transition cursor-pointer"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                      <button
                         onClick={() => setCardCandidate(p)}
                         title="Generate 1080x1080 Social Media Card"
                         className="p-1.5 rounded-lg text-magenta-400 hover:text-white hover:bg-magenta-500/20 transition cursor-pointer"
@@ -431,6 +445,14 @@ export default function AdminProfilesTab() {
         <AdminSocialCardModal
           candidate={cardCandidate}
           onClose={() => setCardCandidate(null)}
+        />
+      )}
+
+      {/* Direct Communication Modal (WhatsApp & Email) */}
+      {commCandidate && (
+        <AdminCommunicationModal
+          candidate={commCandidate}
+          onClose={() => setCommCandidate(null)}
         />
       )}
     </div>

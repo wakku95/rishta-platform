@@ -14,8 +14,9 @@ import AdminAssistedTab from './AdminAssistedTab';
 import AdminAssistedListingsTab from './AdminAssistedListingsTab';
 import AdminAssistedSubmissionsTab from './AdminAssistedSubmissionsTab';
 import AdminSocialMediaTab from './AdminSocialMediaTab';
-import { ClipboardList, FileText, Share2, Briefcase } from 'lucide-react';
+import { ClipboardList, FileText, Share2, Briefcase, Sparkles } from 'lucide-react';
 import AdminPortfolioTab from './AdminPortfolioTab';
+import AdminMatchmakerTab from './AdminMatchmakerTab';
 
 export default function AdminPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,6 +28,7 @@ export default function AdminPage() {
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: BarChart3 },
+    { id: 'matchmaker', name: 'Auto Matchmaker', icon: Sparkles },
     { id: 'users', name: 'Users & Accounts', icon: Users },
     { id: 'profiles', name: 'Profiles Moderation', icon: HeartHandshake },
     { id: 'verifications', name: 'Verifications', icon: ShieldCheck },
@@ -89,6 +91,7 @@ export default function AdminPage() {
         {/* Tab Body */}
         <div className="mt-6">
           {activeTab === 'overview' && <AdminOverviewTab />}
+          {activeTab === 'matchmaker' && <AdminMatchmakerTab />}
           {activeTab === 'users' && <AdminUsersTab />}
           {activeTab === 'profiles' && <AdminProfilesTab />}
           {activeTab === 'verifications' && <AdminVerificationsTab />}

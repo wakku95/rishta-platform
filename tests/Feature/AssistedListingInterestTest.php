@@ -74,4 +74,41 @@ class AssistedListingInterestTest extends TestCase
         $response->assertStatus(429)
                  ->assertJsonPath('message', 'You have already submitted an interest for this listing recently.');
     }
+
+    public function test_assisted_listings_can_be_filtered_by_education()
+    {
+        $phd = \App\Models\AssistedListing::factory()->create([
+            'listing_code' => 'AL-PHD001',
+            'education' => 'PhD',
+            'listing_status' => 'published',
+        ]);
+
+        $bachelor = \App\Models\AssistedListing::factory()->create([
+            'listing_code' => 'AL-BACH002',
+            'education' => "Bachelor's",
+            'listing_status' => 'published',
+        ]);
+
+        $matric = \App\Models\AssistedListing::factory()->create([
+            'listing_code' => 'AL-MAT003',
+            'education' => 'Matric / O-Level',
+            'listing_status' => 'published',
+        ]);
+
+        // Filter by Bachelor's (includes Bachelor's, Master's, MPhil, PhD)
+        $res = $this->getJson('/api/listings?education=' . urlencode("Bachelor's"));
+        $res->assertStatus(200);
+        $codes = collect($res->json('data'))->pluck('listing_code')->toArray();
+        $this->assertContains('AL-PHD001', $codes);
+        $this->assertContains('AL-BACH002', $codes);
+        $this->assertNotContains('AL-MAT003', $codes);
+
+        // Filter by PhD (only includes PhD)
+        $resPhd = $this->getJson('/api/listings?education=' . urlencode('PhD'));
+        $resPhd->assertStatus(200);
+        $codesPhd = collect($resPhd->json('data'))->pluck('listing_code')->toArray();
+        $this->assertContains('AL-PHD001', $codesPhd);
+        $this->assertNotContains('AL-BACH002', $codesPhd);
+        $this->assertNotContains('AL-MAT003', $codesPhd);
+    }
 }

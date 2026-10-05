@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Listings;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Constants\ProfileOptions;
 use App\Models\AssistedListing;
 use App\Http\Resources\AssistedListingPublicResource;
 use App\Http\Requests\Listings\SubmitInterestRequest;
@@ -41,6 +42,39 @@ class AssistedListingController extends Controller
         if ($request->filled('max_age')) {
             $minDob = now()->subYears($request->max_age + 1)->format('Y-m-d');
             $query->where('date_of_birth', '>', $minDob);
+        }
+
+        // Faith Filters
+        if ($request->filled('religion')) {
+            $query->where('religion', $request->religion);
+        }
+
+        if ($request->filled('sect')) {
+            $query->where('sect', $request->sect);
+        }
+
+        // Education Filter (canonical matching at or above specified level)
+        if ($request->filled('education')) {
+            $qualifyingEducations = ProfileOptions::getEducationsAtOrAbove($request->education);
+            $query->whereIn('education', $qualifyingEducations);
+        }
+
+        // Profession & Marital Status
+        if ($request->filled('profession')) {
+            $query->where('profession', $request->profession);
+        }
+
+        if ($request->filled('marital_status')) {
+            $query->where('marital_status', $request->marital_status);
+        }
+
+        // Height Boundaries
+        if ($request->filled('min_height')) {
+            $query->where('height', '>=', $request->integer('min_height'));
+        }
+
+        if ($request->filled('max_height')) {
+            $query->where('height', '<=', $request->integer('max_height'));
         }
 
         $listings = $query->latest()->paginate($request->per_page ?? 15);

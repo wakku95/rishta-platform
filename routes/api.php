@@ -258,6 +258,17 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::put('/items/{id}', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'updateItem']);
         Route::delete('/items/{id}', [\App\Http\Controllers\Api\Admin\AdminPortfolioController::class, 'destroyItem']);
     });
+
+    // Matchmaker Engine
+    Route::prefix('matchmaker')->group(function () {
+        Route::get('/candidates', [\App\Http\Controllers\Api\Admin\AdminMatchmakerController::class, 'getCandidates']);
+        Route::post('/matches', [\App\Http\Controllers\Api\Admin\AdminMatchmakerController::class, 'findMatches']);
+    });
+
+    // Admin Communications (Email & messaging)
+    Route::prefix('communications')->group(function () {
+        Route::post('/send-email', [\App\Http\Controllers\Api\Admin\AdminCommunicationController::class, 'sendEmail']);
+    });
 });
 
 // User Social Media Publication Requests

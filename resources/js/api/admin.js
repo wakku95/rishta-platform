@@ -54,4 +54,13 @@ export const adminApi = {
   searchMatches: (id, params) => api.post(`/admin/assisted/profiles/${id}/search-matches`, params).then(r => r.data.data),
   sendProposal: (id, data) => api.post(`/admin/assisted/profiles/${id}/send-proposal`, data).then(r => r.data),
   listProposals: (id) => api.get(`/admin/assisted/profiles/${id}/proposals`).then(r => r.data.data),
+
+  // Matchmaker Engine
+  getMatchmakerCandidates: (params) => api.get('/admin/matchmaker/candidates', { params }).then(r => r.data.data),
+  findMatchmakerMatches: (data) => api.post('/admin/matchmaker/matches', data).then(r => r.data.data),
+
+  // Communications
+  sendCommunicationEmail: (formData) => api.post('/admin/communications/send-email', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).then(r => r.data),
 };

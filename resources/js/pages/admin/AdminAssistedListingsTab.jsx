@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { 
   Plus, Search, Edit, FileText, CheckCircle, 
-  XCircle, Filter, FileSearch, ShieldCheck, UserPlus, Sparkles, Trash2, Heart 
+  XCircle, Filter, FileSearch, ShieldCheck, UserPlus, Sparkles, Trash2, Heart, MessageCircle
 } from 'lucide-react';
 import CreateAssistedListingModal from './CreateAssistedListingModal';
 import ListingConversionModal from './ListingConversionModal';
 import AssistedListingDetailView from './AssistedListingDetailView';
 import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
+import AdminCommunicationModal from '../../components/admin/AdminCommunicationModal';
 
 export default function AdminAssistedListingsTab() {
   const [searchTerm, setSearchTerm] = useState('');
@@ -23,9 +24,10 @@ export default function AdminAssistedListingsTab() {
   // Modals state
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [editingListing, setEditingListing] = useState(null);
+  const [cardCandidate, setCardCandidate] = useState(null);
+  const [commCandidate, setCommCandidate] = useState(null);
   const [convertingListing, setConvertingListing] = useState(null);
   const [viewingListing, setViewingListing] = useState(null);
-  const [cardCandidate, setCardCandidate] = useState(null);
 
   const fetchListings = useCallback(async () => {
     setIsLoading(true);
@@ -211,6 +213,18 @@ export default function AdminAssistedListingsTab() {
                   <td className="px-6 py-4 text-right">
                     <div className="flex items-center justify-end gap-3">
                       <button 
+                        onClick={() => setCommCandidate({
+                          ...listing,
+                          name: listing.full_name,
+                          code: listing.listing_code,
+                          type: 'assisted',
+                        })}
+                        className="text-emerald-400 hover:text-white transition"
+                        title="Send WhatsApp or Email Message"
+                      >
+                        <MessageCircle className="w-4 h-4" />
+                      </button>
+                      <button 
                         onClick={() => setCardCandidate(listing)}
                         className="text-magenta-400 hover:text-white transition"
                         title="Generate 1080x1080 Social Media Card"
@@ -345,6 +359,14 @@ export default function AdminAssistedListingsTab() {
         <AdminSocialCardModal
           candidate={cardCandidate}
           onClose={() => setCardCandidate(null)}
+        />
+      )}
+
+      {/* Direct Communication Modal (WhatsApp & Email) */}
+      {commCandidate && (
+        <AdminCommunicationModal
+          candidate={commCandidate}
+          onClose={() => setCommCandidate(null)}
         />
       )}
     </div>

@@ -1,8 +1,9 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Filter, RotateCcw, Search, SlidersHorizontal, Users } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useContext } from 'react';
+import { useSearchParams, Link } from 'react-router-dom';
+import { Filter, RotateCcw, Search, SlidersHorizontal, Users, Sparkles } from 'lucide-react';
 import { searchProfiles } from '../../api/discovery';
-import { getProfileOptions } from '../../api/profile';
+import { getProfileOptions, getProfile } from '../../api/profile';
+import { AuthContext } from '../../contexts/AuthContext';
 import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
 import Input from '../../components/ui/Input';
@@ -61,6 +62,53 @@ export default function SearchProfilesPage() {
   const [error, setError] = useState(null);
   const [validationErrors, setValidationErrors] = useState({});
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
+
+  // Registered User Auto Match state
+  const { user } = useContext(AuthContext);
+  const [userProfile, setUserProfile] = useState(null);
+  const [isAutoMatchActive, setIsAutoMatchActive] = useState(() => searchParams.get('auto_match') === '1');
+
+  useEffect(() => {
+    if (user) {
+      getProfile().then(res => {
+        if (res.data) setUserProfile(res.data);
+      }).catch(() => {});
+    } else {
+      setUserProfile(null);
+    }
+  }, [user]);
+
+  const handleApplyAutoMatch = () => {
+    if (!userProfile?.preferences) return;
+    const p = userProfile.preferences;
+
+    const autoFilters = {
+      ...INITIAL_FILTERS,
+      gender: p.preferred_gender || '',
+      min_age: p.min_age ? String(p.min_age) : '',
+      max_age: p.max_age ? String(p.max_age) : '',
+      city: (Array.isArray(p.preferred_cities) && p.preferred_cities.length > 0) ? p.preferred_cities[0] : '',
+      religion: p.preferred_religion || '',
+      sect: p.preferred_sect || '',
+      education: p.preferred_education || '',
+      marital_status: (Array.isArray(p.preferred_marital_status) && p.preferred_marital_status.length > 0) ? p.preferred_marital_status[0] : '',
+      min_height: p.min_height ? String(p.min_height) : '',
+      max_height: p.max_height ? String(p.max_height) : '',
+      page: 1,
+    };
+
+    setFilters(autoFilters);
+    setIsAutoMatchActive(true);
+
+    const params = new URLSearchParams();
+    for (const [key, val] of Object.entries(autoFilters)) {
+      if (val !== '' && val !== null && val !== undefined && key !== 'page') {
+        params.set(key, val);
+      }
+    }
+    params.set('auto_match', '1');
+    setSearchParams(params);
+  };
 
   // Load canonical options once
   useEffect(() => {
@@ -183,6 +231,7 @@ export default function SearchProfilesPage() {
   const handleClearFilters = () => {
     setFilters(INITIAL_FILTERS);
     setActiveFilters(INITIAL_FILTERS);
+    setIsAutoMatchActive(false);
     setValidationErrors({});
     setError(null);
     if (searchParams.toString() !== '') {
@@ -251,6 +300,78 @@ export default function SearchProfilesPage() {
           )}
         </div>
       </div>
+
+      {/* Auto Match Feature Bar for Registered Users */}
+      {user ? (
+        userProfile?.preferences ? (
+          <div className="p-4 rounded-2xl bg-gradient-to-r from-navy-800 via-purple-950/40 to-navy-800 border border-magenta-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-md shadow-magenta-500/5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 flex items-center justify-center text-white shadow-md shadow-magenta-500/20 shrink-0">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-bold text-white">1-Click Auto Match</h3>
+                  {isAutoMatchActive && (
+                    <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                      Active
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs text-slate-300">
+                  {isAutoMatchActive
+                    ? `Showing matches tailored for your profile (${userProfile.profile_code || 'My Profile'})`
+                    : 'Instantly filter candidates based on your saved partner preferences.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              {isAutoMatchActive ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  icon={RotateCcw}
+                  onClick={handleClearFilters}
+                  className="text-xs font-bold text-slate-300 hover:text-white"
+                >
+                  Show All Candidates
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="primary"
+                  icon={Sparkles}
+                  onClick={handleApplyAutoMatch}
+                  className="text-xs font-bold shadow-md shadow-magenta-500/20"
+                >
+                  Apply My Preferences
+                </Button>
+              )}
+            </div>
+          </div>
+        ) : (
+          <div className="p-3.5 rounded-xl bg-navy-800/80 border border-slate-700/80 flex items-center justify-between text-xs text-slate-300">
+            <div className="flex items-center gap-2">
+              <Sparkles className="w-4 h-4 text-amber-400" />
+              <span>Configure your <strong>Partner Preferences</strong> to unlock 1-click Auto Match.</span>
+            </div>
+            <Link to="/profile/preferences" className="font-bold text-magenta-400 hover:underline">
+              Set Preferences →
+            </Link>
+          </div>
+        )
+      ) : (
+        <div className="p-3 rounded-xl bg-navy-800/50 border border-white/5 flex items-center justify-between text-xs text-slate-400">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-magenta-400" />
+            <span>Looking for personalized rishtas? Registered members get instant <strong>Auto Match</strong> based on preferences.</span>
+          </div>
+          <Link to="/login" className="font-bold text-magenta-400 hover:underline shrink-0">
+            Sign In →
+          </Link>
+        </div>
+      )}
 
       {error && (
         <Alert variant="danger" title="Notice">

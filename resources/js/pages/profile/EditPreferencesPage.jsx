@@ -126,8 +126,10 @@ export default function EditPreferencesPage() {
 
         if (prefRes.status === 'fulfilled' && prefRes.value?.data) {
           const d = prefRes.value.data;
+          const userGender = user?.profile?.gender;
+          const fallbackGender = userGender === 'female' ? 'male' : 'female';
           setFormData({
-            preferred_gender: d.preferred_gender || 'female',
+            preferred_gender: d.preferred_gender || fallbackGender,
             min_age: d.min_age || 20,
             max_age: d.max_age || 30,
             preferred_cities: d.preferred_cities || [],

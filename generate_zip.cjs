@@ -40,7 +40,7 @@ if (fs.existsSync(hotFilePath)) fs.rmSync(hotFilePath, { force: true });
 console.log('Creating zip file...');
 // Use PowerShell to zip the contents so it extracts directly into public_html without a parent folder
 try {
-  execSync(`powershell.exe -Command "Compress-Archive -Path '${tempDir}\\*' -DestinationPath '${zipFile}' -Force"`, { stdio: 'inherit' });
+  execSync(`tar -a -c -f "${zipFile}" -C "${tempDir}" .`, { stdio: 'inherit' });
   console.log('Successfully created public_html.zip!');
 } catch (e) {
   console.error('Failed to create zip file:', e.message);
