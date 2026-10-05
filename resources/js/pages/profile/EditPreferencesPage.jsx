@@ -99,7 +99,7 @@ export default function EditPreferencesPage() {
     preferred_gender: 'female',
     min_age: 20,
     max_age: 30,
-    preferred_cities: ['Lahore', 'Islamabad'],
+    preferred_cities: [],
     preferred_religion: 'Islam',
     preferred_sect: '',
     min_height: '',

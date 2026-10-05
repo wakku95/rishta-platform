@@ -92,13 +92,13 @@ export default function AdminMatchmakerTab() {
         preferred_gender: targetGender,
         min_age: p.min_age || defaultMinAge,
         max_age: p.max_age || defaultMaxAge,
-        city: (Array.isArray(p.preferred_cities) && p.preferred_cities.length > 0) ? p.preferred_cities[0] : (candidate.city || ''),
+        city: (Array.isArray(p.preferred_cities) && p.preferred_cities.length > 0) ? p.preferred_cities[0] : '',
         religion: p.preferred_religion || candidate.religion || 'Islam',
         sect: p.preferred_sect || '',
         education: p.preferred_education || '',
         marital_status: (Array.isArray(p.preferred_marital_status) && p.preferred_marital_status.length > 0) ? p.preferred_marital_status[0] : '',
-        min_height: p.min_height || '',
-        max_height: p.max_height || '',
+        min_height: '',
+        max_height: '',
       };
       setPreferences(initialPrefs);
       runMatching(candidate, initialPrefs);
@@ -108,7 +108,7 @@ export default function AdminMatchmakerTab() {
         preferred_gender: targetGender,
         min_age: defaultMinAge,
         max_age: defaultMaxAge,
-        city: candidate.city || '',
+        city: '',
         religion: candidate.religion || 'Islam',
         sect: '',
         education: '',
@@ -155,8 +155,6 @@ export default function AdminMatchmakerTab() {
         sect: prefsToUse.religion === 'Islam' ? (prefsToUse.sect || undefined) : undefined,
         education: prefsToUse.education || undefined,
         marital_status: prefsToUse.marital_status ? [prefsToUse.marital_status] : undefined,
-        min_height: prefsToUse.min_height || undefined,
-        max_height: prefsToUse.max_height || undefined,
         exclude_profile_id: candidate.type === 'registered' ? candidate.id : undefined,
         exclude_listing_id: candidate.type === 'assisted' ? candidate.id : undefined,
       };
