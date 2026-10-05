@@ -162,7 +162,7 @@ export default function AdminAssistedListingsTab() {
                 <th className="px-6 py-4">Listing Code</th>
                 <th className="px-6 py-4">Name / Contact</th>
                 <th className="px-6 py-4">Status</th>
-                <th className="px-6 py-4">Consent</th>
+                <th className="px-6 py-4">Website Consent</th>
                 <th className="px-6 py-4 text-right">Actions</th>
               </tr>
             </thead>
@@ -201,12 +201,12 @@ export default function AdminAssistedListingsTab() {
                   </td>
                   <td className="px-6 py-4">
                     {listing.consent_given_at ? (
-                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs">
-                        <CheckCircle className="w-3.5 h-3.5" /> Given
+                      <span className="inline-flex items-center gap-1 text-emerald-400 text-xs font-semibold" title="Consented to platform matchmaking">
+                        <CheckCircle className="w-3.5 h-3.5" /> Website Active
                       </span>
                     ) : (
-                      <span className="inline-flex items-center gap-1 text-rose-400 text-xs">
-                        <XCircle className="w-3.5 h-3.5" /> Not Given
+                      <span className="inline-flex items-center gap-1 text-slate-400 text-xs" title="Pending platform consent">
+                        <XCircle className="w-3.5 h-3.5" /> Pending
                       </span>
                     )}
                   </td>

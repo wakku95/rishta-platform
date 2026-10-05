@@ -66,6 +66,9 @@ export default function CreateAssistedListingModal({ isOpen, listing = null, onC
       if (name === 'gender' && value !== 'male' && prev.marital_status === 'married') {
         updated.marital_status = '';
       }
+      if (name === 'listing_status' && value === 'published') {
+        updated.consent_given = true;
+      }
       return updated;
     });
   };
@@ -229,22 +232,24 @@ export default function CreateAssistedListingModal({ isOpen, listing = null, onC
                   </select>
                 </div>
                 
-                <div className="flex items-center gap-3 mt-4 sm:mt-0">
-                  <div className="flex h-5 items-center">
+                <div className="flex items-start gap-3 mt-4 sm:mt-0">
+                  <div className="flex h-5 items-center mt-0.5">
                     <input
                       id="consent"
                       name="consent_given"
                       type="checkbox"
                       checked={formData.consent_given}
                       onChange={handleChange}
-                      className="h-4 w-4 rounded border-white/20 bg-navy-950 text-amber-500 focus:ring-amber-500 focus:ring-offset-navy-900"
+                      className="h-4 w-4 rounded border-white/20 bg-navy-950 text-amber-500 focus:ring-amber-500 focus:ring-offset-navy-900 cursor-pointer"
                     />
                   </div>
                   <div className="text-sm">
-                    <label htmlFor="consent" className="font-semibold text-slate-200">
-                      Public Listing Consent Given
+                    <label htmlFor="consent" className="font-semibold text-slate-200 block cursor-pointer">
+                      Website Matchmaking Consent
                     </label>
-                    <p className="text-xs text-slate-400">Required before publishing.</p>
+                    <p className="text-[11px] text-slate-400">
+                      Allows profile to be matched on Raabta platform. (Does <strong className="text-slate-300">not</strong> post to Social Media).
+                    </p>
                   </div>
                 </div>
               </div>

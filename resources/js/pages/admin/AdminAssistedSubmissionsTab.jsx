@@ -185,18 +185,18 @@ export default function AdminAssistedSubmissionsTab() {
 
               {/* Consent */}
               <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-sm">
-                <h4 className="font-bold text-white mb-3 text-sm">Consents</h4>
+                <h4 className="font-bold text-white mb-3 text-sm">Customer Permissions</h4>
                 <div className="flex items-center gap-2 mb-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <span className="text-slate-300">Terms Accepted: <span className="text-white font-semibold">{formatDate(selectedSubmission.terms_accepted_at)}</span></span>
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                  <span className="text-slate-300">Website Matchmaking Terms: <span className="text-white font-semibold">{formatDate(selectedSubmission.terms_accepted_at)}</span></span>
                 </div>
                 <div className="flex items-center gap-2">
                   {selectedSubmission.social_publication_consent ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   ) : (
-                    <XCircle className="w-4 h-4 text-rose-500" />
+                    <XCircle className="w-4 h-4 text-amber-400" />
                   )}
-                  <span className="text-slate-300">Social Media Consent: <span className="text-white font-semibold">{selectedSubmission.social_publication_consent ? formatDate(selectedSubmission.social_publication_consent_at) : 'Not Given'}</span></span>
+                  <span className="text-slate-300">Facebook & Instagram Posting: <span className={selectedSubmission.social_publication_consent ? "text-emerald-400 font-semibold" : "text-amber-400 font-semibold"}>{selectedSubmission.social_publication_consent ? 'Allowed' : 'Not Given (Private Matchmaking Only)'}</span></span>
                 </div>
               </div>
 
@@ -222,7 +222,7 @@ export default function AdminAssistedSubmissionsTab() {
                       disabled={actionLoading}
                       className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold py-3 rounded-xl transition disabled:opacity-50"
                     >
-                      Approve & Create Listing
+                      Approve for Website Matchmaking
                     </button>
                   </div>
                   <div className="bg-rose-500/10 p-4 rounded-xl border border-rose-500/20">

@@ -40,16 +40,16 @@ export default function AdminCommunicationModal({ candidate, onClose, initialMat
       return `${idx + 1}. Code: ${m.code || m.profile_code} | Age: ${m.age || 27} yrs | City: ${m.city} | Edu: ${m.education || 'Graduate'} | Compatibility: ${m.match_score || 85}%`;
     }).join('\n');
   } else {
-    matchSummaryText = `1. Code: RK-Sample | Age: 26 yrs | City: ${candCity} | Education: Bachelor's | Highly Compatible\n2. Code: AP-Sample | Age: 28 yrs | City: ${candCity} | Education: Master's | Verified Profile`;
+    matchSummaryText = `1. Code: RK-Sample | Age: 26 yrs | City: ${candCity} | Education: Bachelor's | Highly Compatible\n2. Code: AP-Sample | Age: 28 yrs | City: ${candCity} | Education: Master's | Active Profile`;
   }
 
-  // Pre-configured rich templates
+  // Pre-configured rich templates (focused on matchmaking facilitation)
   const TEMPLATES = {
     someone_interested: {
-      label: '💍 Someone Interested (Verified Proposal Inquiry)',
+      label: '💍 Someone Interested (Proposal Inquiry)',
       subject: `Marriage Proposal Inquiry for Profile ${candCode} - Raabta Matrimonial`,
-      whatsapp: `Assalam-o-Alaikum ${candName},\n\nWe are contacting you from Raabta Matrimonial regarding your profile (${candCode}).\n\nA verified, respectable family on our platform has shown keen interest in your proposal for their ${targetGender}. They found your profile criteria and background highly compatible.\n\nIf you are interested in reviewing their profile details and proposal card, please reply to this message so we can share their information with you.\n\nBest Regards,\nRaabta Matrimonial Team\nhttps://raabtanow.com`,
-      email: `We are pleased to inform you that a verified family on Raabta Matrimonial has shown genuine interest in your proposal profile (${candCode}).\n\nThey have reviewed your general criteria and would be glad to explore mutual compatibility for their ${targetGender}.\n\nNext Steps:\nIf you are open to viewing their proposal details and introductory card, please reply directly to this email or contact our support representative.\n\nYour privacy and dignity remain our utmost priority.`,
+      whatsapp: `Assalam-o-Alaikum ${candName},\n\nWe are contacting you from Raabta Matrimonial regarding your profile (${candCode}).\n\nA respectable family on our platform has shown keen interest in your proposal for their ${targetGender}. They found your profile criteria and background highly compatible.\n\nIf you are interested in reviewing their profile details and proposal card, please reply to this message so we can share their information with you.\n\nBest Regards,\nRaabta Matrimonial Team\nhttps://raabtanow.com`,
+      email: `We are pleased to inform you that a prospective family on Raabta Matrimonial has shown interest in your proposal profile (${candCode}).\n\nThey have reviewed your general criteria and would be glad to explore mutual compatibility for their ${targetGender}.\n\nNext Steps:\nIf you are open to viewing their proposal details and introductory card, please reply directly to this email or contact our support representative.\n\nYour privacy and dignity remain our utmost priority.`,
     },
     preferences_reminder: {
       label: '⚡ Partner Preferences Missing (Account Activation)',
@@ -66,11 +66,11 @@ export default function AdminCommunicationModal({ candidate, onClose, initialMat
     bio_modification: {
       label: '🔒 Bio Privacy & Contact Info Notice',
       subject: `Friendly Safety Notice Regarding Your Profile Bio - Raabta`,
-      whatsapp: `Assalam-o-Alaikum ${candName},\n\nDuring our routine profile safety review for ${candCode}, our moderation team noticed personal contact details or sensitive personal identifiers in your bio section.\n\nFor your personal privacy and safety, contact details are kept secure and shared only with verified mutual matches. Kindly update your bio to describe personal qualities and expectations instead:\n👉 https://raabtanow.com/profile/edit\n\nThank you for helping us maintain a safe platform.\nRaabta Support Team`,
-      email: `During our regular profile quality and safety review for profile ${candCode}, our moderation team noticed direct contact information or identifiable details in your "About Myself" bio.\n\nFor your personal safety and platform security guidelines, direct contact numbers and social handles are not displayed publicly and should only be exchanged via mutual verified requests.\n\nAction Required:\nPlease take a moment to update your bio by removing personal contact numbers and focusing on your values, interests, and family background.\n\nDirect Edit Link: https://raabtanow.com/profile/edit`,
+      whatsapp: `Assalam-o-Alaikum ${candName},\n\nDuring our routine profile safety review for ${candCode}, our moderation team noticed personal contact details or sensitive personal identifiers in your bio section.\n\nFor your personal privacy and safety, contact details should only be exchanged via mutually accepted matches. Kindly update your bio to describe personal qualities and expectations instead:\n👉 https://raabtanow.com/profile/edit\n\nThank you for helping us maintain a safe platform.\nRaabta Support Team`,
+      email: `During our regular profile quality and safety review for profile ${candCode}, our moderation team noticed direct contact information or identifiable details in your "About Myself" bio.\n\nFor your personal safety and platform security guidelines, direct contact numbers and social handles are not displayed publicly and should only be exchanged via mutually accepted requests.\n\nAction Required:\nPlease take a moment to update your bio by removing personal contact numbers and focusing on your values, interests, and family background.\n\nDirect Edit Link: https://raabtanow.com/profile/edit`,
     },
     assisted_followup: {
-      label: '🤝 Assisted Listing Status & Verification Follow-up',
+      label: '🤝 Assisted Listing Status & Update Follow-up',
       subject: `Follow-up Regarding Your Assisted Listing ${candCode} - Raabta`,
       whatsapp: `Assalam-o-Alaikum,\n\nWe are following up from Raabta Matrimonial regarding assisted candidate ${candName} (${candCode}, ${candCity}).\n\nWe are actively receiving marriage inquiries in ${candCity}. Could you please confirm if this proposal is still active and looking for matches, or if any details have changed?\n\nLooking forward to your response.\nBest Regards,\nRaabta Matrimonial Team\nWhatsApp: +92 303 2404609`,
       email: `We are following up from Raabta Matrimonial regarding assisted proposal ${candName} (${candCode}) based in ${candCity}.\n\nOur matchmaking desk is currently assisting families with compatible criteria. Could you please confirm if this proposal is still actively seeking a match, or if any preferences (city, education, sect) have been updated?\n\nIf you have any questions or new requirements, please feel free to reply directly to this message.`,
@@ -81,11 +81,11 @@ export default function AdminCommunicationModal({ candidate, onClose, initialMat
       whatsapp: `Assalam-o-Alaikum ${candName},\n\nWe are pleased to inform you that both parties have agreed to proceed with initial family communication regarding proposal ${candCode}.\n\nPlease let us know your preferred day and time window for a brief, dignified introductory call between the guardians/families.\n\nBest Regards,\nRaabta Matrimonial Coordination Team`,
       email: `We are delighted to share that both families have expressed mutual interest in exploring matrimonial compatibility regarding profile ${candCode}.\n\nNext Step:\nWe would like to coordinate a convenient time for an introductory telephonic conversation between the families/representatives.\n\nPlease reply with:\n1. Preferred day & time window (e.g. Saturday 5 PM - 8 PM)\n2. Primary contact person (Father, Mother, Self, Guardian)\n\nWe pray this brings fruitful and blessed results for both families.`,
     },
-    verification_docs: {
-      label: '🛡️ Trust Badge - ID & Degree Verification Request',
-      subject: `Elevate Your Profile Trust with Verified Badge - Raabta`,
-      whatsapp: `Assalam-o-Alaikum ${candName},\n\nDid you know that profiles with the Verified Trust Badge on Raabta receive 3x more genuine rishta requests?\n\nYour profile (${candCode}) is currently unverified. You can submit your CNIC / Educational degree securely here:\n👉 https://raabtanow.com/profile/verification\n\nYour documents remain 100% confidential and are never shared publicly.\nRaabta Support Team`,
-      email: `Profiles carrying the Raabta Verified Badge receive over three times higher engagement and genuine rishta requests from respectable families.\n\nYour profile (${candCode}) is currently eligible for the Verified Trust Badge.\n\nHow to get verified:\nSimply upload a clear photo of your ID (CNIC) and highest education certificate via our secure portal. Our verification team reviews submissions within 24 hours.\n\nUpload safely here: https://raabtanow.com/profile/verification\n\nYour documents are strictly encrypted and never visible to the public.`,
+    profile_completion: {
+      label: '📋 Complete Profile & Biodata Request',
+      subject: `Update and Complete Your Matrimonial Profile - Raabta`,
+      whatsapp: `Assalam-o-Alaikum ${candName},\n\nTo help us find better suited matches for your profile (${candCode}), we encourage you to complete any remaining details in your profile and partner preferences:\n👉 https://raabtanow.com/profile/edit\n\nDetailed profiles help prospective families better understand your background and expectations.\n\nThank you,\nRaabta Matrimonial Support`,
+      email: `To help our matchmaking team assist you in finding well-suited proposals for profile ${candCode}, we encourage you to enrich and complete your profile biodata and partner preferences.\n\nDetailed profiles allow families to better understand your background, education, and mutual values.\n\nUpdate Profile: https://raabtanow.com/profile/edit`,
     },
     custom_blank: {
       label: '📝 Custom Blank Message',

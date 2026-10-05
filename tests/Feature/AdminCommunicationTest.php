@@ -63,7 +63,7 @@ class AdminCommunicationTest extends TestCase
                 'recipient_email' => 'candidate@example.com',
                 'recipient_name' => 'Fatima Zahra',
                 'subject' => 'Marriage Proposal Inquiry for Profile AP-1002',
-                'message' => 'We are pleased to inform you that a verified family has shown interest.',
+                'message' => 'We are pleased to inform you that a respectable prospective family has shown interest.',
                 'attachments' => [$file],
             ]);
 

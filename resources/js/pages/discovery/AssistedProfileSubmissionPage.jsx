@@ -391,43 +391,106 @@ export default function AssistedProfileSubmissionPage() {
               </div>
             </div>
 
-            {/* Social Consent (Optional) */}
-            <div className="bg-blue-900/20 border border-blue-500/30 rounded-2xl p-6">
-              <h3 className="font-bold text-blue-400 mb-1">📱 Facebook & Instagram Publication Consent (Optional)</h3>
-              <h4 className="font-urdu text-blue-400 font-bold mb-4" dir="rtl">Facebook اور Instagram پر پروفائل کی اشاعت کی اجازت</h4>
-              <p className="text-sm text-slate-300 mb-2">
-                If you agree, RaabtaNow may use the approved public/basic information from your assisted profile to create a matrimonial post/listing on RaabtaNow's official Facebook and Instagram pages. Your private name, phone number and private information will not be published.
-              </p>
-              <p className="font-urdu text-base text-slate-300 mb-6 text-right" dir="rtl">
-                اگر آپ اجازت دیتے ہیں تو RaabtaNow آپ کے assisted profile کی منظور شدہ بنیادی/عوامی معلومات استعمال کرتے ہوئے اپنے official Facebook اور Instagram pages پر matrimonial post/listing شائع کر سکتا ہے۔ آپ کا نجی نام، فون نمبر اور نجی معلومات public نہیں کی جائیں گی۔
-              </p>
-              <label className="flex items-start gap-3 cursor-pointer bg-blue-950/50 p-4 rounded-xl border border-blue-900 hover:bg-blue-900/40 transition">
-                <input type="checkbox" name="social_publication_consent" checked={formData.social_publication_consent} onChange={handleChange} className="mt-1 w-5 h-5 accent-blue-500" />
+            {/* Privacy & Safety Guarantee */}
+            <div className="bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-5 sm:p-6 space-y-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0">
+                  <Shield className="w-5 h-5" />
+                </div>
                 <div>
-                  <span className="block text-sm text-white font-medium">I give RaabtaNow permission to publish my approved public profile information on its official Facebook and Instagram pages for matrimonial/matchmaking purposes.</span>
-                  <span className="block font-urdu text-sm text-slate-300 mt-1" dir="rtl">میں RaabtaNow کو اجازت دیتا/دیتی ہوں کہ وہ میری منظور شدہ عوامی پروفائل معلومات کو matrimonial/matchmaking مقصد کے لیے اپنے official Facebook اور Instagram pages پر شائع کرے۔</span>
+                  <h3 className="font-bold text-white text-base">Your Privacy & Honor Are 100% Protected</h3>
+                  <h4 className="font-urdu text-emerald-400 font-bold text-lg" dir="rtl">آپ کا تحفظ اور رازداری ہماری اولین ترجیح ہے</h4>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 text-xs text-slate-300">
+                <div className="flex items-start gap-2 bg-navy-950/50 p-3 rounded-xl border border-white/5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white block">No Phone Number Publicly Shown</strong>
+                    آپ کا فون نمبر کبھی پبلک نہیں کیا جاتا۔ یہ صرف سنجیدہ میچز کے لیے محفوظ رہتا ہے۔
+                  </div>
+                </div>
+                <div className="flex items-start gap-2 bg-navy-950/50 p-3 rounded-xl border border-white/5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                  <div>
+                    <strong className="text-white block">Dignified Anonymous Biodata</strong>
+                    صرف بنیادی تعلیمی اور خاندانی ضروریات (جیسے شہر، تعلیم، عمر) کی بنیاد پر رشتے تجویز کیے جاتے ہیں۔
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Social Media Sharing Option (Optional) */}
+            <div className="bg-navy-850 border border-blue-500/25 rounded-2xl p-5 sm:p-6 space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-blue-500/15 border border-blue-500/30 text-blue-300 uppercase tracking-wider mb-2">
+                    Optional / اختیاری
+                  </div>
+                  <h3 className="font-bold text-white text-base">Facebook & Instagram Matrimonial Reach</h3>
+                  <h4 className="font-urdu text-blue-300 font-bold text-base mt-0.5" dir="rtl">سوشل میڈیا پر اضافی رسائی (اختیاری)</h4>
+                </div>
+              </div>
+
+              <div className="text-xs text-slate-300 space-y-2 leading-relaxed bg-navy-950/60 p-4 rounded-xl border border-white/5">
+                <p>
+                  If you choose this option, Raabta may share an anonymous, respectable rishta card (stating only Age, City, Education, Profession) on our official Facebook & Instagram pages to help you reach more families. <strong>Your private name, phone number, and personal identity are NEVER shared.</strong>
+                </p>
+                <p className="font-urdu text-slate-200 text-sm text-right pt-1 border-t border-white/5" dir="rtl">
+                  اگر آپ چاہیں تو ہماری ٹیم بغیر نام اور بغیر فون نمبر کے ایک باوقار کارڈ فیس بک اور انسٹاگرام پر شیئر کر سکتی ہے تاکہ مزید اچھے رشتے مل سکیں۔ <strong>اگر آپ اجازت نہ دیں تو کارڈ پوسٹ نہیں کیا جائے گا اور رشتہ صرف ویب سائٹ پر ہی تلاش کیا جائے گا۔</strong>
+                </p>
+              </div>
+
+              <label className="flex items-start gap-3 cursor-pointer bg-blue-950/40 p-4 rounded-xl border border-blue-500/30 hover:bg-blue-950/60 transition">
+                <input
+                  type="checkbox"
+                  name="social_publication_consent"
+                  checked={formData.social_publication_consent}
+                  onChange={handleChange}
+                  className="mt-1 w-4 h-4 accent-blue-500 rounded cursor-pointer"
+                />
+                <div>
+                  <span className="block text-xs sm:text-sm text-white font-semibold">
+                    Yes, you may share an anonymous proposal card on Facebook & Instagram (Optional)
+                  </span>
+                  <span className="block font-urdu text-xs sm:text-sm text-blue-300 mt-1" dir="rtl">
+                    ہاں، بغیر نام اور نمبر کے باوقار کارڈ سوشل میڈیا پر شیئر کیا جا سکتا ہے (اختیاری)
+                  </span>
                 </div>
               </label>
             </div>
 
-            {/* Terms Consent (Required) */}
-            <div className="bg-navy-800 border border-slate-700 rounded-2xl p-6">
-              <h3 className="font-bold text-white mb-1">Terms & Conditions / شرائط و ضوابط</h3>
-              <ul className="text-xs text-slate-400 list-disc pl-5 space-y-2 mb-6">
-                <li>The customer confirms that the information they provide is accurate to the best of their knowledge.</li>
-                <li>RaabtaNow is a matrimonial/matchmaking platform and does not guarantee a successful match or marriage.</li>
-                <li>RaabtaNow does not independently verify every piece of information provided by users/assisted-profile customers unless a separate verification service is explicitly stated.</li>
-                <li>Users should independently verify identity, family information, education, marital status and other important information before proceeding with a proposal or relationship.</li>
-                <li>RaabtaNow is not responsible for false or misleading information supplied by a customer or third party.</li>
-                <li>Private contact information will not be displayed publicly as part of the assisted profile.</li>
-                <li>The customer understands what information will be public. Social-media publication requires a separate explicit consent.</li>
-                <li>RaabtaNow may reject or remove submissions that violate its rules or contain inappropriate, misleading or prohibited content.</li>
-              </ul>
-              <label className="flex items-start gap-3 cursor-pointer bg-navy-900 p-4 rounded-xl border border-slate-700 hover:bg-navy-750 transition">
-                <input type="checkbox" name="terms_accepted" required checked={formData.terms_accepted} onChange={handleChange} className="mt-1 w-5 h-5 accent-amber-500" />
+            {/* Platform Terms (Simple & Reassuring) */}
+            <div className="bg-navy-850 border border-slate-700/80 rounded-2xl p-5 sm:p-6 space-y-4">
+              <h3 className="font-bold text-white text-base">Matchmaking Assistance Terms (خدمات کی شرائط)</h3>
+              <div className="text-xs text-slate-300 space-y-2 bg-navy-950/60 p-4 rounded-xl border border-white/5">
+                <p>
+                  1. You confirm the provided biodata is genuine and submitted with sincere intentions for marriage.
+                </p>
+                <p>
+                  2. Raabta acts as a facilitator to connect compatible families. Both parties are encouraged to independently verify background, family details, and compatibility.
+                </p>
+                <p className="font-urdu text-slate-200 text-sm text-right pt-2 border-t border-white/5" dir="rtl">
+                  یہ معلومات شادی کے نیک اور سنجیدہ ارادے کے لیے فراہم کی جا رہی ہیں۔ رابطہ پلیٹ فارم دونوں خاندانوں کو متعارف کروانے میں مدد فراہم کرتا ہے۔
+                </p>
+              </div>
+
+              <label className="flex items-start gap-3 cursor-pointer bg-navy-900 p-4 rounded-xl border border-slate-750 hover:bg-navy-800 transition">
+                <input
+                  type="checkbox"
+                  name="terms_accepted"
+                  required
+                  checked={formData.terms_accepted}
+                  onChange={handleChange}
+                  className="mt-1 w-4 h-4 accent-amber-500 rounded cursor-pointer"
+                />
                 <div>
-                  <span className="block text-sm text-white font-medium">I have read and agree to the Terms & Conditions. <span className="text-rose-500">*</span></span>
-                  <span className="block font-urdu text-sm text-slate-300 mt-1" dir="rtl">میں نے شرائط و ضوابط پڑھ لیے ہیں اور ان سے اتفاق کرتا/کرتی ہوں۔</span>
+                  <span className="block text-xs sm:text-sm text-white font-semibold">
+                    I agree to the matchmaking assistance terms and confirm details are truthful. <span className="text-rose-400">*</span>
+                  </span>
+                  <span className="block font-urdu text-xs sm:text-sm text-amber-300 mt-1" dir="rtl">
+                    میں خدمات کی شرائط سے متفق ہوں اور تصدیق کرتا/کرتی ہوں کہ تمام تفصیلات درست ہیں۔
+                  </span>
                 </div>
               </label>
             </div>
