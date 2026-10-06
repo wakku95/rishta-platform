@@ -595,7 +595,7 @@ export default function AdminMatchmakerTab() {
                               </h4>
                               {m.last_contacted && (
                                 <div className="text-[11px] text-amber-300/90 font-medium flex items-center gap-1 mt-1">
-                                  <span>💬 Contacted {new Date(m.last_contacted.contacted_at).toLocaleDateString()}</span>
+                                  <span>💬 Contacted {m.last_contacted.time || (m.last_contacted.contacted_at ? new Date(m.last_contacted.contacted_at).toLocaleDateString() : '')}</span>
                                   <span className="capitalize text-slate-400">({m.last_contacted.channel})</span>
                                 </div>
                               )}

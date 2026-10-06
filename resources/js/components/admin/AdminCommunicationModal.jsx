@@ -13,18 +13,25 @@ export default function AdminCommunicationModal({ candidate, onClose, initialMat
   const [selectedTemplateKey, setSelectedTemplateKey] = useState('');
   
   // WhatsApp state
-  const [phone, setPhone] = useState(candidate.contact_number || candidate.phone || '');
+  const [phone, setPhone] = useState(candidate.phone || candidate.contact_number || candidate.user?.phone || '');
   const [waMessage, setWaMessage] = useState('');
   const [copied, setCopied] = useState(false);
 
   // Email state
-  const [email, setEmail] = useState(candidate.user?.email || candidate.email || '');
+  const [email, setEmail] = useState(candidate.email || candidate.user?.email || '');
   const [subject, setSubject] = useState('');
   const [emailBody, setEmailBody] = useState('');
   const [attachments, setAttachments] = useState([]);
   const [sendingEmail, setSendingEmail] = useState(false);
   const [emailSuccess, setEmailSuccess] = useState('');
   const [emailError, setEmailError] = useState('');
+
+  useEffect(() => {
+    if (candidate) {
+      setPhone(candidate.phone || candidate.contact_number || candidate.user?.phone || '');
+      setEmail(candidate.email || candidate.user?.email || '');
+    }
+  }, [candidate]);
 
   // Format candidate data for template replacements
   const candName = candidate.name || candidate.full_name || 'Candidate';

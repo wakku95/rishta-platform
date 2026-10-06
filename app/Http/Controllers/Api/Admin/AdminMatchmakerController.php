@@ -26,6 +26,7 @@ class AdminMatchmakerController extends Controller
 
         if ($type === 'assisted') {
             $query = AssistedListing::query()
+                ->with('user:id,name,email')
                 ->whereIn('listing_status', ['published', 'draft', 'unpublished'])
                 ->where('gender', $gender);
 
@@ -51,6 +52,8 @@ class AdminMatchmakerController extends Controller
                     'type' => 'assisted',
                     'code' => $c->listing_code,
                     'name' => $c->full_name,
+                    'email' => $c->user?->email,
+                    'phone' => $c->contact_number,
                     'gender' => $c->gender,
                     'age' => $c->date_of_birth ? $c->date_of_birth->age : 28,
                     'date_of_birth' => $c->date_of_birth?->format('Y-m-d'),
@@ -67,6 +70,7 @@ class AdminMatchmakerController extends Controller
                     'last_contacted' => $lastLog ? [
                         'channel' => $lastLog->channel,
                         'time' => $lastLog->created_at->diffForHumans(),
+                        'contacted_at' => $lastLog->created_at->toIso8601String(),
                     ] : null,
                 ];
             });
@@ -83,7 +87,7 @@ class AdminMatchmakerController extends Controller
 
         // Registered user profiles
         $query = Profile::query()
-            ->with(['user:id,name,email', 'preferences'])
+            ->with(['user:id,name,email,phone', 'preferences'])
             ->where('profile_status', 'active')
             ->where('gender', $gender);
 
@@ -111,6 +115,9 @@ class AdminMatchmakerController extends Controller
                 'type' => 'registered',
                 'code' => $p->profile_code,
                 'name' => $p->user?->name ?? 'Candidate',
+                'email' => $p->user?->email,
+                'phone' => $p->user?->phone,
+                'contact_number' => $p->user?->phone,
                 'gender' => $p->gender,
                 'age' => $p->age,
                 'date_of_birth' => $p->date_of_birth?->format('Y-m-d'),
@@ -137,6 +144,7 @@ class AdminMatchmakerController extends Controller
                 'last_contacted' => $lastLog ? [
                     'channel' => $lastLog->channel,
                     'time' => $lastLog->created_at->diffForHumans(),
+                    'contacted_at' => $lastLog->created_at->toIso8601String(),
                 ] : null,
             ];
         });
@@ -201,7 +209,7 @@ class AdminMatchmakerController extends Controller
 
         // 1. Query Registered Profiles
         $profileQuery = Profile::query()
-            ->with('user:id,name,email')
+            ->with('user:id,name,email,phone')
             ->where('profile_status', 'active')
             ->where('gender', $preferredGender);
 
@@ -246,6 +254,7 @@ class AdminMatchmakerController extends Controller
 
         // 2. Query Assisted Listings
         $listingQuery = AssistedListing::query()
+            ->with('user:id,name,email')
             ->where('listing_status', 'published')
             ->where('gender', $preferredGender);
 
@@ -316,8 +325,12 @@ class AdminMatchmakerController extends Controller
             $results->push([
                 'id' => $p->id,
                 'source' => 'registered',
+                'type' => 'registered',
                 'code' => $p->profile_code,
                 'name' => $p->user?->name ?? 'Candidate',
+                'email' => $p->user?->email,
+                'phone' => $p->user?->phone,
+                'contact_number' => $p->user?->phone,
                 'gender' => $p->gender,
                 'age' => $p->age,
                 'city' => $p->city,
@@ -335,6 +348,7 @@ class AdminMatchmakerController extends Controller
                 'last_contacted' => $lastLog ? [
                     'channel' => $lastLog->channel,
                     'time' => $lastLog->created_at->diffForHumans(),
+                    'contacted_at' => $lastLog->created_at->toIso8601String(),
                 ] : null,
             ]);
         }
@@ -366,8 +380,12 @@ class AdminMatchmakerController extends Controller
             $results->push([
                 'id' => $l->id,
                 'source' => 'assisted',
+                'type' => 'assisted',
                 'code' => $l->listing_code,
                 'name' => $l->full_name,
+                'email' => $l->user?->email,
+                'phone' => $l->contact_number,
+                'contact_number' => $l->contact_number,
                 'gender' => $l->gender,
                 'age' => $age,
                 'city' => $l->city,
@@ -386,6 +404,7 @@ class AdminMatchmakerController extends Controller
                 'last_contacted' => $lastLog ? [
                     'channel' => $lastLog->channel,
                     'time' => $lastLog->created_at->diffForHumans(),
+                    'contacted_at' => $lastLog->created_at->toIso8601String(),
                 ] : null,
             ]);
         }
