@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\User;
+use App\Models\Profile;
+use App\Models\AssistedListing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -61,5 +63,73 @@ class AdminUserModerationTest extends TestCase
 
         $deleteRes = $this->deleteJson("/api/admin/users/{$admin->id}");
         $deleteRes->assertStatus(422);
+    }
+
+    public function test_admin_can_assign_staff_role_to_user(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $targetUser = User::factory()->create(['role' => 'user']);
+
+        Sanctum::actingAs($admin, ['*']);
+
+        $response = $this->postJson("/api/admin/users/{$targetUser->id}/role", [
+            'role' => 'staff'
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('staff', $targetUser->fresh()->role);
+    }
+
+    public function test_staff_can_access_admin_portal_routes(): void
+    {
+        $staff = User::factory()->create(['role' => 'staff']);
+
+        Sanctum::actingAs($staff, ['*']);
+
+        $response = $this->getJson('/api/admin/users');
+        $response->assertStatus(200);
+    }
+
+    public function test_staff_cannot_update_roles_or_delete_resources(): void
+    {
+        $staff = User::factory()->create(['role' => 'staff']);
+        $targetUser = User::factory()->create(['role' => 'user']);
+
+        Sanctum::actingAs($staff, ['*']);
+
+        // Staff cannot change role
+        $roleRes = $this->postJson("/api/admin/users/{$targetUser->id}/role", [
+            'role' => 'admin'
+        ]);
+        $roleRes->assertStatus(403);
+
+        // Staff cannot delete user
+        $deleteUserRes = $this->deleteJson("/api/admin/users/{$targetUser->id}");
+        $deleteUserRes->assertStatus(403);
+
+        // Staff cannot delete profile
+        $profile = Profile::create([
+            'user_id' => $targetUser->id,
+            'profile_code' => 'RN-9999',
+            'gender' => 'male',
+            'date_of_birth' => '1995-01-01',
+            'marital_status' => 'never_married',
+            'city' => 'Lahore',
+            'religion' => 'Islam',
+            'education' => 'Bachelor\'s',
+            'profession' => 'Engineer',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'profile_status' => 'active'
+        ]);
+        $deleteProfileRes = $this->deleteJson("/api/admin/profiles/{$profile->id}");
+        $deleteProfileRes->assertStatus(403);
+
+        // Staff cannot delete assisted listing
+        $listing = AssistedListing::factory()->create([
+            'created_by_admin_id' => $staff->id,
+        ]);
+        $deleteListingRes = $this->deleteJson("/api/admin/listings/{$listing->id}");
+        $deleteListingRes->assertStatus(403);
     }
 }

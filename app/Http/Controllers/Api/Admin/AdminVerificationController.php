@@ -166,6 +166,10 @@ class AdminVerificationController extends Controller
      */
     public function purge(Request $request): JsonResponse
     {
+        if (!$request->user()?->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can purge documents.', [], Response::HTTP_FORBIDDEN);
+        }
+
         $request->validate([
             'days' => 'nullable|integer|min:0|max:365',
         ]);
@@ -183,8 +187,12 @@ class AdminVerificationController extends Controller
     /**
      * Admin: Delete a verification request and its stored files safely.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
+        if (!$request->user()?->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can delete verification requests.', [], Response::HTTP_FORBIDDEN);
+        }
+
         $verification = ProfileVerification::find($id);
 
         if (!$verification) {

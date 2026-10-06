@@ -11,7 +11,7 @@ export default function OnboardingBanner() {
 
   // Don't show banner if profile is active, or if user is an admin viewing admin pages
   if (profileStatus === 'active') return null;
-  if (user?.role === 'admin' && location.pathname.startsWith('/admin')) return null;
+  if (['admin', 'staff'].includes(user?.role) && location.pathname.startsWith('/admin')) return null;
 
   let config = null;
 

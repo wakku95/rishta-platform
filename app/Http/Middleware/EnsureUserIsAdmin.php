@@ -25,7 +25,7 @@ class EnsureUserIsAdmin
             ], Response::HTTP_UNAUTHORIZED);
         }
 
-        if ($user->role !== 'admin') {
+        if (!$user->hasAdminAccess()) {
             return response()->json([
                 'success' => false,
                 'message' => 'This action is unauthorized. Admin privileges required.',

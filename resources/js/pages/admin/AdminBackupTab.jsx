@@ -7,8 +7,12 @@ import {
 import { adminApi } from '../../api/admin';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminBackupTab() {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [downloadingFile, setDownloadingFile] = useState(null);
@@ -307,14 +311,16 @@ export default function AdminBackupTab() {
                           <Download className="w-3 h-3" />
                           {downloadingFile === b.filename ? 'Downloading...' : 'Download'}
                         </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(b.filename)}
-                          className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 font-sans transition"
-                          title="Delete backup file"
-                        >
-                          <Trash2 className="w-3 h-3" />
-                        </button>
+                        {isSuperAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(b.filename)}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 border border-rose-500/20 font-sans transition"
+                            title="Delete backup file"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

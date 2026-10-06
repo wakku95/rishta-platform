@@ -78,8 +78,12 @@ class AdminBackupController extends Controller
     /**
      * Delete an existing backup file.
      */
-    public function delete(string $filename): JsonResponse
+    public function delete(Request $request, string $filename): JsonResponse
     {
+        if (!$request->user()?->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can delete backups.', [], Response::HTTP_FORBIDDEN);
+        }
+
         $deleted = $this->backupService->deleteBackup($filename);
 
         if (!$deleted) {

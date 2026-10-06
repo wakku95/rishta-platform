@@ -14,6 +14,10 @@ class User extends Authenticatable implements MustVerifyEmail
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
+    public const ROLE_USER = 'user';
+    public const ROLE_STAFF = 'staff';
+    public const ROLE_ADMIN = 'admin';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -48,6 +52,21 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->role === self::ROLE_ADMIN;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->role === self::ROLE_STAFF;
+    }
+
+    public function hasAdminAccess(): bool
+    {
+        return in_array($this->role, [self::ROLE_ADMIN, self::ROLE_STAFF], true);
     }
 
     /**

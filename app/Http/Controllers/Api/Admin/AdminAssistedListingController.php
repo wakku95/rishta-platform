@@ -124,8 +124,14 @@ class AdminAssistedListingController extends Controller
         ]);
     }
 
-    public function destroy(AssistedListing $assistedListing)
+    public function destroy(Request $request, AssistedListing $assistedListing)
     {
+        if (!$request->user()?->isAdmin()) {
+            return response()->json([
+                'message' => 'Only Super Admin can delete listings.',
+            ], 403);
+        }
+
         $assistedListing->delete();
         
         return response()->json([

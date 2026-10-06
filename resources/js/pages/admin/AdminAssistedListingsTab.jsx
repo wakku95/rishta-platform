@@ -9,8 +9,12 @@ import ListingConversionModal from './ListingConversionModal';
 import AssistedListingDetailView from './AssistedListingDetailView';
 import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 import AdminCommunicationModal from '../../components/admin/AdminCommunicationModal';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminAssistedListingsTab() {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [interestFilter, setInterestFilter] = useState('');
@@ -281,13 +285,15 @@ export default function AdminAssistedListingsTab() {
                         </button>
                       )}
 
-                      <button 
-                        onClick={() => handleDelete(listing.id)}
-                        className="text-rose-400/70 hover:text-rose-400 transition"
-                        title="Delete Listing Permanently"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {isSuperAdmin && (
+                        <button 
+                          onClick={() => handleDelete(listing.id)}
+                          className="text-rose-400/70 hover:text-rose-400 transition"
+                          title="Delete Listing Permanently"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

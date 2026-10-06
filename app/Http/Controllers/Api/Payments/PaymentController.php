@@ -467,7 +467,9 @@ class PaymentController extends Controller
             'transaction_reference' => [
                 'required',
                 'string',
-                'regex:/^\d{10,14}$/',
+                'min:6',
+                'max:35',
+                'regex:/^[A-Za-z0-9\-_]+$/',
             ],
             'receipt' => [
                 'required',
@@ -476,7 +478,9 @@ class PaymentController extends Controller
                 'max:5120', // 5MB
             ],
         ], [
-            'transaction_reference.regex' => 'The JazzCash Transaction ID must be a numeric string between 10 and 14 digits.',
+            'transaction_reference.regex' => 'The Transaction Reference must contain only letters, numbers, hyphens, or underscores (6 to 35 characters).',
+            'transaction_reference.min' => 'The Transaction Reference must be at least 6 characters.',
+            'transaction_reference.max' => 'The Transaction Reference may not be greater than 35 characters.',
             'receipt.mimes' => 'Receipt must be an image (JPG, PNG, WebP) or PDF document.',
             'receipt.max' => 'Receipt file size must not exceed 5MB.',
         ]);

@@ -114,7 +114,7 @@ export default function Navbar() {
           <div className="hidden md:flex items-center gap-2 shrink-0">
             {authenticated ? (
               <>
-                {user?.role === 'admin' && (
+                {['admin', 'staff'].includes(user?.role) && (
                   <Link to="/admin" className="shrink-0">
                     <Button variant="gold" size="sm" icon={ShieldCheck} className="whitespace-nowrap font-bold">
                       Admin
@@ -207,7 +207,7 @@ export default function Navbar() {
           <div className="pt-3 border-t border-slate-800 flex flex-col gap-2.5">
             {authenticated ? (
               <>
-                {user?.role === 'admin' && (
+                {['admin', 'staff'].includes(user?.role) && (
                   <Link to="/admin" onClick={() => setMobileMenuOpen(false)}>
                     <Button variant="gold" className="w-full justify-center" icon={ShieldCheck}>
                       Admin Control Portal

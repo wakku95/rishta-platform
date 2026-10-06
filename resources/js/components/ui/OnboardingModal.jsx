@@ -15,7 +15,7 @@ export default function OnboardingModal() {
                          (location.pathname.startsWith('/profiles/') && location.pathname !== '/profile');
 
   useEffect(() => {
-    if (authenticated && user?.role !== 'admin' && profileStatus !== 'active' && isRelevantPage) {
+    if (authenticated && !['admin', 'staff'].includes(user?.role) && profileStatus !== 'active' && isRelevantPage) {
       setIsOpen(true);
     } else {
       setIsOpen(false);

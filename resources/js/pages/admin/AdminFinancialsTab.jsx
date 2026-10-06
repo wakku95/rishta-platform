@@ -4,8 +4,12 @@ import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
 import Alert from '../../components/ui/Alert';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminFinancialsTab() {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [subTab, setSubTab] = useState('payments'); // 'payments' | 'unlocks'
   const [payments, setPayments] = useState([]);
   const [unlocks, setUnlocks] = useState([]);
@@ -315,7 +319,7 @@ export default function AdminFinancialsTab() {
                               <Eye className="w-3.5 h-3.5 text-cyan-400" />
                               <span>Receipt</span>
                             </button>
-                            {p.status !== 'pending' && (
+                            {isSuperAdmin && p.status !== 'pending' && (
                               <button
                                 type="button"
                                 onClick={() => handleDeleteReceipt(p)}
@@ -534,7 +538,7 @@ export default function AdminFinancialsTab() {
                 </Button>
               </div>
             ) : (
-              viewingReceipt?.receipt_path && (
+              isSuperAdmin && viewingReceipt?.receipt_path && (
                 <Button
                   variant="danger"
                   size="sm"

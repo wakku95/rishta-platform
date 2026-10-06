@@ -74,8 +74,14 @@ class AdminListingInterestController extends Controller
         ]);
     }
 
-    public function destroy(AssistedListing $assistedListing, AssistedListingInterest $interest)
+    public function destroy(Request $request, AssistedListing $assistedListing, AssistedListingInterest $interest)
     {
+        if (!$request->user()?->isAdmin()) {
+            return response()->json([
+                'message' => 'Only Super Admin can delete interests.',
+            ], 403);
+        }
+
         if ($interest->assisted_listing_id !== $assistedListing->id) {
             abort(404);
         }

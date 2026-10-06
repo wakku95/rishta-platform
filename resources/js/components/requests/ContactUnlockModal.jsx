@@ -56,6 +56,7 @@ export default function ContactUnlockModal({
   const [receiptPreview, setReceiptPreview] = useState(null);
   const [submittingProof, setSubmittingProof] = useState(false);
   const [copiedTill, setCopiedTill] = useState(false);
+  const [copiedIban, setCopiedIban] = useState(false);
   const [isQrZoomed, setIsQrZoomed] = useState(false);
 
   // Phone & OTP state
@@ -197,6 +198,14 @@ export default function ContactUnlockModal({
     }
   };
 
+  const handleCopyIban = (text) => {
+    if (navigator?.clipboard?.writeText) {
+      navigator.clipboard.writeText(text);
+      setCopiedIban(true);
+      setTimeout(() => setCopiedIban(false), 2000);
+    }
+  };
+
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -222,13 +231,13 @@ export default function ContactUnlockModal({
     setFeedback(null);
 
     const cleanTid = manualTid.trim();
-    if (!/^\d{10,14}$/.test(cleanTid)) {
-      setError('Please enter a valid numeric JazzCash Transaction ID (10 to 14 digits).');
+    if (!/^[A-Za-z0-9\-_]{6,35}$/.test(cleanTid)) {
+      setError('Please enter a valid Transaction Reference / TID (6 to 35 characters).');
       return;
     }
 
     if (!receiptFile) {
-      setError('Please upload your JazzCash payment screenshot or receipt.');
+      setError('Please upload your payment screenshot or receipt.');
       return;
     }
 
@@ -648,8 +657,46 @@ export default function ContactUnlockModal({
                                   <span className="font-semibold text-white">muhammad shop</span>
                                 </div>
 
+                                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                                  <span className="text-slate-400 font-medium">Bank Name:</span>
+                                  <span className="font-semibold text-white">Mobilink Microfinance Bank (JazzCash)</span>
+                                </div>
+
+                                {/* IBAN Row with Copy */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1.5 border-b border-slate-800/80">
+                                  <span className="text-slate-400 font-medium">IBAN (Any Bank Transfer):</span>
+                                  <div className="flex items-center gap-1.5">
+                                    <span className="font-mono font-bold text-cyan-400 text-xs sm:text-sm tracking-wider select-all break-all">
+                                      PK74JCMA1009921032404609
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyIban('PK74JCMA1009921032404609')}
+                                      className={`px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 ${
+                                        copiedIban
+                                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                          : 'bg-navy-800 hover:bg-navy-700 text-slate-200 border border-slate-600'
+                                      }`}
+                                      title="Copy IBAN Number"
+                                    >
+                                      {copiedIban ? (
+                                        <>
+                                          <Check className="w-3.5 h-3.5" />
+                                          <span>Copied!</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy className="w-3.5 h-3.5" />
+                                          <span>Copy</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* Till ID Row with Copy */}
                                 <div className="flex items-center justify-between">
-                                  <span className="text-slate-400 font-medium">Till ID:</span>
+                                  <span className="text-slate-400 font-medium">Till ID (JazzCash App):</span>
                                   <div className="flex items-center gap-1.5">
                                     <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-sm tracking-wider">984453113</span>
                                     <button
@@ -677,8 +724,13 @@ export default function ContactUnlockModal({
                                   </div>
                                 </div>
 
-                                <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed">
-                                  💡 <strong className="text-white">Mobile Users:</strong> Copy Till ID <span className="font-mono text-amber-600 dark:text-amber-300 font-bold">984453113</span> and pay directly in the JazzCash App under <em>"Till Payments"</em>, or save the QR image above and tap <em>"Scan from Gallery"</em> in your JazzCash app.
+                                <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed space-y-1">
+                                  <p>
+                                    💡 <strong className="text-white">Any Bank / Raast:</strong> Send Rs. 300 from any app (SadaPay, NayaPay, Easypaisa, HBL, Meezan, etc.) to the IBAN above.
+                                  </p>
+                                  <p>
+                                    💡 <strong className="text-white">JazzCash App:</strong> Pay via Till ID <span className="font-mono text-amber-300 font-bold">984453113</span> under <em>"Till Payments"</em>, or scan the QR above.
+                                  </p>
                                 </div>
                               </div>
                             </div>
@@ -687,18 +739,18 @@ export default function ContactUnlockModal({
                             <form onSubmit={handleSubmitManualProof} className="space-y-3 pt-1">
                               <div>
                                 <label className="text-xs font-semibold text-slate-300 block mb-1">
-                                  JazzCash Transaction ID (TID) *
+                                  Transaction ID / Reference Number (TID) *
                                 </label>
                                 <input
                                   type="text"
                                   value={manualTid}
-                                  onChange={(e) => setManualTid(e.target.value.replace(/\D/g, '').slice(0, 14))}
-                                  placeholder="Enter 10 to 14 digit TID (e.g. 012345678901)"
+                                  onChange={(e) => setManualTid(e.target.value.replace(/[^A-Za-z0-9\-_]/g, '').slice(0, 35))}
+                                  placeholder="Enter Transaction ID (e.g. from JazzCash, Bank, SadaPay, or Raast)"
                                   className="w-full bg-navy-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-slate-500 font-mono focus:outline-none focus:border-magenta-500 transition"
                                   required
                                 />
                                 <span className="text-[10px] text-slate-400 mt-1 block">
-                                  Found in the SMS confirmation or JazzCash transaction history.
+                                  Found on your payment receipt, SMS confirmation, or banking app transaction history.
                                 </span>
                               </div>
 

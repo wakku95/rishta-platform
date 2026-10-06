@@ -4,8 +4,12 @@ import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
 import AdminSocialCardModal from '../../components/admin/AdminSocialCardModal';
 import AdminCommunicationModal from '../../components/admin/AdminCommunicationModal';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminProfilesTab() {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [profiles, setProfiles] = useState([]);
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
   const [search, setSearch] = useState('');
@@ -262,13 +266,15 @@ export default function AdminProfilesTab() {
                           <Eye className="w-4 h-4" />
                         )}
                       </button>
-                      <button
-                        onClick={() => handleDeleteProfile(p.id)}
-                        title="Permanently Delete Profile"
-                        className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/20 transition"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      {isSuperAdmin && (
+                        <button
+                          onClick={() => handleDeleteProfile(p.id)}
+                          title="Permanently Delete Profile"
+                          className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/20 transition"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
                     </div>
                   </td>
                 </tr>

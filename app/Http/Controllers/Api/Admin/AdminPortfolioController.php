@@ -90,8 +90,12 @@ class AdminPortfolioController extends Controller
         return response()->json(['success' => true, 'data' => $item, 'message' => 'Item updated successfully.']);
     }
 
-    public function destroyItem($id): JsonResponse
+    public function destroyItem(Request $request, $id): JsonResponse
     {
+        if (!$request->user()?->isAdmin()) {
+            return response()->json(['message' => 'Only Super Admin can delete portfolio items.'], 403);
+        }
+
         $item = PortfolioItem::findOrFail($id);
         $item->delete();
 

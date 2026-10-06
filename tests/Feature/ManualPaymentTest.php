@@ -135,21 +135,42 @@ class ManualPaymentTest extends TestCase
     {
         $file = UploadedFile::fake()->create('receipt.jpg', 500, 'image/jpeg');
 
-        // Letters in TID
+        // Invalid characters (spaces and symbols)
         $res1 = $this->actingAs($this->sender)
             ->postJson("/api/requests/{$this->rishtaRequest->request_code}/payment/submit-proof", [
-                'transaction_reference' => 'INVALID_TID',
+                'transaction_reference' => 'INVALID TID @#$',
                 'receipt' => $file,
             ]);
         $res1->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
 
-        // Less than 10 digits
+        // Less than 6 characters
         $res2 = $this->actingAs($this->sender)
             ->postJson("/api/requests/{$this->rishtaRequest->request_code}/payment/submit-proof", [
                 'transaction_reference' => '12345',
                 'receipt' => $file,
             ]);
         $res2->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    public function test_alphanumeric_bank_reference_is_accepted(): void
+    {
+        $file = UploadedFile::fake()->create('receipt.jpg', 500, 'image/jpeg');
+
+        // Bank / Raast alphanumeric reference
+        $res = $this->actingAs($this->sender)
+            ->postJson("/api/requests/{$this->rishtaRequest->request_code}/payment/submit-proof", [
+                'transaction_reference' => 'PK-JAZZ-99210088',
+                'receipt' => $file,
+            ]);
+        $res->assertStatus(Response::HTTP_CREATED)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.transaction_reference', 'PK-JAZZ-99210088');
+
+        $this->assertDatabaseHas('payments', [
+            'rishta_request_id' => $this->rishtaRequest->id,
+            'transaction_reference' => 'PK-JAZZ-99210088',
+            'status' => 'pending',
+        ]);
     }
 
     public function test_duplicate_tid_submission_is_rejected(): void

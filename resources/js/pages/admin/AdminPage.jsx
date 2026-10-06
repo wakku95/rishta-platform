@@ -18,8 +18,12 @@ import { ClipboardList, FileText, Share2, Briefcase, Sparkles, Database } from '
 import AdminPortfolioTab from './AdminPortfolioTab';
 import AdminMatchmakerTab from './AdminMatchmakerTab';
 import AdminBackupTab from './AdminBackupTab';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminPage() {
+  const { user } = useAuth();
+  const isSuperAdmin = user?.role === 'admin';
+
   const [searchParams, setSearchParams] = useSearchParams();
   const activeTab = searchParams.get('tab') || 'overview';
 
@@ -55,6 +59,13 @@ export default function AdminPage() {
             <div>
               <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
                 RaabtaNow <span className="text-amber-400">Admin Control</span>
+                <span className={`text-[11px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider border ${
+                  isSuperAdmin 
+                    ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' 
+                    : 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
+                }`}>
+                  {isSuperAdmin ? 'Super Admin' : 'Staff Access'}
+                </span>
               </h1>
               <p className="text-xs text-slate-400">Administrative management, user moderation, and financial audit portal.</p>
             </div>

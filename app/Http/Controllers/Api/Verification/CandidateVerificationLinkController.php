@@ -206,8 +206,12 @@ class CandidateVerificationLinkController extends Controller
     /**
      * Admin: Safely delete a candidate verification request and any uploaded files.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
+        if (!$request->user()?->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can delete verification requests.', [], Response::HTTP_FORBIDDEN);
+        }
+
         $record = CandidateVerificationRequest::find($id);
         if (!$record) {
             return $this->errorResponse('Verification record not found.', [], Response::HTTP_NOT_FOUND);

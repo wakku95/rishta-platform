@@ -5,8 +5,12 @@ import {
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminUsersTab() {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [users, setUsers] = useState([]);
   const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
   const [search, setSearch] = useState('');
@@ -69,8 +73,8 @@ export default function AdminUsersTab() {
     }
   };
 
-  const handleToggleRole = async (user) => {
-    const newRole = user.role === 'admin' ? 'user' : 'admin';
+  const handleChangeRole = async (user, newRole) => {
+    if (!newRole || newRole === user.role) return;
     setActionLoadingId(user.id);
     setMessage(null);
     try {
@@ -148,6 +152,7 @@ export default function AdminUsersTab() {
           >
             <option value="">All Roles</option>
             <option value="user">Standard Users</option>
+            <option value="staff">Staff Members</option>
             <option value="admin">Administrators</option>
           </select>
 
@@ -193,14 +198,37 @@ export default function AdminUsersTab() {
                       <div className="text-xs text-slate-400 font-mono">{u.email}</div>
                     </td>
                     <td className="px-5 py-3.5">
-                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
-                        u.role === 'admin' 
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
-                          : 'bg-slate-700/50 text-slate-300'
-                      }`}>
-                        {u.role === 'admin' && <Shield className="w-3 h-3 text-amber-400" />}
-                        {u.role}
-                      </span>
+                      {isSuperAdmin ? (
+                        <select
+                          value={u.role}
+                          disabled={isWorking}
+                          onChange={(e) => handleChangeRole(u, e.target.value)}
+                          aria-label={`Change role for ${u.name}`}
+                          className={`text-xs font-bold rounded-lg px-2.5 py-1 border transition cursor-pointer outline-none ${
+                            u.role === 'admin'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                              : u.role === 'staff'
+                              ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/40'
+                              : 'bg-slate-700/50 text-slate-300 border-slate-600/50'
+                          }`}
+                        >
+                          <option value="user" className="bg-navy-900 text-slate-300">User</option>
+                          <option value="staff" className="bg-navy-900 text-cyan-300">Staff</option>
+                          <option value="admin" className="bg-navy-900 text-amber-300">Admin</option>
+                        </select>
+                      ) : (
+                        <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                          u.role === 'admin' 
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' 
+                            : u.role === 'staff'
+                            ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                            : 'bg-slate-700/50 text-slate-300'
+                        }`}>
+                          {u.role === 'admin' && <Shield className="w-3 h-3 text-amber-400" />}
+                          {u.role === 'staff' && <Shield className="w-3 h-3 text-cyan-400" />}
+                          {u.role}
+                        </span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
@@ -249,25 +277,17 @@ export default function AdminUsersTab() {
                           {u.status === 'suspended' ? <UserCheck className="w-4 h-4" /> : <UserX className="w-4 h-4" />}
                         </button>
 
-                        {/* Toggle Role */}
-                        <button
-                          onClick={() => handleToggleRole(u)}
-                          disabled={isWorking}
-                          title={u.role === 'admin' ? 'Demote to User' : 'Promote to Admin'}
-                          className="p-1.5 rounded-lg text-purple-400 hover:bg-purple-500/20 transition"
-                        >
-                          <Shield className="w-4 h-4" />
-                        </button>
-
-                        {/* Delete User Modal trigger */}
-                        <button
-                          onClick={() => setConfirmDeleteUser(u)}
-                          disabled={isWorking}
-                          title="Permanently Delete Account"
-                          className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/20 transition"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {/* Delete User Modal trigger (Super Admin only) */}
+                        {isSuperAdmin && (
+                          <button
+                            onClick={() => setConfirmDeleteUser(u)}
+                            disabled={isWorking}
+                            title="Permanently Delete Account"
+                            className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/20 transition"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </div>
                     </td>
                   </tr>

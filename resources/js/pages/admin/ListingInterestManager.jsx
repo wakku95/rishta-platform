@@ -1,8 +1,12 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { Save, User, Mail, Phone, Trash2, Clock } from 'lucide-react';
+import useAuth from '../../hooks/useAuth';
 
 export default function ListingInterestManager({ listing, interest, onUpdated }) {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [status, setStatus] = useState(interest.status);
   const [adminNotes, setAdminNotes] = useState(interest.admin_notes || '');
   const [loading, setLoading] = useState(false);
@@ -124,13 +128,15 @@ export default function ListingInterestManager({ listing, interest, onUpdated })
               <Save className="w-3.5 h-3.5" /> Save
             </button>
           )}
-          <button 
-            onClick={handleDelete}
-            className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
-            title="Delete Interest"
-          >
-            <Trash2 className="w-4 h-4" />
-          </button>
+          {isSuperAdmin && (
+            <button 
+              onClick={handleDelete}
+              className="p-1.5 text-slate-500 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition"
+              title="Delete Interest"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          )}
         </div>
       </div>
 

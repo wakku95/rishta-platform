@@ -258,8 +258,12 @@ class AdminActivityController extends Controller
     /**
      * Delete/Purge the stored receipt image for an approved or rejected payment to free server storage.
      */
-    public function deleteReceipt(int $id): JsonResponse
+    public function deleteReceipt(Request $request, int $id): JsonResponse
     {
+        if (!$request->user()?->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can delete receipts.', [], Response::HTTP_FORBIDDEN);
+        }
+
         $payment = Payment::find($id);
 
         if (!$payment) {

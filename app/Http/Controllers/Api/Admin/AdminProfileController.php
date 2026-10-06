@@ -197,8 +197,12 @@ class AdminProfileController extends Controller
     /**
      * Permanently delete profile.
      */
-    public function destroy(int $id): JsonResponse
+    public function destroy(Request $request, int $id): JsonResponse
     {
+        if (!$request->user()->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can delete candidate profiles.', [], Response::HTTP_FORBIDDEN, 'UNAUTHORIZED');
+        }
+
         $profile = Profile::find($id);
 
         if (!$profile) {

@@ -3,8 +3,12 @@ import axios from 'axios';
 import { Settings, Save, Plus, Edit2, Trash2, CheckCircle2, AlertCircle, XCircle } from 'lucide-react';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminPortfolioTab() {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [settings, setSettings] = useState({});
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -222,8 +226,10 @@ export default function AdminPortfolioTab() {
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button onClick={() => openEditModal(item)} className="p-1.5 text-slate-400 hover:text-amber-400 transition"><Edit2 className="w-4 h-4" /></button>
-                        <button onClick={() => deleteItem(item.id)} className="p-1.5 text-slate-400 hover:text-rose-400 transition ml-1"><Trash2 className="w-4 h-4" /></button>
+                        <button onClick={() => openEditModal(item)} className="p-1.5 text-slate-400 hover:text-amber-400 transition" title="Edit item"><Edit2 className="w-4 h-4" /></button>
+                        {isSuperAdmin && (
+                          <button onClick={() => deleteItem(item.id)} className="p-1.5 text-slate-400 hover:text-rose-400 transition ml-1" title="Delete item"><Trash2 className="w-4 h-4" /></button>
+                        )}
                       </td>
                     </tr>
                   ))}

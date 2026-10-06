@@ -36,9 +36,9 @@ class AdminUserController extends Controller
             }
         }
 
-        // Role filter (user, admin)
+        // Role filter (user, staff, admin)
         if ($role = $request->input('role')) {
-            if (in_array($role, ['user', 'admin'])) {
+            if (in_array($role, ['user', 'staff', 'admin'])) {
                 $query->where('role', $role);
             }
         }
@@ -117,12 +117,16 @@ class AdminUserController extends Controller
     }
 
     /**
-     * Toggle or update user role (admin / user).
+     * Toggle or update user role (admin / staff / user).
      */
     public function updateRole(Request $request, int $id): JsonResponse
     {
+        if (!$request->user()->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can change user roles.', [], Response::HTTP_FORBIDDEN, 'UNAUTHORIZED');
+        }
+
         $request->validate([
-            'role' => 'required|in:admin,user',
+            'role' => 'required|in:admin,staff,user',
         ]);
 
         $user = User::find($id);
@@ -150,6 +154,10 @@ class AdminUserController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
+        if (!$request->user()->isAdmin()) {
+            return $this->errorResponse('Only Super Admin can delete users.', [], Response::HTTP_FORBIDDEN, 'UNAUTHORIZED');
+        }
+
         $user = User::find($id);
 
         if (!$user) {

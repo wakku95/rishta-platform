@@ -6,8 +6,12 @@ import {
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
+import useAuth from '../../hooks/useAuth';
 
 export default function AdminVerificationsTab() {
+  const { user: currentAdmin } = useAuth();
+  const isSuperAdmin = currentAdmin?.role === 'admin';
+
   const [activeSection, setActiveSection] = useState('registered'); // 'registered' | 'magic_links'
   
   // Registered users state
@@ -345,7 +349,7 @@ export default function AdminVerificationsTab() {
           </button>
         </div>
 
-        {activeSection === 'registered' && (
+        {isSuperAdmin && activeSection === 'registered' && (
           <Button
             size="sm"
             variant="secondary"
@@ -454,15 +458,17 @@ export default function AdminVerificationsTab() {
                           Review
                         </Button>
 
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteRegistered(v.id)}
-                          title="Delete verification record"
-                          disabled={actionLoadingId === v.id}
-                          className="p-1.5 rounded-lg bg-navy-700 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition inline-flex items-center justify-center border border-white/10"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {isSuperAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteRegistered(v.id)}
+                            title="Delete verification record"
+                            disabled={actionLoadingId === v.id}
+                            className="p-1.5 rounded-lg bg-navy-700 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition inline-flex items-center justify-center border border-white/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))
@@ -652,15 +658,17 @@ export default function AdminVerificationsTab() {
                             )}
                           </button>
 
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteMagicLink(link.id)}
-                            title="Delete verification request"
-                            disabled={actionLoadingId === link.id}
-                            className="p-1.5 rounded-lg bg-navy-700 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition inline-flex items-center justify-center border border-white/10"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                          {isSuperAdmin && (
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteMagicLink(link.id)}
+                              title="Delete verification request"
+                              disabled={actionLoadingId === link.id}
+                              className="p-1.5 rounded-lg bg-navy-700 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition inline-flex items-center justify-center border border-white/10"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
                         </td>
                       </tr>
                     );
@@ -947,22 +955,24 @@ export default function AdminVerificationsTab() {
                   <Button size="sm" variant="danger" onClick={() => setShowRejectForm(true)}>
                     Reject Submission
                   </Button>
-                  <Button 
-                    size="sm" 
-                    variant="ghost" 
-                    icon={Trash2}
-                    className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20"
-                    onClick={() => {
-                      if (modalType === 'magic_link') {
-                        handleDeleteMagicLink(selectedItem.id);
-                      } else {
-                        handleDeleteRegistered(selectedItem.id);
-                      }
-                    }}
-                    isLoading={actionLoadingId === selectedItem.id}
-                  >
-                    Delete Record
-                  </Button>
+                  {isSuperAdmin && (
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      icon={Trash2}
+                      className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20"
+                      onClick={() => {
+                        if (modalType === 'magic_link') {
+                          handleDeleteMagicLink(selectedItem.id);
+                        } else {
+                          handleDeleteRegistered(selectedItem.id);
+                        }
+                      }}
+                      isLoading={actionLoadingId === selectedItem.id}
+                    >
+                      Delete Record
+                    </Button>
+                  )}
                 </div>
                 <Button 
                   size="sm" 
