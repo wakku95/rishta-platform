@@ -57,9 +57,10 @@ class CandidateVerificationLinkController extends Controller
             $phone = $profile->user?->phone;
         }
 
-        // Check if an active unexpired request already exists
+        // Check if an active unexpired request already exists for this document type
         $existing = CandidateVerificationRequest::where('candidate_type', $type)
             ->where('candidate_id', $id)
+            ->where('document_type', $docType)
             ->where('status', 'pending')
             ->where('expires_at', '>', now())
             ->latest()

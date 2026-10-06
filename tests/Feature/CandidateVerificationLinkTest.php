@@ -67,6 +67,59 @@ class CandidateVerificationLinkTest extends TestCase
         ]);
     }
 
+    public function test_admin_can_generate_separate_links_for_different_document_types(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $listing = AssistedListing::create([
+            'listing_code' => 'AS-9989',
+            'full_name' => 'Multi Doc Candidate',
+            'contact_number' => '03009999999',
+            'gender' => 'female',
+            'height' => 162,
+            'city' => 'Karachi',
+            'date_of_birth' => '1998-05-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'education' => 'Masters',
+            'profession' => 'Doctor',
+            'marital_status' => 'never_married',
+            'listing_status' => 'published',
+            'managed_by' => 'self',
+        ]);
+
+        // Generate CNIC link
+        $resCnic = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/admin/verification-links/generate', [
+                'candidate_type' => 'assisted',
+                'candidate_id' => $listing->id,
+                'document_type' => 'cnic',
+            ])
+            ->assertStatus(200);
+
+        // Generate Salary Slip link for same candidate
+        $resSalary = $this->actingAs($admin, 'sanctum')
+            ->postJson('/api/admin/verification-links/generate', [
+                'candidate_type' => 'assisted',
+                'candidate_id' => $listing->id,
+                'document_type' => 'salary_slip',
+            ])
+            ->assertStatus(200);
+
+        $freshListing = $listing->fresh();
+        $this->assertNotEquals($resCnic->json('data.token'), $resSalary->json('data.token'));
+        $this->assertDatabaseCount('candidate_verification_requests', 2);
+        $this->assertDatabaseHas('candidate_verification_requests', [
+            'candidate_code' => $freshListing->listing_code,
+            'document_type' => 'salary_slip',
+            'status' => 'pending',
+        ]);
+        $this->assertDatabaseHas('candidate_verification_requests', [
+            'candidate_code' => $freshListing->listing_code,
+            'document_type' => 'cnic',
+            'status' => 'pending',
+        ]);
+    }
+
     public function test_public_can_view_and_submit_verification_document(): void
     {
         $request = CandidateVerificationRequest::create([
