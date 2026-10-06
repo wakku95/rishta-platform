@@ -5,7 +5,7 @@ import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Alert from '../../components/ui/Alert';
-import { User, Mail, ShieldCheck, Clock, CheckCircle2, AlertTriangle, Sparkles, LogOut, ArrowRight, KeyRound } from 'lucide-react';
+import { User, Mail, Clock, CheckCircle2, AlertTriangle, Sparkles, LogOut, ArrowRight } from 'lucide-react';
 import SEOHead from '../../components/seo/SEOHead';
 import VerificationSection from '../../components/profile/VerificationSection';
 
@@ -29,7 +29,7 @@ export default function DashboardPage() {
             Assalam-o-Alaikum, {user?.name || 'User'}
           </h1>
           <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
-            Your matrimonial session is active and secure. First-party HttpOnly cookies protect your privacy with zero client-side credential exposure.
+            Welcome to RaabtaNow. Your account is secure and private. Manage your profile, partner preferences, and rishta proposals from here.
           </p>
         </div>
       </div>
@@ -128,22 +128,8 @@ export default function DashboardPage() {
           </div>
         </Card>
 
-        {/* Security & Next Phase Preview Cards */}
+        {/* Matrimonial Profile Card */}
         <div className="space-y-6">
-          <Card className="p-6 bg-navy-800 border border-slate-750 shadow-xl space-y-4">
-            <div className="flex items-center gap-3 text-emerald-400 font-bold text-base">
-              <ShieldCheck className="w-6 h-6 shrink-0" />
-              <span>Security & Privacy Active</span>
-            </div>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Your authentication session is strictly managed by Laravel Sanctum SPA cookies. No tokens exist in JavaScript memory or browser storage.
-            </p>
-            <div className="p-3.5 rounded-xl bg-navy-850 border border-slate-750 text-xs font-semibold text-slate-300 space-y-2">
-              <p className="flex items-center gap-2">✓ <span className="text-emerald-400">HttpOnly Session Cookie</span></p>
-              <p className="flex items-center gap-2">✓ <span className="text-emerald-400">Zero localStorage Tokens</span></p>
-              <p className="flex items-center gap-2">✓ <span className="text-emerald-400">Rate-Limited API Endpoints</span></p>
-            </div>
-          </Card>
 
           {/* Phase 2: Matrimonial Profile Card */}
           <Card className="p-6 bg-navy-800 border border-slate-750 shadow-xl space-y-4">
