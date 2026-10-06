@@ -204,6 +204,33 @@ class CandidateVerificationLinkController extends Controller
     }
 
     /**
+     * Admin: Safely delete a candidate verification request and any uploaded files.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $record = CandidateVerificationRequest::find($id);
+        if (!$record) {
+            return $this->errorResponse('Verification record not found.', [], Response::HTTP_NOT_FOUND);
+        }
+
+        // Safely clean up uploaded files for this specific token/record
+        $folder = "{$this->storageFolder}/{$record->token}";
+        if (Storage::disk($this->storageDisk)->exists($folder)) {
+            Storage::disk($this->storageDisk)->deleteDirectory($folder);
+        }
+        if ($record->document_front_path && Storage::disk($this->storageDisk)->exists($record->document_front_path)) {
+            Storage::disk($this->storageDisk)->delete($record->document_front_path);
+        }
+        if ($record->document_back_path && Storage::disk($this->storageDisk)->exists($record->document_back_path)) {
+            Storage::disk($this->storageDisk)->delete($record->document_back_path);
+        }
+
+        $record->delete();
+
+        return $this->successResponse(null, 'Candidate verification request deleted successfully.');
+    }
+
+    /**
      * Public: Get verification details by token (no login required).
      */
     public function showPublic(string $token): JsonResponse

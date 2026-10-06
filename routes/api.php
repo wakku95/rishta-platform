@@ -191,6 +191,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/verifications/{id}/document/{side?}', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'viewDocument']);
     Route::post('/verifications/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'approve']);
     Route::post('/verifications/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'reject']);
+    Route::delete('/verifications/{id}', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'destroy']);
     Route::post('/verifications/purge', [\App\Http\Controllers\Api\Admin\AdminVerificationController::class, 'purge']);
 
     // Requests Oversight & Intervention
@@ -293,6 +294,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::get('/{id}/document/{side?}', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'viewDocument']);
         Route::post('/{id}/approve', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'approve']);
         Route::post('/{id}/reject', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'reject']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'destroy']);
     });
 });
 

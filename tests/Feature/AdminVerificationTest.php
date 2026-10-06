@@ -218,4 +218,44 @@ class AdminVerificationTest extends TestCase
         $this->assertNotNull($verification->fresh()->documents_purged_at);
         $this->assertTrue($user->fresh()->isEducationVerified());
     }
+
+    public function test_admin_can_safely_delete_verification_request_without_affecting_user(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['name' => 'Verify User']);
+
+        $file = UploadedFile::fake()->create('doc.jpg', 100, 'image/jpeg');
+        $path = Storage::disk('local')->putFile('verifications/' . $user->id, $file);
+        $verification = ProfileVerification::create([
+            'user_id' => $user->id,
+            'type' => 'identity',
+            'status' => 'pending',
+            'document_front_path' => $path,
+            'submitted_at' => now(),
+        ]);
+
+        // Guest cannot delete
+        $this->deleteJson("/api/admin/verifications/{$verification->id}")
+            ->assertStatus(401);
+
+        // Admin can delete
+        $this->actingAs($admin, 'sanctum')
+            ->deleteJson("/api/admin/verifications/{$verification->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        // Record is deleted
+        $this->assertDatabaseMissing('profile_verifications', [
+            'id' => $verification->id,
+        ]);
+
+        // File is unlinked
+        Storage::disk('local')->assertMissing($path);
+
+        // User account is 100% intact
+        $this->assertDatabaseHas('users', [
+            'id' => $user->id,
+            'name' => 'Verify User',
+        ]);
+    }
 }

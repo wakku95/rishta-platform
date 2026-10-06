@@ -205,4 +205,63 @@ class CandidateVerificationLinkTest extends TestCase
             'front_image' => $front,
         ])->assertStatus(410); // HTTP_GONE
     }
+
+    public function test_admin_can_safely_delete_verification_link_without_affecting_candidate(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $listing = AssistedListing::create([
+            'listing_code' => 'AS-DELETE-1',
+            'full_name' => 'Safe Delete Candidate',
+            'contact_number' => '03001112233',
+            'gender' => 'male',
+            'height' => 170,
+            'city' => 'Islamabad',
+            'date_of_birth' => '1996-01-01',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'education' => 'Bachelors',
+            'profession' => 'Accountant',
+            'marital_status' => 'never_married',
+            'listing_status' => 'published',
+            'managed_by' => 'self',
+        ]);
+
+        $filePath = "verification_links/del-token-123/front.jpg";
+        Storage::disk('local')->put($filePath, 'fake image content');
+
+        $req = CandidateVerificationRequest::create([
+            'token' => 'del-token-123',
+            'candidate_type' => 'assisted',
+            'candidate_id' => $listing->id,
+            'candidate_code' => $listing->listing_code,
+            'document_type' => 'salary_slip',
+            'document_front_path' => $filePath,
+            'status' => 'submitted',
+            'expires_at' => now()->addDays(7),
+        ]);
+
+        // Guest cannot delete
+        $this->deleteJson("/api/admin/verification-links/{$req->id}")
+            ->assertStatus(401);
+
+        // Admin can delete
+        $this->actingAs($admin, 'sanctum')
+            ->deleteJson("/api/admin/verification-links/{$req->id}")
+            ->assertStatus(200)
+            ->assertJsonPath('success', true);
+
+        // Verification request is gone
+        $this->assertDatabaseMissing('candidate_verification_requests', [
+            'id' => $req->id,
+        ]);
+
+        // File is deleted
+        $this->assertFalse(Storage::disk('local')->exists($filePath));
+
+        // Candidate listing is 100% INTACT
+        $this->assertDatabaseHas('assisted_listings', [
+            'id' => $listing->id,
+            'full_name' => 'Safe Delete Candidate',
+        ]);
+    }
 }

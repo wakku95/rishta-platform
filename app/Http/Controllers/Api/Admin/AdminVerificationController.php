@@ -179,4 +179,21 @@ class AdminVerificationController extends Controller
 
         return $this->successResponse($result, $message);
     }
+
+    /**
+     * Admin: Delete a verification request and its stored files safely.
+     */
+    public function destroy(int $id): JsonResponse
+    {
+        $verification = ProfileVerification::find($id);
+
+        if (!$verification) {
+            return $this->errorResponse('Verification request not found.', [], Response::HTTP_NOT_FOUND, 'VERIFICATION_NOT_FOUND');
+        }
+
+        $verification->deleteStoredDocuments();
+        $verification->delete();
+
+        return $this->successResponse(null, 'Verification request deleted successfully.');
+    }
 }

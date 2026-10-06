@@ -233,6 +233,42 @@ export default function AdminVerificationsTab() {
     }
   };
 
+  const handleDeleteMagicLink = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this verification request? This will permanently remove the link and any uploaded document files. The candidate profile itself will NOT be affected.")) return;
+    setActionLoadingId(id);
+    setMessage(null);
+    try {
+      const res = await adminApi.deleteVerificationLink(id);
+      setMessage({ type: 'success', text: res.message || 'Verification link deleted successfully.' });
+      if (selectedItem?.id === id) {
+        closeReviewModal();
+      }
+      fetchMagicLinks(magicPagination.current_page);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to delete verification request.' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  const handleDeleteRegistered = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this verification record? This will permanently remove the record and any uploaded document files. The user account and profile will NOT be affected.")) return;
+    setActionLoadingId(id);
+    setMessage(null);
+    try {
+      const res = await adminApi.deleteVerification(id);
+      setMessage({ type: 'success', text: res.message || 'Verification record deleted successfully.' });
+      if (selectedItem?.id === id) {
+        closeReviewModal();
+      }
+      fetchVerifications(pagination.current_page);
+    } catch (err) {
+      setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to delete verification record.' });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   const copyMagicLink = (linkItem) => {
     const fullUrl = `${window.location.origin}/verify-doc/${linkItem.token}`;
     navigator.clipboard.writeText(fullUrl).then(() => {
@@ -408,7 +444,7 @@ export default function AdminVerificationsTab() {
                       <td className="px-5 py-3.5 text-xs text-slate-300">
                         {v.reviewer ? v.reviewer.name : '—'}
                       </td>
-                      <td className="px-5 py-3.5 text-right">
+                      <td className="px-5 py-3.5 text-right space-x-2">
                         <Button
                           size="sm"
                           variant="secondary"
@@ -417,6 +453,16 @@ export default function AdminVerificationsTab() {
                         >
                           Review
                         </Button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteRegistered(v.id)}
+                          title="Delete verification record"
+                          disabled={actionLoadingId === v.id}
+                          className="p-1.5 rounded-lg bg-navy-700 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition inline-flex items-center justify-center border border-white/10"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -604,6 +650,16 @@ export default function AdminVerificationsTab() {
                             ) : (
                               <Copy className="w-4 h-4" />
                             )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteMagicLink(link.id)}
+                            title="Delete verification request"
+                            disabled={actionLoadingId === link.id}
+                            className="p-1.5 rounded-lg bg-navy-700 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition inline-flex items-center justify-center border border-white/10"
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </button>
                         </td>
                       </tr>
@@ -886,10 +942,28 @@ export default function AdminVerificationsTab() {
                 </div>
               </form>
             ) : (
-              <div className="flex items-center justify-between pt-3 border-t border-white/10">
-                <Button size="sm" variant="danger" onClick={() => setShowRejectForm(true)}>
-                  Reject Submission
-                </Button>
+              <div className="flex items-center justify-between pt-3 border-t border-white/10 flex-wrap gap-2">
+                <div className="flex items-center gap-2">
+                  <Button size="sm" variant="danger" onClick={() => setShowRejectForm(true)}>
+                    Reject Submission
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="ghost" 
+                    icon={Trash2}
+                    className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20"
+                    onClick={() => {
+                      if (modalType === 'magic_link') {
+                        handleDeleteMagicLink(selectedItem.id);
+                      } else {
+                        handleDeleteRegistered(selectedItem.id);
+                      }
+                    }}
+                    isLoading={actionLoadingId === selectedItem.id}
+                  >
+                    Delete Record
+                  </Button>
+                </div>
                 <Button 
                   size="sm" 
                   variant="primary" 

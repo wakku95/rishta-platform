@@ -39,6 +39,7 @@ export const adminApi = {
   getVerification: (id) => api.get(`/admin/verifications/${id}`).then(r => r.data.data),
   approveVerification: (id) => api.post(`/admin/verifications/${id}/approve`).then(r => r.data),
   rejectVerification: (id, reason) => api.post(`/admin/verifications/${id}/reject`, { reason }).then(r => r.data),
+  deleteVerification: (id) => api.delete(`/admin/verifications/${id}`).then(r => r.data),
   getDocumentUrl: (id, side = 'front') => `/api/admin/verifications/${id}/document/${side}`,
   getDocumentBlob: (id, side = 'front') => api.get(`/admin/verifications/${id}/document/${side}`, {
     responseType: 'blob',
@@ -79,6 +80,7 @@ export const adminApi = {
   getVerificationLinks: (params) => api.get('/admin/verification-links', { params }).then(r => r.data.data),
   approveVerificationLink: (id, notes) => api.post(`/admin/verification-links/${id}/approve`, { notes }).then(r => r.data),
   rejectVerificationLink: (id, reason) => api.post(`/admin/verification-links/${id}/reject`, { reason }).then(r => r.data),
+  deleteVerificationLink: (id) => api.delete(`/admin/verification-links/${id}`).then(r => r.data),
   getVerificationLinkDocBlob: (id, side = 'front') => api.get(`/admin/verification-links/${id}/document/${side}`, {
     responseType: 'blob',
   }),
