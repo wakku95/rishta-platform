@@ -87,7 +87,8 @@ class AdminMatchmakerController extends Controller
 
         // Registered user profiles
         $query = Profile::query()
-            ->with(['user:id,name,email,phone', 'preferences'])
+            ->with(['user:id,name,email', 'preferences'])
+            ->whereNull('created_by_admin_id')
             ->where('profile_status', 'active')
             ->where('gender', $gender);
 
@@ -116,8 +117,8 @@ class AdminMatchmakerController extends Controller
                 'code' => $p->profile_code,
                 'name' => $p->user?->name ?? 'Candidate',
                 'email' => $p->user?->email,
-                'phone' => $p->user?->phone,
-                'contact_number' => $p->user?->phone,
+                'phone' => null,
+                'contact_number' => null,
                 'gender' => $p->gender,
                 'age' => $p->age,
                 'date_of_birth' => $p->date_of_birth?->format('Y-m-d'),
@@ -209,7 +210,8 @@ class AdminMatchmakerController extends Controller
 
         // 1. Query Registered Profiles
         $profileQuery = Profile::query()
-            ->with('user:id,name,email,phone')
+            ->with('user:id,name,email')
+            ->whereNull('created_by_admin_id')
             ->where('profile_status', 'active')
             ->where('gender', $preferredGender);
 
@@ -329,8 +331,8 @@ class AdminMatchmakerController extends Controller
                 'code' => $p->profile_code,
                 'name' => $p->user?->name ?? 'Candidate',
                 'email' => $p->user?->email,
-                'phone' => $p->user?->phone,
-                'contact_number' => $p->user?->phone,
+                'phone' => null,
+                'contact_number' => null,
                 'gender' => $p->gender,
                 'age' => $p->age,
                 'city' => $p->city,

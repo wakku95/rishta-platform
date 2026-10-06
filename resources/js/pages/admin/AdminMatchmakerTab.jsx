@@ -67,6 +67,9 @@ export default function AdminMatchmakerTab() {
       }
     } catch (err) {
       console.error('Failed to load candidates:', err);
+      setCandidates([]);
+      setSelectedCandidate(null);
+      setMatches([]);
     } finally {
       setCandidatesLoading(false);
     }
