@@ -24,3 +24,17 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 *.zip
+
+# Android & Capacitor build artifacts
+/android/.gradle
+/android/build
+/android/app/build
+/android/captures
+/android/local.properties
+/android/.idea
+/android/*.iml
+/android/app/*.iml
+
+# Release signing keys (Keystore)
+*.keystore
+*.jks

@@ -4,9 +4,14 @@
     "type": "module",
     "scripts": {
         "build": "node -e \"const fs=require('fs'); try{fs.unlinkSync('public/hot')}catch(e){}\" && vite build",
-        "dev": "vite"
+        "dev": "vite",
+        "cap:sync": "cap sync",
+        "cap:open": "cap open android"
     },
     "dependencies": {
+        "@capacitor/android": "^8.5.2",
+        "@capacitor/cli": "^8.5.2",
+        "@capacitor/core": "^8.5.2",
         "@rollup/wasm-node": "^4.63.1",
         "@tailwindcss/oxide-wasm32-wasi": "^4.3.3",
         "axios": "^1.11.0",

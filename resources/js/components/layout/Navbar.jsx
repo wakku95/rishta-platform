@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut } from 'lucide-react';
+import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut, Smartphone } from 'lucide-react';
 import Button from '../ui/Button';
 import useAuth from '../../hooks/useAuth';
 
@@ -150,6 +150,16 @@ export default function Navbar() {
                 </Link>
               </>
             )}
+
+            <a
+              href="/downloads/raabtanow.apk"
+              download="raabtanow.apk"
+              title="Download RaabtaNow Android App (.APK)"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 hover:text-white border border-emerald-500/25 transition-all shrink-0 ml-1"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+              <span>App</span>
+            </a>
           </div>
 
           {/* Mobile Hamburger Button */}
@@ -245,6 +255,18 @@ export default function Navbar() {
                 </Link>
               </>
             )}
+          </div>
+
+          <div className="pt-1">
+            <a
+              href="/downloads/raabtanow.apk"
+              download="raabtanow.apk"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/35 text-emerald-300 font-bold text-xs hover:bg-emerald-500/30 transition-all shadow-xs"
+            >
+              <Smartphone className="w-4 h-4 text-emerald-400" />
+              <span>Download Android App (.APK)</span>
+            </a>
           </div>
 
           <div className="pt-2 flex items-center justify-center gap-1.5 text-xs font-medium text-slate-400">

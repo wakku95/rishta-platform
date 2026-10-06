@@ -1,0 +1,22 @@
+{
+  "appId": "com.raabtanow.app",
+  "appName": "RaabtaNow",
+  "webDir": "public",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 0,
+      "launchAutoHide": true
+    }
+  },
+  "server": {
+    "url": "https://raabtanow.com",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "android": {
+    "allowMixedContent": false,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}

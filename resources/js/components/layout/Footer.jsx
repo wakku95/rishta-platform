@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Shield, Lock, PhoneCall, HeartHandshake } from 'lucide-react';
+import { Shield, Lock, PhoneCall, HeartHandshake, Smartphone } from 'lucide-react';
 
 export default function Footer() {
   return (
@@ -96,6 +96,15 @@ export default function Footer() {
                 </svg>
                 <span>Instagram</span>
               </a>
+              <a 
+                href="/downloads/raabtanow.apk" 
+                download="raabtanow.apk"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-xs text-emerald-300 hover:text-white hover:border-emerald-400 hover:bg-emerald-500/20 transition-colors font-medium shadow-xs"
+                title="Download RaabtaNow Android App (.APK)"
+              >
+                <Smartphone className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                <span>Android App (.APK)</span>
+              </a>
             </div>
           </div>
 
@@ -107,6 +116,16 @@ export default function Footer() {
               <li><Link to="/about" className="hover:text-magenta-400 transition-colors">About Our Mission</Link></li>
               <li><Link to="/contact" className="hover:text-magenta-400 transition-colors">Contact Us & Services</Link></li>
               <li><Link to="/register" className="hover:text-magenta-400 transition-colors">Register Profile</Link></li>
+              <li>
+                <a 
+                  href="/downloads/raabtanow.apk" 
+                  download="raabtanow.apk" 
+                  className="text-emerald-400 hover:text-emerald-300 font-semibold transition-colors flex items-center gap-1.5"
+                >
+                  <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Download Android App</span>
+                </a>
+              </li>
             </ul>
           </div>
 
