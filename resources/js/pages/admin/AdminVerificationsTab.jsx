@@ -257,6 +257,20 @@ export default function AdminVerificationsTab() {
     return <span className="px-2.5 py-0.5 rounded text-xs font-bold uppercase bg-amber-500/20 text-amber-300 border border-amber-500/30">Pending</span>;
   };
 
+  const formatDocType = (type) => {
+    switch (type) {
+      case 'salary_slip':
+        return { label: 'Salary Slip / Income', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' };
+      case 'degree':
+        return { label: 'Educational Degree', badgeColor: 'bg-purple-500/15 text-purple-300 border-purple-500/30' };
+      case 'other':
+        return { label: 'Other Document', badgeColor: 'bg-amber-500/15 text-amber-300 border-amber-500/30' };
+      case 'cnic':
+      default:
+        return { label: 'CNIC / National ID', badgeColor: 'bg-cyan-500/15 text-cyan-300 border-cyan-500/30' };
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Sub-Navigation Switcher */}
@@ -536,8 +550,15 @@ export default function AdminVerificationsTab() {
                           )}
                         </td>
 
-                        <td className="px-5 py-3.5 uppercase text-xs font-bold text-slate-300">
-                          {link.document_type || 'CNIC'}
+                        <td className="px-5 py-3.5">
+                          {(() => {
+                            const info = formatDocType(link.document_type);
+                            return (
+                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${info.badgeColor}`}>
+                                {info.label}
+                              </span>
+                            );
+                          })()}
                         </td>
 
                         <td className="px-5 py-3.5">
@@ -634,7 +655,7 @@ export default function AdminVerificationsTab() {
                 <h3 className="text-lg font-bold text-white capitalize flex items-center gap-2">
                   <span>
                     {modalType === 'magic_link'
-                      ? `Candidate Verification Document (${selectedItem.document_type || 'CNIC'})`
+                      ? `Candidate Document: ${formatDocType(selectedItem.document_type).label}`
                       : `Review ${selectedItem.type} Verification`}
                   </span>
                   {modalType === 'registered' && selectedItem.user?.profile?.date_of_birth && (
@@ -649,6 +670,9 @@ export default function AdminVerificationsTab() {
                     <span>Candidate: <strong className="text-slate-200">{selectedItem.candidate_name || `#${selectedItem.candidate_code}`}</strong></span>
                     <span className="font-mono text-cyan-300 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20">
                       Code: {selectedItem.candidate_code}
+                    </span>
+                    <span className={`text-[11px] font-semibold px-2 py-0.5 rounded border ${formatDocType(selectedItem.document_type).badgeColor}`}>
+                      Requested: {formatDocType(selectedItem.document_type).label}
                     </span>
                     {selectedItem.phone && (
                       <span className="text-emerald-300 font-mono flex items-center gap-1">

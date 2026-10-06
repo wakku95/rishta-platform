@@ -154,9 +154,19 @@ export default function PublicDocumentVerificationPage() {
             Raabta<span className="text-magenta-400">Now</span> Candidate Verification
           </h1>
           <p className="text-xs text-slate-400 max-w-sm mx-auto">
-            Please submit your verification document for Candidate Reference{' '}
+            Please submit verification document for Candidate Reference{' '}
             <span className="font-mono font-bold text-white">#{record.candidate_code}</span>
           </p>
+          <div className="pt-1">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 text-xs font-bold uppercase tracking-wider">
+              Requested: {
+                record.document_type === 'salary_slip' ? 'Salary Slip / Income Proof' :
+                record.document_type === 'degree' ? 'Educational Degree / Certificate' :
+                record.document_type === 'other' ? 'Supporting Document' :
+                'CNIC / National Identity Card'
+              }
+            </span>
+          </div>
         </div>
 
         {/* Privacy & Confidentiality Guarantee Box */}

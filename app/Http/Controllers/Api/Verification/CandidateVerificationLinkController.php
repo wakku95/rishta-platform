@@ -85,7 +85,14 @@ class CandidateVerificationLinkController extends Controller
         $appUrl = rtrim(config('app.url', url('/')), '/');
         $verifyUrl = "{$appUrl}/verify-doc/{$record->token}";
 
-        $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow Matrimonial profile verification ke liye baraye meherbani is secure link par apna CNIC / Document upload karein: {$verifyUrl}\n\nNote: Aapka document confidential rahega aur kisi public user ko show nahi kiya jayega.";
+        $docLabel = match($docType) {
+            'salary_slip' => 'Salary Slip / Income Proof',
+            'degree' => 'Educational Degree / Certificate',
+            'other' => 'Verification Document',
+            default => 'CNIC / National ID (Front & Back)',
+        };
+
+        $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow Matrimonial profile verification ke liye baraye meherbani is secure link par apna {$docLabel} upload karein: {$verifyUrl}\n\nNote: Aapka document 100% confidential rahega aur kisi public user ko show nahi kiya jayega.";
 
         return $this->successResponse([
             'id' => $record->id,
@@ -95,6 +102,7 @@ class CandidateVerificationLinkController extends Controller
             'phone' => $phone,
             'candidate_code' => $candidateCode,
             'candidate_name' => $candidateName,
+            'document_type' => $record->document_type,
             'status' => $record->status,
             'expires_at' => $record->expires_at->toIso8601String(),
         ], 'Verification link generated successfully.');
