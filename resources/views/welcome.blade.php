@@ -128,6 +128,19 @@
                     ]
                 }
                 @endif
+                @if(isset($seo['schema_type']) && in_array($seo['schema_type'], ['profile', 'listing']))
+                ,
+                {
+                    "&#64;type": "ProfilePage",
+                    "&#64;id": "{{ $seo['canonical'] }}#webpage",
+                    "url": "{{ $seo['canonical'] }}",
+                    "name": "{{ addslashes($seo['title']) }}",
+                    "description": "{{ addslashes($seo['description']) }}",
+                    "isPartOf": {
+                        "&#64;id": "https://raabtanow.com/#website"
+                    }
+                }
+                @endif
             ]
         }
         </script>
