@@ -79,7 +79,7 @@ export default function AdminCommunicationModal({ candidate, onClose, initialMat
     assisted_followup: {
       label: '🤝 Assisted Listing Status & Update Follow-up',
       subject: `Follow-up Regarding Your Assisted Listing ${candCode} - Raabta`,
-      whatsapp: `Assalam-o-Alaikum,\n\nWe are following up from Raabta Matrimonial regarding assisted candidate ${candName} (${candCode}, ${candCity}).\n\nWe are actively receiving marriage inquiries in ${candCity}. Could you please confirm if this proposal is still active and looking for matches, or if any details have changed?\n\nLooking forward to your response.\nBest Regards,\nRaabta Matrimonial Team\nWhatsApp: +92 303 2404609`,
+      whatsapp: `Assalam-o-Alaikum,\n\nWe are following up from Raabta Matrimonial regarding assisted candidate ${candName} (${candCode}, ${candCity}).\n\nWe are actively receiving marriage inquiries in ${candCity}. Could you please confirm if this proposal is still active and looking for matches, or if any details have changed?\n\nLooking forward to your response.\nBest Regards,\nRaabta Matrimonial Team\nWhatsApp: +92 323 9225450`,
       email: `We are following up from Raabta Matrimonial regarding assisted proposal ${candName} (${candCode}) based in ${candCity}.\n\nOur matchmaking desk is currently assisting families with compatible criteria. Could you please confirm if this proposal is still actively seeking a match, or if any preferences (city, education, sect) have been updated?\n\nIf you have any questions or new requirements, please feel free to reply directly to this message.`,
     },
     meeting_coordination: {
