@@ -22,6 +22,9 @@ export default function AdminProfilesTab() {
   const [cardCandidate, setCardCandidate] = useState(null);
   const [commCandidate, setCommCandidate] = useState(null);
   const [message, setMessage] = useState(null);
+  const [editingDob, setEditingDob] = useState(false);
+  const [dobInput, setDobInput] = useState('');
+  const [dobSaving, setDobSaving] = useState(false);
 
   const fetchProfiles = async (page = 1) => {
     setLoading(true);
@@ -89,6 +92,7 @@ export default function AdminProfilesTab() {
   const handleInspect = async (id) => {
     setInspectingId(id);
     setMessage(null);
+    setEditingDob(false);
     try {
       const data = await adminApi.getProfile(id);
       setSelectedProfile(data);
@@ -96,6 +100,34 @@ export default function AdminProfilesTab() {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to load profile details.' });
     } finally {
       setInspectingId(null);
+    }
+  };
+
+  const handleSaveDob = async () => {
+    if (!dobInput) {
+      alert('Please select a valid date of birth.');
+      return;
+    }
+    if (!window.confirm(`Are you sure you want to administratively update Date of Birth to ${dobInput}? This will recalculate the candidate's age and match brackets.`)) {
+      return;
+    }
+    setDobSaving(true);
+    try {
+      const res = await adminApi.updateProfileField(selectedProfile.id, 'date_of_birth', dobInput);
+      const updatedDob = res.data?.date_of_birth || dobInput;
+      const updatedAge = res.data?.age;
+      setSelectedProfile(prev => ({
+        ...prev,
+        date_of_birth: updatedDob,
+        age: updatedAge !== undefined ? updatedAge : prev.age,
+      }));
+      setEditingDob(false);
+      setMessage({ type: 'success', text: `Date of birth successfully updated to ${updatedDob}.` });
+      fetchProfiles(pagination.current_page);
+    } catch (err) {
+      alert(err.response?.data?.message || err.response?.data?.errors?.value?.[0] || 'Failed to update date of birth.');
+    } finally {
+      setDobSaving(false);
     }
   };
 
@@ -325,7 +357,7 @@ export default function AdminProfilesTab() {
                 <p className="text-xs text-slate-400">Created by {selectedProfile.user?.name} ({selectedProfile.user?.email})</p>
               </div>
               <button 
-                onClick={() => setSelectedProfile(null)}
+                onClick={() => { setSelectedProfile(null); setEditingDob(false); }}
                 className="text-slate-400 hover:text-white text-sm px-2.5 py-1 rounded-lg bg-navy-800"
               >
                 ✕ Close
@@ -333,8 +365,22 @@ export default function AdminProfilesTab() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
-              <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5 space-y-1">
-                <span className="text-slate-400 block">Gender & Age</span>
+              <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 block">Gender & Age</span>
+                  {!editingDob ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingDob(true);
+                        setDobInput(selectedProfile.date_of_birth ? String(selectedProfile.date_of_birth).substring(0, 10) : '');
+                      }}
+                      className="text-[11px] text-cyan-400 hover:text-cyan-300 font-semibold underline"
+                    >
+                      Edit DOB
+                    </button>
+                  ) : null}
+                </div>
                 <div className="flex items-center gap-2">
                   <select
                     value={selectedProfile.gender}
@@ -358,6 +404,39 @@ export default function AdminProfilesTab() {
                   </select>
                   <span className="text-slate-300 font-semibold">{selectedProfile.age ? `• ${selectedProfile.age} yrs` : ''}</span>
                 </div>
+                {editingDob ? (
+                  <div className="pt-1.5 border-t border-white/5 space-y-1">
+                    <span className="text-[10px] text-slate-400 block">Date of Birth (18–80 yrs):</span>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        type="date"
+                        value={dobInput}
+                        onChange={(e) => setDobInput(e.target.value)}
+                        className="bg-navy-900 border border-slate-700 text-white rounded px-2 py-1 text-xs focus:outline-none focus:border-cyan-500 w-full"
+                      />
+                      <button
+                        type="button"
+                        disabled={dobSaving}
+                        onClick={handleSaveDob}
+                        className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-xs font-bold transition disabled:opacity-50 shrink-0"
+                      >
+                        {dobSaving ? '...' : 'Save'}
+                      </button>
+                      <button
+                        type="button"
+                        disabled={dobSaving}
+                        onClick={() => setEditingDob(false)}
+                        className="px-2 py-1 bg-slate-700 hover:bg-slate-600 text-slate-300 rounded text-xs transition shrink-0"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-[11px] text-slate-400 font-mono">
+                    DOB: <span className="text-slate-300">{selectedProfile.date_of_birth ? String(selectedProfile.date_of_birth).substring(0, 10) : 'N/A'}</span>
+                  </div>
+                )}
               </div>
               <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5">
                 <span className="text-slate-400 block mb-1">City</span>

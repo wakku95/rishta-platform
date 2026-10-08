@@ -49,6 +49,11 @@ export default function AdminVerificationsTab() {
   const [purgeDays, setPurgeDays] = useState(30);
   const [purging, setPurging] = useState(false);
 
+  // Administrative DOB correction state
+  const [editingDobId, setEditingDobId] = useState(null);
+  const [dobInput, setDobInput] = useState('');
+  const [dobSaving, setDobSaving] = useState(false);
+
   const calculateAge = (dobString) => {
     if (!dobString) return null;
     const dob = new Date(dobString);
@@ -72,6 +77,40 @@ export default function AdminVerificationsTab() {
     setSelectedItem(null);
     setShowRejectForm(false);
     setRejectReason('');
+    setEditingDobId(null);
+    setDobInput('');
+  };
+
+  const handleSaveVerificationDob = async () => {
+    if (!dobInput) {
+      alert('Please select a valid date of birth.');
+      return;
+    }
+    if (!window.confirm(`Update candidate's Date of Birth to ${dobInput} based on CNIC verification document?`)) {
+      return;
+    }
+    setDobSaving(true);
+    try {
+      const res = await adminApi.updateProfileField(editingDobId, 'date_of_birth', dobInput);
+      const updatedDob = res.data?.date_of_birth || dobInput;
+      setSelectedItem(prev => ({
+        ...prev,
+        user: {
+          ...prev.user,
+          profile: {
+            ...prev.user?.profile,
+            date_of_birth: updatedDob,
+          }
+        }
+      }));
+      setEditingDobId(null);
+      setMessage({ type: 'success', text: `Candidate Date of Birth updated to ${updatedDob}.` });
+      fetchVerifications(pagination.current_page);
+    } catch (err) {
+      alert(err.response?.data?.message || err.response?.data?.errors?.value?.[0] || 'Failed to update date of birth.');
+    } finally {
+      setDobSaving(false);
+    }
   };
 
   const handleLoadDoc = async (item, side, label, isMagicLink = false) => {
@@ -756,10 +795,48 @@ export default function AdminVerificationsTab() {
                         Education: {selectedItem.user.profile.education}
                       </span>
                     )}
-                    {selectedItem.user?.profile?.date_of_birth && (
-                      <span className="text-emerald-300 font-mono">
-                        DOB: {selectedItem.user.profile.date_of_birth}
-                      </span>
+                    {selectedItem.user?.profile && (
+                      editingDobId === selectedItem.user.profile.id ? (
+                        <span className="inline-flex items-center gap-1.5 bg-navy-900 border border-slate-700 px-2 py-0.5 rounded">
+                          <input
+                            type="date"
+                            value={dobInput}
+                            onChange={(e) => setDobInput(e.target.value)}
+                            className="bg-navy-950 text-white text-xs px-1.5 py-0.5 rounded border border-slate-600 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            disabled={dobSaving}
+                            onClick={handleSaveVerificationDob}
+                            className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs px-2 py-0.5 rounded font-bold transition disabled:opacity-50"
+                          >
+                            {dobSaving ? '...' : 'Save'}
+                          </button>
+                          <button
+                            type="button"
+                            disabled={dobSaving}
+                            onClick={() => setEditingDobId(null)}
+                            className="bg-slate-700 hover:bg-slate-600 text-slate-300 text-xs px-1.5 py-0.5 rounded transition"
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-emerald-300 font-mono">
+                          <span>DOB: {selectedItem.user.profile.date_of_birth ? String(selectedItem.user.profile.date_of_birth).substring(0, 10) : 'N/A'}</span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingDobId(selectedItem.user.profile.id);
+                              setDobInput(selectedItem.user.profile.date_of_birth ? String(selectedItem.user.profile.date_of_birth).substring(0, 10) : '');
+                            }}
+                            className="text-[11px] text-cyan-400 hover:text-cyan-300 underline font-sans font-semibold ml-0.5"
+                            title="Correct Date of Birth from CNIC"
+                          >
+                            Edit
+                          </button>
+                        </span>
+                      )
                     )}
                     {selectedItem.user?.profile?.gender && (
                       <span className="capitalize text-slate-300">

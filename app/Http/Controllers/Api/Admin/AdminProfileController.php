@@ -168,9 +168,25 @@ class AdminProfileController extends Controller
      */
     public function updateField(Request $request, int $id): JsonResponse
     {
-        $request->validate([
+        $field = $request->input('field');
+
+        $rules = [
             'field' => 'required|in:date_of_birth,education,gender',
-            'value' => 'required|string',
+        ];
+
+        if ($field === 'date_of_birth') {
+            $minDate = \Carbon\Carbon::now()->subYears(80)->format('Y-m-d');
+            $maxDate = \Carbon\Carbon::now()->subYears(18)->format('Y-m-d');
+            $rules['value'] = ['required', 'date', 'before_or_equal:' . $maxDate, 'after_or_equal:' . $minDate];
+        } elseif ($field === 'gender') {
+            $rules['value'] = ['required', 'in:male,female'];
+        } else {
+            $rules['value'] = ['required', 'string'];
+        }
+
+        $request->validate($rules, [
+            'value.before_or_equal' => 'Candidate must be at least 18 years of age.',
+            'value.after_or_equal' => 'Please enter a realistic date of birth (maximum 80 years).',
         ]);
 
         $profile = Profile::find($id);
@@ -179,11 +195,11 @@ class AdminProfileController extends Controller
             return $this->errorResponse('Profile not found.', [], Response::HTTP_NOT_FOUND, 'PROFILE_NOT_FOUND');
         }
 
-        $field = $request->input('field');
         $value = $request->input('value');
         $oldValue = (string) $profile->{$field};
 
         $profile->update([$field => $value]);
+        $profile->refresh();
 
         \Illuminate\Support\Facades\Log::info("[Admin] Profile #{$profile->profile_code} {$field} administratively modified from '{$oldValue}' to '{$value}' by admin user #{$request->user()->id}");
 
@@ -191,6 +207,8 @@ class AdminProfileController extends Controller
             'id' => $profile->id,
             'profile_code' => $profile->profile_code,
             $field => $profile->{$field},
+            'date_of_birth' => $profile->date_of_birth?->format('Y-m-d'),
+            'age' => $profile->age,
         ], "Candidate {$field} successfully updated to [{$value}].");
     }
 

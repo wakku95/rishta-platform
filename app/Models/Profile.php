@@ -42,6 +42,15 @@ class Profile extends Model
     ];
 
     /**
+     * The accessors to append to the model's array and JSON forms.
+     *
+     * @var list<string>
+     */
+    protected $appends = [
+        'age',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>

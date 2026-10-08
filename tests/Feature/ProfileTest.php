@@ -298,6 +298,62 @@ class ProfileTest extends TestCase
         $this->assertEquals('female', $profile->fresh()->gender);
     }
 
+    public function test_admin_can_update_candidate_date_of_birth_and_recalculates_age(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['role' => 'user']);
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-ADMINGDOB',
+            'gender' => 'male',
+            'date_of_birth' => '1995-05-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Engineering',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'profile_status' => 'active',
+        ]);
+
+        // Non-admin cannot call admin field endpoint
+        $forbidden = $this->actingAs($user)->postJson("/api/admin/profiles/{$profile->id}/field", [
+            'field' => 'date_of_birth',
+            'value' => '1998-08-20',
+        ]);
+        $forbidden->assertStatus(403);
+
+        // Validation rejects underage date (e.g. 15 years old)
+        $underage = now()->subYears(15)->format('Y-m-d');
+        $this->actingAs($admin)->postJson("/api/admin/profiles/{$profile->id}/field", [
+            'field' => 'date_of_birth',
+            'value' => $underage,
+        ])->assertStatus(422);
+
+        // Admin successfully updates DOB
+        $newDob = '1998-08-20';
+        $expectedAge = \Carbon\Carbon::parse($newDob)->age;
+
+        $response = $this->actingAs($admin)->postJson("/api/admin/profiles/{$profile->id}/field", [
+            'field' => 'date_of_birth',
+            'value' => $newDob,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'date_of_birth' => $newDob,
+                    'age' => $expectedAge,
+                ],
+            ]);
+
+        $this->assertEquals($newDob, $profile->fresh()->date_of_birth->format('Y-m-d'));
+        $this->assertEquals($expectedAge, $profile->fresh()->age);
+    }
+
     public function test_profile_validation_rejects_underage_candidate(): void
     {
         $user = User::factory()->create();

@@ -18,6 +18,7 @@ export const adminApi = {
   updateProfileStatus: (id, status) => api.post(`/admin/profiles/${id}/status`, { profile_status: status }).then(r => r.data),
   updateAboutApproval: (id, approved) => api.post(`/admin/profiles/${id}/about-approval`, { approved }).then(r => r.data),
   updateProfileGender: (id, gender) => api.post(`/admin/profiles/${id}/gender`, { gender }).then(r => r.data),
+  updateProfileField: (id, field, value) => api.post(`/admin/profiles/${id}/field`, { field, value }).then(r => r.data),
   deleteProfile: (id) => api.delete(`/admin/profiles/${id}`).then(r => r.data),
 
   // Requests
