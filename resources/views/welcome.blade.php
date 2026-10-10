@@ -282,12 +282,12 @@
                         <path d="M19.414 14.414C21 12.828 22 11.5 22 9.5a5.5 5.5 0 0 0-9.591-3.676.6.6 0 0 1-.818.001A5.5 5.5 0 0 0 2 9.5c0 2.3 1.5 4 3 5.5l5.535 5.362a2 2 0 0 0 2.879.052 2.12 2.12 0 0 0-.004-3 2.124 2.124 0 1 0 3-3 2.124 2.124 0 0 0 3.004 0 2 2 0 0 0 0-2.828l-1.881-1.882a2.41 2.41 0 0 0-3.409 0l-1.71 1.71a2 2 0 0 1-2.828 0 2 2 0 0 1 0-2.828l2.823-2.762"/>
                     </svg>
                 </div>
-                <div class="rn-preloader-title" style="margin-top:16px;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.02em;">
-                    Raabta<span style="color:#F472B6;">Now</span>
-                </div>
-                <div style="margin-top:4px;color:#94A3B8;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">
-                    Privacy-First Matrimonial
-                </div>
+                <h1 class="rn-preloader-title" style="margin-top:16px;margin-bottom:0;color:#ffffff;font-size:17px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;text-align:center;">
+                    {{ $seo['title'] ?? 'RaabtaNow — Privacy-First Pakistani Matrimonial & Online Rishta' }}
+                </h1>
+                <p style="margin-top:4px;margin-bottom:0;color:#94A3B8;font-size:11px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;text-align:center;">
+                    Privacy-First Halal Matchmaking
+                </p>
                 <div class="rn-progress-track">
                     <div class="rn-progress-bar"></div>
                 </div>

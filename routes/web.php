@@ -16,14 +16,14 @@ if (!function_exists('getSeoMetadata')) {
     $publicRoutes = [
         '' => [
             'title' => 'Online Rishta in Pakistan | Pakistani Matrimonial Website | RaabtaNow',
-            'description' => 'RaabtaNow is a privacy-first Pakistani matrimonial platform to discover compatible rishtas online, connect through mutual interest, and build meaningful marriage connections.',
+            'description' => 'Find compatible Pakistani rishtas online with complete privacy. Free registration, verified candidate biodata, and halal matrimonial matchmaking.',
             'canonical' => $baseUrl,
             'is_indexable' => true,
             'schema_type' => 'website',
         ],
         'how-it-works' => [
             'title' => 'How Online Rishta Works | Safe & Private Pakistani Matrimonial | RaabtaNow',
-            'description' => 'Learn how RaabtaNow\'s dignified Pakistani matrimonial discovery process works: private biodata, mutual consent proposals, and secure SMS OTP contact verification.',
+            'description' => 'Learn how RaabtaNow works: private matrimonial biodata, mutual consent proposals, and secure SMS OTP contact verification for Pakistani families.',
             'canonical' => $baseUrl . '/how-it-works',
             'is_indexable' => true,
             'schema_type' => 'guide',
@@ -79,7 +79,7 @@ if (!function_exists('getSeoMetadata')) {
         ],
         'search' => [
             'title' => 'Search Pakistani Rishta Profiles & Matrimonial Candidates | RaabtaNow',
-            'description' => 'Browse verified Pakistani rishta biodata online. Filter candidate profiles by age, city, sect, education, and profession with complete family privacy on RaabtaNow.',
+            'description' => 'Browse verified Pakistani rishta profiles online. Filter candidates by age, city, sect, and education with complete family privacy on RaabtaNow.',
             'canonical' => $baseUrl . '/search',
             'is_indexable' => true,
             'schema_type' => 'website',

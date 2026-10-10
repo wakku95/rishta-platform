@@ -134,7 +134,7 @@ export default function HomePage() {
     <div className="space-y-16 sm:space-y-24 py-4 sm:py-6">
       <SEOHead
         title="Online Rishta in Pakistan | Pakistani Matrimonial Website | RaabtaNow"
-        description="RaabtaNow is a privacy-first Pakistani matrimonial platform to discover compatible rishtas online, connect through mutual interest, and build meaningful marriage connections."
+        description="Find compatible Pakistani rishtas online with complete privacy. Free registration, verified candidate biodata, and halal matrimonial matchmaking."
         canonicalPath="/"
         isIndexable={true}
       />

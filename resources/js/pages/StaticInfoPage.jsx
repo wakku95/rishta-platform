@@ -48,7 +48,7 @@ export function HowItWorksPage() {
     <div className="max-w-4xl mx-auto space-y-10 py-6 px-4">
       <SEOHead
         title="How Online Rishta Works | Safe & Private Pakistani Matrimonial | RaabtaNow"
-        description="Learn how RaabtaNow's dignified Pakistani matrimonial discovery process works: private biodata, mutual consent proposals, and secure SMS OTP contact verification."
+        description="Learn how RaabtaNow works: private matrimonial biodata, mutual consent proposals, and secure SMS OTP contact verification for Pakistani families."
         canonicalPath="/how-it-works"
         isIndexable={true}
       />
