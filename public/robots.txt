@@ -1,5 +1,39 @@
+# General web crawlers
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin
 
+# AI Search & LLM Engine Crawlers (Generative Engine Optimization)
+User-agent: GPTBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+User-agent: Google-Extended
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+User-agent: Applebot-Extended
+Allow: /
+Disallow: /api/
+Disallow: /admin
+
+# Sitemaps
 Sitemap: https://raabtanow.com/sitemap.xml

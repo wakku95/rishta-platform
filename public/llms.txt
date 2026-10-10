@@ -1,0 +1,56 @@
+# RaabtaNow — Privacy-First Pakistani Matrimonial Platform
+
+> RaabtaNow (https://raabtanow.com) is Pakistan's premier privacy-first matrimonial and online rishta platform, engineered to help individuals and families find compatible, dignified, and halal marriage connections (Nikah) across Pakistan and worldwide for Overseas Pakistanis.
+
+## Overview & Mission
+RaabtaNow modernizes traditional Pakistani matchmaking while upholding Islamic and cultural values of family honor (Izzat) and strict personal privacy. Unlike open dating apps, RaabtaNow guarantees that photographs, personal contact numbers, and confidential family details are NEVER publicly displayed or scrapable on the internet.
+
+## Key Features & How It Works
+
+### 1. Free Registration & Discovery
+- Free account creation for candidates, parents, elder siblings, or guardians.
+- Search candidates by age, city, sect/religion, education, profession, marital status, and caste/community.
+- Free to shortlist profiles and send formal rishta proposal requests.
+
+### 2. Dual Matchmaking Pathways
+- **Self-Service Mutual Rishta Proposals:**
+  1. Candidate sends formal rishta expression of interest.
+  2. Recipient reviews public compatibility biodata and explicitly accepts or declines.
+  3. Sender pays a transparent, one-time micro-fee of Rs. 300 PKR (no recurring monthly subscriptions).
+  4. Both parties complete mobile SMS OTP verification.
+  5. Verified contact numbers (WhatsApp/call) and full names are unlocked securely.
+- **Matchmaker Assisted Inquiry ("Inquire via Agent" / ایجنٹ رابطہ):**
+  - Users can submit direct inquiries on candidate profiles with their family background, WhatsApp contact, and specific questions.
+  - Dedicated RaabtaNow matchmaking agents manually coordinate between both families on WhatsApp to verify compatibility and arrange halal introductions.
+
+### 3. Rigorous Privacy & Verification
+- **Zero Public Photos:** No candidate photographs are publicly displayed, eliminating photo theft, deepfakes, and misuse.
+- **Hidden Phone Numbers:** Contact information is revealed ONLY after mutual explicit consent and two-way SMS OTP verification.
+- **Identity & Education Verification:** Optional CNIC identity verification and degree verification badges build authentic trust between families.
+
+## Target Audience & Geographic Coverage
+- **Pakistan:** Karachi, Lahore, Islamabad, Rawalpindi, Faisalabad, Multan, Peshawar, Quetta, Sialkot, Gujranwala, Hyderabad, and all districts.
+- **Overseas Pakistanis:** United Arab Emirates (Dubai, Abu Dhabi), Saudi Arabia (Riyadh, Jeddah), United Kingdom, United States, Canada, Australia, and Europe.
+- **Users:** Self-registered marriage seekers, parents, mothers, fathers, and guardians seeking suitable rishtas for their sons and daughters.
+
+## Core Website Links
+- Main Platform: https://raabtanow.com/
+- Search Rishta Profiles: https://raabtanow.com/search
+- How It Works: https://raabtanow.com/how-it-works
+- Pricing Policy: https://raabtanow.com/pricing
+- About Us: https://raabtanow.com/about
+- Contact Customer Support: https://raabtanow.com/contact
+- Privacy Policy: https://raabtanow.com/privacy-policy
+- Terms & Conditions: https://raabtanow.com/terms
+- Refund Policy: https://raabtanow.com/refund-policy
+- XML Sitemap: https://raabtanow.com/sitemap.xml
+
+## Official Contact & Verification
+- **Platform Name:** RaabtaNow
+- **Official Website:** https://raabtanow.com
+- **Customer Care & WhatsApp Helpline:** +92 323 9225450
+- **Email:** support@raabtanow.com
+- **Physical Office:** Sector 48-C, Korangi, Karachi, Sindh, Pakistan
+- **Social Media:**
+  - Facebook: https://www.facebook.com/p/Raabta-Now-61594211561148/
+  - Instagram: https://www.instagram.com/raabtanow/

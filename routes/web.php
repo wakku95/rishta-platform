@@ -248,6 +248,18 @@ Route::get('/sitemap.xml', function () {
     ]);
 });
 
+// Machine-readable context for AI Search & LLMs (llmstxt.org standard)
+Route::get('/llms.txt', function () {
+    $path = public_path('llms.txt');
+    if (file_exists($path)) {
+        return response(file_get_contents($path), 200, [
+            'Content-Type' => 'text/plain; charset=utf-8',
+            'X-Robots-Tag' => 'noindex',
+        ]);
+    }
+    abort(404);
+});
+
 Route::get('/', function (Request $request) {
     // If request expects JSON or is accessing the API host/root
     if ($request->expectsJson() || str_starts_with($request->getHost(), 'api.')) {

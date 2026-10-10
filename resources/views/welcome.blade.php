@@ -19,6 +19,7 @@
         @if(isset($seo['is_indexable']) && $seo['is_indexable'])
         <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
         <link rel="canonical" href="{{ $seo['canonical'] ?? 'https://raabtanow.com' }}">
+        <link rel="alternate" type="text/plain" href="https://raabtanow.com/llms.txt" title="LLM Context">
 
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website">
@@ -46,15 +47,25 @@
                     "&#64;id": "https://raabtanow.com/#organization",
                     "name": "RaabtaNow",
                     "url": "https://raabtanow.com",
+                    "description": "Privacy-first Pakistani matrimonial and online rishta platform offering verified biodata, mutual proposal consent, and matchmaker agent assistance.",
                     "logo": {
                         "&#64;type": "ImageObject",
                         "url": "https://raabtanow.com/favicon-192x192.png"
                     },
+                    "knowsAbout": [
+                        "Pakistani Matrimonial",
+                        "Online Rishta in Pakistan",
+                        "Halal Matchmaking",
+                        "Muslim Matrimonial Service",
+                        "Nikah Proposals",
+                        "Overseas Pakistani Rishta",
+                        "Verified Family Matchmaking"
+                    ],
                     "contactPoint": {
                         "&#64;type": "ContactPoint",
                         "telephone": "+92-323-9225450",
                         "contactType": "customer service",
-                        "areaServed": "PK",
+                        "areaServed": ["PK", "AE", "SA", "GB", "US", "CA"],
                         "availableLanguage": ["en", "ur"]
                     },
                     "address": {
@@ -115,6 +126,22 @@
                             "acceptedAnswer": {
                                 "&#64;type": "Answer",
                                 "text": "Contact information is never shared automatically. First, candidate A sends a formal proposal request. If candidate B reviews the biodata and explicitly accepts, candidate A pays a one-time micro-fee of Rs. 300 PKR. Both parties then complete SMS OTP verification on their active mobile numbers. Once verified, mutual phone numbers, names, and emails are unlocked on screen."
+                            }
+                        },
+                        {
+                            "&#64;type": "Question",
+                            "name": "Can I inquire directly or get matchmaker agent assistance on a candidate profile?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "Yes. Users can submit direct inquiries via the 'Inquire via Agent' (ایجنٹ رابطہ) option on candidate profiles. You can share your family details, contact number, and specific questions, and our dedicated matchmaking agent coordinates directly between both parties on WhatsApp to facilitate a respectful introduction."
+                            }
+                        },
+                        {
+                            "&#64;type": "Question",
+                            "name": "Is RaabtaNow available for Overseas Pakistanis?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "Yes. RaabtaNow serves overseas Pakistani families living in the UAE (Dubai, Abu Dhabi), Saudi Arabia, the United Kingdom, the United States, Canada, Australia, and Europe seeking compatible halal rishtas in Pakistan or abroad."
                             }
                         },
                         {
