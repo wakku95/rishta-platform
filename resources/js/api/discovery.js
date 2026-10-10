@@ -45,3 +45,12 @@ export const getHiddenProfiles = async () => {
   const response = await api.get('/discovery/hidden-profiles');
   return response.data;
 };
+
+/**
+ * Submit an agent-assisted direct inquiry for a candidate profile.
+ */
+export const submitProfileInquiry = async (profileCode, payload) => {
+  const response = await api.post(`/discovery/profiles/${profileCode}/inquire`, payload);
+  return response.data;
+};
+

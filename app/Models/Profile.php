@@ -124,6 +124,14 @@ class Profile extends Model
     }
 
     /**
+     * Get matchmaker inquiries referencing this profile.
+     */
+    public function inquiries(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProfileInquiry::class);
+    }
+
+    /**
      * Calculate candidate's current age from date of birth.
      */
     public function getAgeAttribute(): ?int

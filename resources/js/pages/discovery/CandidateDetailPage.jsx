@@ -31,6 +31,7 @@ import Alert from '../../components/ui/Alert';
 import Modal from '../../components/ui/Modal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import ContactUnlockModal from '../../components/requests/ContactUnlockModal';
+import CandidateInquiryModal from './CandidateInquiryModal';
 import useAuth from '../../hooks/useAuth';
 
 export default function CandidateDetailPage() {
@@ -56,6 +57,7 @@ export default function CandidateDetailPage() {
   const [confirmAcceptOpen, setConfirmAcceptOpen] = useState(false);
   const [showUnlockModal, setShowUnlockModal] = useState(false);
   const [showInactiveModal, setShowInactiveModal] = useState(false);
+  const [showInquiryModal, setShowInquiryModal] = useState(false);
 
   useEffect(() => {
     fetchProfile();
@@ -351,6 +353,17 @@ export default function CandidateDetailPage() {
 
           {/* Rishta Request Action Context */}
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
+            <Button
+              variant="gold"
+              size="sm"
+              icon={HeartHandshake}
+              onClick={() => setShowInquiryModal(true)}
+              className="font-black bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-500 hover:from-amber-300 hover:to-yellow-300 text-slate-950 border border-amber-300/90 shadow-lg shadow-amber-500/25 w-full sm:w-auto justify-center transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+              title="Inquire via Matchmaker Agent (رابطہ بذریعہ رشتہ ایجنٹ)"
+            >
+              Inquire via Agent / ایجنٹ رابطہ
+            </Button>
+
             {!activeRequest ? (
               <Button
                 variant="primary"
@@ -641,6 +654,13 @@ export default function CandidateDetailPage() {
           }}
         />
       )}
+
+      {/* Candidate Direct Inquiry Modal */}
+      <CandidateInquiryModal
+        isOpen={showInquiryModal}
+        onClose={() => setShowInquiryModal(false)}
+        candidate={profile}
+      />
 
       {/* Inactive Profile Warning Modal */}
       <Modal

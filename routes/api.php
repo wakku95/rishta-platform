@@ -83,6 +83,9 @@ Route::prefix('discovery')->group(function () {
         Route::post('/profiles/{profile_code}/hide', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'hideProfile']);
         Route::delete('/profiles/{profile_code}/hide', [\App\Http\Controllers\Api\Discovery\DiscoveryController::class, 'unhideProfile']);
     });
+
+    Route::post('/profiles/{profile_code}/inquire', [\App\Http\Controllers\Api\ProfileInquiry\ProfileInquiryController::class, 'submit'])
+        ->middleware('throttle:10,1');
 });
 
 /*
@@ -236,6 +239,14 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{assistedListing}/interests/{interest}/status', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'updateStatus']);
         Route::post('/{assistedListing}/interests/{interest}/notes', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'addNotes']);
         Route::delete('/{assistedListing}/interests/{interest}', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'destroy']);
+    });
+
+    // Candidate Profile Direct Inquiries (Matchmaker Assisted)
+    Route::prefix('inquiries')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\Admin\AdminProfileInquiryController::class, 'index']);
+        Route::post('/{id}/status', [\App\Http\Controllers\Api\Admin\AdminProfileInquiryController::class, 'updateStatus']);
+        Route::post('/{id}/notes', [\App\Http\Controllers\Api\Admin\AdminProfileInquiryController::class, 'addNotes']);
+        Route::delete('/{id}', [\App\Http\Controllers\Api\Admin\AdminProfileInquiryController::class, 'destroy']);
     });
 
     // Assisted Profile Submissions (Customer facing)

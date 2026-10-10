@@ -96,6 +96,7 @@ export default function App() {
             {/* Public Discovery & Candidate Teaser */}
             <Route path="search" element={<SearchProfilesPage />} />
             <Route path="profiles/:profileCode" element={<CandidateDetailPage />} />
+            <Route path="profile/:profileCode" element={<CandidateDetailPage />} />
             <Route path="listings/:listingCode" element={<AssistedListingDetailPage />} />
 
             {/* Shortlist & Requests routes (strictly requires verified email) */}

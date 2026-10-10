@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { X, HeartHandshake, AlertCircle, CheckCircle } from 'lucide-react';
-import { submitListingInterest } from '../../api/listings';
+import { X, HeartHandshake, AlertCircle, CheckCircle, ShieldCheck } from 'lucide-react';
+import { submitProfileInquiry } from '../../api/discovery';
 import useAuth from '../../hooks/useAuth';
 
-export default function ExpressInterestModal({ isOpen, onClose, listing }) {
+export default function CandidateInquiryModal({ isOpen, onClose, candidate }) {
   const { user, isAuthenticated } = useAuth();
-  
+
   const [formData, setFormData] = useState({
     submitter_name: '',
     submitter_contact: '',
@@ -22,7 +22,6 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
     if (isOpen) {
       setSuccess(false);
       setError(null);
-      // Pre-fill if logged in
       if (isAuthenticated && user) {
         setFormData({
           submitter_name: user.name || '',
@@ -43,7 +42,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
     }
   }, [isOpen, isAuthenticated, user]);
 
-  if (!isOpen || !listing) return null;
+  if (!isOpen || !candidate) return null;
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -55,25 +54,17 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
     setLoading(true);
     setError(null);
 
-    const parts = [];
-    if (formData.family_details?.trim()) {
-      parts.push(`[Family Info / تعارف]:\n${formData.family_details.trim()}`);
-    }
-    if (formData.questions?.trim()) {
-      parts.push(`[Questions for Candidate / سوالات]:\n${formData.questions.trim()}`);
-    }
-    const combinedMessage = parts.join('\n\n');
-
     try {
-      await submitListingInterest(listing.listing_code, {
+      await submitProfileInquiry(candidate.profile_code, {
         submitter_name: formData.submitter_name,
         submitter_contact: formData.submitter_contact,
-        submitter_email: formData.submitter_email,
-        message: combinedMessage,
+        submitter_email: formData.submitter_email || null,
+        family_details: formData.family_details || null,
+        questions: formData.questions || null,
       });
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.message || err.response?.data?.error || "Failed to submit interest. Please try again.");
+      setError(err.response?.data?.message || 'Failed to submit inquiry. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -83,14 +74,15 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm">
       <div className="bg-navy-900 border border-white/10 rounded-2xl w-full max-w-lg overflow-hidden flex flex-col shadow-2xl max-h-[90vh]">
         
+        {/* Header */}
         <div className="shrink-0 flex items-center justify-between px-6 py-4 border-b border-white/10 bg-navy-800/50">
           <div>
             <h2 className="text-lg font-bold text-white flex items-center gap-2">
               <HeartHandshake className="w-5 h-5 text-amber-500" />
-              Express Interest / اظہارِ دلچسپی
+              Inquire via Matchmaker / رشتہ ایجنٹ کے ذریعے رابطہ
             </h2>
             <p className="text-xs text-slate-400 mt-0.5">
-              Assisted Matchmaking Inquiry • Listing #{listing.listing_code}
+              Direct Agent Inquiry • Candidate #{candidate.profile_code}
             </p>
           </div>
           <button onClick={onClose} className="text-slate-400 hover:text-white transition">
@@ -98,18 +90,21 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
           </button>
         </div>
 
+        {/* Content */}
         <div className="flex-1 p-6 overflow-y-auto min-h-0">
           {success ? (
             <div className="text-center py-6">
               <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
                 <CheckCircle className="w-8 h-8 text-emerald-500" />
               </div>
-              <h3 className="text-xl font-bold text-white mb-2">Interest Submitted / درخواست موصول ہوگئی</h3>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Inquiry Received / درخواست موصول ہوگئی
+              </h3>
               <p className="text-slate-300 text-sm leading-relaxed max-w-md mx-auto">
-                Thank you! Our matchmaker agent will review your details and contact you on WhatsApp at <strong>{formData.submitter_contact}</strong> to facilitate the match.
+                Thank you! Our matchmaker agent will review your details, coordinate with the candidate's family, and contact you directly on WhatsApp at <strong>{formData.submitter_contact}</strong>.
               </p>
               <p className="text-xs text-amber-300 mt-2 font-urdu" dir="rtl">
-                شکریہ! ہمارا رشتہ ایجنٹ آپ کی تفصیلات دیکھ کر آپ سے واٹس ایپ پر رابطہ کرے گا۔
+                شکریہ! ہمارا رشتہ ایجنٹ آپ کی تفصیلات دیکھ کر دونوں فریقین سے واٹس ایپ پر رابطہ کرے گا۔
               </p>
               <button 
                 onClick={onClose}
@@ -120,13 +115,16 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
             </div>
           ) : (
             <>
-              {/* Notice Banner & Fee Policy */}
+              {/* Informative Notice & Fee Banner */}
               <div className="mb-5 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl space-y-2.5 text-xs">
-                <div className="text-slate-200 leading-relaxed">
-                  You are inquiring about listing <strong className="text-amber-400">{listing.listing_code}</strong>. Our personal matchmaker will review your profile and contact both families directly on WhatsApp.
+                <div className="flex items-start gap-2 text-slate-200 leading-relaxed">
+                  <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                  <div>
+                    This inquiry is handled directly by our <strong>RaabtaNow Matchmaker Agent</strong>. No automated request is sent to the candidate; our agent will discuss compatibility and mediate between both families on WhatsApp.
+                  </div>
                 </div>
                 <div className="text-amber-300/90 leading-relaxed font-urdu text-right" dir="rtl">
-                  آپ لسٹنگ <strong className="text-amber-300">{listing.listing_code}</strong> کے لیے رابطہ کر رہے ہیں۔ ہمارا رشتہ ایجنٹ دونوں فریقین سے واٹس ایپ پر رابطہ کر کے بات آگے بڑھائے گا۔
+                  یہ انکوائری ہمارے رشتہ ایجنٹ کے ذریعے ہینڈل کی جائے گی۔ امیدوار کو براہ راست آٹومیٹک ریکویسٹ نہیں جائے گی، بلکہ ہمارا نمائندہ واٹس ایپ پر دونوں فریقین سے رابطہ کرے گا۔
                 </div>
                 <div className="pt-2 border-t border-amber-500/20 text-[11px] text-amber-200/90 space-y-1">
                   <div className="flex items-start gap-1.5 font-semibold text-amber-300">
@@ -149,12 +147,12 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                 </div>
               )}
 
-              <form id="interest-form" onSubmit={handleSubmit} className="space-y-4">
+              <form id="candidate-inquiry-form" onSubmit={handleSubmit} className="space-y-4">
                 
                 {isAuthenticated && (
                   <div className="text-xs text-emerald-400 bg-emerald-500/10 p-2.5 rounded-lg font-semibold flex items-center gap-2">
                     <CheckCircle className="w-3.5 h-3.5" />
-                    Using your verified RaabtaNow profile details.
+                    Using your RaabtaNow verified account info.
                   </div>
                 )}
 
@@ -229,7 +227,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                   <textarea 
                     name="questions"
                     rows="2"
-                    placeholder="Specific questions or preferences you want our matchmaker to ask the other family..."
+                    placeholder="Specific questions or preferences you want our matchmaker to ask the candidate family..."
                     value={formData.questions} 
                     onChange={handleChange} 
                     className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none" 
@@ -240,10 +238,11 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
           )}
         </div>
 
+        {/* Footer */}
         {!success && (
           <div className="shrink-0 p-4 border-t border-white/10 bg-navy-800/50 flex items-center justify-between gap-3">
             <span className="text-[11px] text-slate-400 hidden sm:inline">
-              Coordinated via Matchmaker
+              Assisted Matchmaking
             </span>
             <div className="flex items-center gap-3 ml-auto">
               <button 
@@ -255,7 +254,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
               </button>
               <button 
                 type="submit"
-                form="interest-form"
+                form="candidate-inquiry-form"
                 disabled={loading}
                 className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-sm font-bold transition disabled:opacity-50 shadow-md shadow-amber-500/20"
               >

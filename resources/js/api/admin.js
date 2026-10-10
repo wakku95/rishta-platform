@@ -81,8 +81,13 @@ export const adminApi = {
   getVerificationLinks: (params) => api.get('/admin/verification-links', { params }).then(r => r.data.data),
   approveVerificationLink: (id, notes) => api.post(`/admin/verification-links/${id}/approve`, { notes }).then(r => r.data),
   rejectVerificationLink: (id, reason) => api.post(`/admin/verification-links/${id}/reject`, { reason }).then(r => r.data),
-  deleteVerificationLink: (id) => api.delete(`/admin/verification-links/${id}`).then(r => r.data),
   getVerificationLinkDocBlob: (id, side = 'front') => api.get(`/admin/verification-links/${id}/document/${side}`, {
     responseType: 'blob',
   }),
+
+  // Candidate Profile Direct Inquiries
+  getInquiries: (params) => api.get('/admin/inquiries', { params }).then(r => r.data.data),
+  updateInquiryStatus: (id, status) => api.post(`/admin/inquiries/${id}/status`, { status }).then(r => r.data),
+  updateInquiryNotes: (id, admin_notes) => api.post(`/admin/inquiries/${id}/notes`, { admin_notes }).then(r => r.data),
+  deleteInquiry: (id) => api.delete(`/admin/inquiries/${id}`).then(r => r.data),
 };

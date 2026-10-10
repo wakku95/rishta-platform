@@ -14,10 +14,11 @@ import AdminAssistedTab from './AdminAssistedTab';
 import AdminAssistedListingsTab from './AdminAssistedListingsTab';
 import AdminAssistedSubmissionsTab from './AdminAssistedSubmissionsTab';
 import AdminSocialMediaTab from './AdminSocialMediaTab';
-import { ClipboardList, FileText, Share2, Briefcase, Sparkles, Database } from 'lucide-react';
+import { ClipboardList, FileText, Share2, Briefcase, Sparkles, Database, MessageSquare } from 'lucide-react';
 import AdminPortfolioTab from './AdminPortfolioTab';
 import AdminMatchmakerTab from './AdminMatchmakerTab';
 import AdminBackupTab from './AdminBackupTab';
+import AdminInquiriesTab from './AdminInquiriesTab';
 import useAuth from '../../hooks/useAuth';
 
 export default function AdminPage() {
@@ -36,6 +37,7 @@ export default function AdminPage() {
     { id: 'matchmaker', name: 'Auto Matchmaker', icon: Sparkles },
     { id: 'users', name: 'Users & Accounts', icon: Users },
     { id: 'profiles', name: 'Profiles Moderation', icon: HeartHandshake },
+    { id: 'inquiries', name: 'Direct Inquiries', icon: MessageSquare },
     { id: 'verifications', name: 'Verifications', icon: ShieldCheck },
     { id: 'requests', name: 'Rishta Requests', icon: Layers },
     { id: 'financials', name: 'Financials & Unlocks', icon: CreditCard },
@@ -107,6 +109,7 @@ export default function AdminPage() {
           {activeTab === 'matchmaker' && <AdminMatchmakerTab />}
           {activeTab === 'users' && <AdminUsersTab />}
           {activeTab === 'profiles' && <AdminProfilesTab />}
+          {activeTab === 'inquiries' && <AdminInquiriesTab />}
           {activeTab === 'verifications' && <AdminVerificationsTab />}
           {activeTab === 'requests' && <AdminRequestsTab />}
           {activeTab === 'financials' && <AdminFinancialsTab />}
