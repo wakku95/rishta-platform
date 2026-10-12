@@ -86,7 +86,7 @@ export default function AdminOverviewTab() {
           </div>
         </div>
 
-        {/* Active Profiles */}
+        {/* Active Profiles (Combined Registered + Assisted) */}
         <div className="p-5 rounded-2xl bg-navy-800/80 border border-white/10 shadow-sm">
           <div className="flex items-center justify-between">
             <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">Active Profiles</span>
@@ -95,14 +95,30 @@ export default function AdminOverviewTab() {
             </div>
           </div>
           <div className="mt-3">
-            <span className="text-2xl font-black text-white">{profiles.active}</span>
-            <div className="mt-2 flex items-center gap-2 text-xs">
-              <span className="text-slate-300">M: {profiles.male_active}</span>
-              <span className="text-slate-500">|</span>
-              <span className="text-slate-300">F: {profiles.female_active}</span>
-              <span className="text-slate-500">•</span>
-              <span className="text-slate-400">{profiles.draft} draft</span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-black text-white">{profiles.active}</span>
+              <span className="text-[11px] font-semibold text-magenta-300">Total Live</span>
             </div>
+            {profiles.breakdown ? (
+              <div className="mt-2 space-y-1 text-xs">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Self-Registered:</span>
+                  <span className="font-bold text-slate-200">{profiles.breakdown.registered_active} <span className="text-slate-500 font-normal">(M:{profiles.breakdown.registered_male} | F:{profiles.breakdown.registered_female})</span></span>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-slate-400">Assisted Listings:</span>
+                  <span className="font-bold text-amber-300">{profiles.breakdown.assisted_published} <span className="text-slate-500 font-normal">(M:{profiles.breakdown.assisted_male} | F:{profiles.breakdown.assisted_female})</span></span>
+                </div>
+              </div>
+            ) : (
+              <div className="mt-2 flex items-center gap-2 text-xs">
+                <span className="text-slate-300">M: {profiles.male_active}</span>
+                <span className="text-slate-500">|</span>
+                <span className="text-slate-300">F: {profiles.female_active}</span>
+                <span className="text-slate-500">•</span>
+                <span className="text-slate-400">{profiles.draft} draft</span>
+              </div>
+            )}
           </div>
         </div>
 

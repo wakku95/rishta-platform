@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\AssistedListing;
 use App\Models\ContactUnlock;
 use App\Models\Payment;
 use App\Models\Profile;
@@ -33,18 +34,43 @@ class AdminDashboardController extends Controller
         $verifiedUsers = User::whereNotNull('email_verified_at')->count();
         $newUsersThisWeek = User::where('created_at', '>=', $oneWeekAgo)->count();
 
-        // Profiles Metrics
-        $totalProfiles = Profile::count();
-        $activeProfiles = Profile::where('profile_status', 'active')->count();
+        // Registered User Profiles Metrics
+        $registeredProfilesTotal = Profile::count();
+        $registeredProfilesActive = Profile::where('profile_status', 'active')->count();
         $draftProfiles = Profile::where('profile_status', 'draft')->count();
         $suspendedProfiles = Profile::where('profile_status', 'suspended')->count();
-        $maleProfiles = Profile::where('gender', 'male')->where('profile_status', 'active')->count();
-        $femaleProfiles = Profile::where('gender', 'female')->where('profile_status', 'active')->count();
+        $registeredMaleActive = Profile::where('gender', 'male')->where('profile_status', 'active')->count();
+        $registeredFemaleActive = Profile::where('gender', 'female')->where('profile_status', 'active')->count();
 
-        // Top Cities
-        $topCities = Profile::select('city', DB::raw('count(*) as total'))
+        // Assisted Listings Metrics
+        $assistedListingsTotal = AssistedListing::count();
+        $assistedListingsPublished = AssistedListing::where('listing_status', 'published')->count();
+        $assistedListingsDraft = AssistedListing::where('listing_status', 'draft')->count();
+        $assistedListingsArchived = AssistedListing::where('listing_status', 'archived')->count();
+        $assistedMalePublished = AssistedListing::where('gender', 'male')->where('listing_status', 'published')->count();
+        $assistedFemalePublished = AssistedListing::where('gender', 'female')->where('listing_status', 'published')->count();
+
+        // Combined Overall Candidate Inventory
+        $totalCombinedProfiles = $registeredProfilesTotal + $assistedListingsTotal;
+        $totalCombinedActive = $registeredProfilesActive + $assistedListingsPublished;
+        $totalCombinedMaleActive = $registeredMaleActive + $assistedMalePublished;
+        $totalCombinedFemaleActive = $registeredFemaleActive + $assistedFemalePublished;
+
+        // Top Cities (Combined across Profiles & Published Assisted Listings)
+        $topCitiesProfiles = Profile::select('city', DB::raw('count(*) as total'))
             ->whereNotNull('city')
             ->where('city', '!=', '')
+            ->groupBy('city');
+
+        $topCitiesAssisted = AssistedListing::select('city', DB::raw('count(*) as total'))
+            ->whereNotNull('city')
+            ->where('city', '!=', '')
+            ->where('listing_status', 'published')
+            ->groupBy('city');
+
+        $topCities = DB::query()
+            ->fromSub($topCitiesProfiles->unionAll($topCitiesAssisted), 'combined_cities')
+            ->select('city', DB::raw('SUM(total) as total'))
             ->groupBy('city')
             ->orderByDesc('total')
             ->limit(5)
@@ -86,13 +112,27 @@ class AdminDashboardController extends Controller
                 'new_this_week' => $newUsersThisWeek,
             ],
             'profiles' => [
-                'total' => $totalProfiles,
-                'active' => $activeProfiles,
-                'draft' => $draftProfiles,
+                'total' => $totalCombinedProfiles,
+                'active' => $totalCombinedActive,
+                'draft' => $draftProfiles + $assistedListingsDraft,
                 'suspended' => $suspendedProfiles,
-                'male_active' => $maleProfiles,
-                'female_active' => $femaleProfiles,
+                'male_active' => $totalCombinedMaleActive,
+                'female_active' => $totalCombinedFemaleActive,
                 'top_cities' => $topCities,
+                'breakdown' => [
+                    'registered_total' => $registeredProfilesTotal,
+                    'registered_active' => $registeredProfilesActive,
+                    'registered_draft' => $draftProfiles,
+                    'registered_suspended' => $suspendedProfiles,
+                    'registered_male' => $registeredMaleActive,
+                    'registered_female' => $registeredFemaleActive,
+                    'assisted_total' => $assistedListingsTotal,
+                    'assisted_published' => $assistedListingsPublished,
+                    'assisted_draft' => $assistedListingsDraft,
+                    'assisted_archived' => $assistedListingsArchived,
+                    'assisted_male' => $assistedMalePublished,
+                    'assisted_female' => $assistedFemalePublished,
+                ],
             ],
             'requests' => [
                 'total' => $totalRequests,
