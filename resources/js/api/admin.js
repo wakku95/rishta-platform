@@ -87,6 +87,7 @@ export const adminApi = {
   getVerificationLinkDocBlob: (id, side = 'front') => api.get(`/admin/verification-links/${id}/document/${side}`, {
     responseType: 'blob',
   }),
+  deleteVerificationLink: (id) => api.delete(`/admin/verification-links/${id}`).then(r => r.data),
 
   // Candidate Profile Direct Inquiries
   getInquiries: (params) => api.get('/admin/inquiries', { params }).then(r => r.data.data),

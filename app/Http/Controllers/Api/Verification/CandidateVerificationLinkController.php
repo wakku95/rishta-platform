@@ -213,8 +213,8 @@ class CandidateVerificationLinkController extends Controller
      */
     public function destroy(Request $request, int $id): JsonResponse
     {
-        if (!$request->user()?->isAdmin()) {
-            return $this->errorResponse('Only Super Admin can delete verification requests.', [], Response::HTTP_FORBIDDEN);
+        if (!$request->user()?->hasAdminAccess()) {
+            return $this->errorResponse('Only Admins can delete verification requests.', [], Response::HTTP_FORBIDDEN);
         }
 
         $record = CandidateVerificationRequest::find($id);
