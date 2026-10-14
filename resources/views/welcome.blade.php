@@ -183,7 +183,7 @@
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
         <link rel="icon" type="image/svg+xml" href="/favicon.svg">
         <link rel="alternate icon" href="/favicon.ico">
-        <meta name="theme-color" content="#0B0F19">
+        <meta name="theme-color" content="#161B26">
 
         <!-- Preconnect Google Fonts for Inter and Playfair -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -235,10 +235,10 @@
         height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
         <!-- End Google Tag Manager (noscript) -->
         <div id="app">
-            <div id="rn-preloader" style="position:fixed;inset:0;background:#0B0F19;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;font-family:system-ui,-apple-system,sans-serif;">
+            <div id="rn-preloader" style="position:fixed;inset:0;background:#161B26;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:99999;font-family:system-ui,-apple-system,sans-serif;">
                 <style>
                     html.light #rn-preloader {
-                        background: #F8FAFC !important;
+                        background: #EAEFF5 !important;
                     }
                     html.light .rn-preloader-title {
                         color: #0F172A !important;
