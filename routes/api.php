@@ -301,6 +301,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     // Candidate Verification Links
     Route::prefix('verification-links')->group(function () {
         Route::post('/generate', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'generateLink']);
+        Route::post('/direct-upload', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'directUpload']);
         Route::get('/', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'listLinks']);
         Route::get('/{id}/document/{side?}', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'viewDocument']);
         Route::post('/{id}/approve', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'approve']);

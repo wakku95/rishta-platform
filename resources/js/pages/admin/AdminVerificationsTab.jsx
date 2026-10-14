@@ -2,17 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, ShieldAlert, CheckCircle2, XCircle, 
   Eye, RefreshCw, FileText, Search, AlertCircle, ExternalLink, Trash2,
-  Link as LinkIcon, Clock, Copy, Check, UserCheck, PhoneCall, AlertTriangle
+  Link as LinkIcon, Clock, Copy, Check, UserCheck, PhoneCall, AlertTriangle, Sparkles
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
 import useAuth from '../../hooks/useAuth';
+import AdminPhotoWatermarkModal from '../../components/admin/AdminPhotoWatermarkModal';
 
 export default function AdminVerificationsTab() {
   const { user: currentAdmin } = useAuth();
   const isSuperAdmin = currentAdmin?.role === 'admin';
 
   const [activeSection, setActiveSection] = useState('registered'); // 'registered' | 'magic_links'
+  const [watermarkModalData, setWatermarkModalData] = useState(null);
   
   // Registered users state
   const [verifications, setVerifications] = useState([]);
@@ -338,6 +340,8 @@ export default function AdminVerificationsTab() {
 
   const formatDocType = (type) => {
     switch (type) {
+      case 'photo':
+        return { label: '📸 Matrimonial Photo', badgeColor: 'bg-magenta-500/15 text-magenta-300 border-magenta-500/30' };
       case 'salary_slip':
         return { label: 'Salary Slip / Income', badgeColor: 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' };
       case 'degree':
@@ -1051,15 +1055,33 @@ export default function AdminVerificationsTab() {
                     </Button>
                   )}
                 </div>
-                <Button 
-                  size="sm" 
-                  variant="primary" 
-                  icon={CheckCircle2} 
-                  onClick={() => handleApprove(selectedItem.id)}
-                  isLoading={actionLoadingId === selectedItem.id}
-                >
-                  Approve Verification
-                </Button>
+                <div className="flex items-center gap-2">
+                  {activeDoc && activeDoc.mime?.startsWith('image/') && (
+                    <Button 
+                      size="sm" 
+                      variant="primary" 
+                      icon={Sparkles} 
+                      className="bg-gradient-to-r from-magenta-600 to-purple-600 hover:from-magenta-500 text-white font-bold"
+                      onClick={() => setWatermarkModalData({
+                        isOpen: true,
+                        photoBlobUrl: activeDoc.url,
+                        candidateCode: selectedItem.candidate_code || selectedItem.user?.profile?.profile_code || 'Candidate',
+                        candidateName: selectedItem.candidate_name || selectedItem.user?.name || 'Candidate',
+                      })}
+                    >
+                      Watermark &amp; Export
+                    </Button>
+                  )}
+                  <Button 
+                    size="sm" 
+                    variant="primary" 
+                    icon={CheckCircle2} 
+                    onClick={() => handleApprove(selectedItem.id)}
+                    isLoading={actionLoadingId === selectedItem.id}
+                  >
+                    Approve Verification
+                  </Button>
+                </div>
               </div>
             )}
           </div>
@@ -1113,6 +1135,17 @@ export default function AdminVerificationsTab() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Photo Watermark Studio Modal */}
+      {watermarkModalData && (
+        <AdminPhotoWatermarkModal
+          isOpen={watermarkModalData.isOpen}
+          onClose={() => setWatermarkModalData(null)}
+          photoBlobUrl={watermarkModalData.photoBlobUrl}
+          candidateCode={watermarkModalData.candidateCode}
+          candidateName={watermarkModalData.candidateName}
+        />
       )}
     </div>
   );

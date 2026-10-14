@@ -89,11 +89,16 @@ class CandidateVerificationLinkController extends Controller
         $docLabel = match($docType) {
             'salary_slip' => 'Salary Slip / Income Proof',
             'degree' => 'Educational Degree / Certificate',
+            'photo' => 'Recent Matrimonial Photograph / Tasveer',
             'other' => 'Verification Document',
             default => 'CNIC / National ID (Front & Back)',
         };
 
-        $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow Matrimonial profile verification ke liye baraye meherbani is secure link par apna {$docLabel} upload karein: {$verifyUrl}\n\nNote: Aapka document 100% confidential rahega aur kisi public user ko show nahi kiya jayega.";
+        if ($docType === 'photo') {
+            $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow matrimonial matchmaking ke liye baraye meherbani is secure link par candidate ki ek halia tasveer (photograph) upload karein: {$verifyUrl}\n\nNote: Yeh tasveer 100% confidential rahegi aur sirf verified proposals ke liye watermark ke sath use hogi.";
+        } else {
+            $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow Matrimonial profile verification ke liye baraye meherbani is secure link par apna {$docLabel} upload karein: {$verifyUrl}\n\nNote: Aapka document 100% confidential rahega aur kisi public user ko show nahi kiya jayega.";
+        }
 
         return $this->successResponse([
             'id' => $record->id,
@@ -235,6 +240,72 @@ class CandidateVerificationLinkController extends Controller
     }
 
     /**
+     * Admin: Directly upload a candidate photo or document (e.g. received via WhatsApp).
+     */
+    public function directUpload(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'candidate_type' => 'required|string|in:assisted,profile,registered',
+            'candidate_id'   => 'required|integer',
+            'document_type'  => 'nullable|string|max:50',
+            'file'           => 'required|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
+            'notes'          => 'nullable|string|max:500',
+        ]);
+
+        $type = $validated['candidate_type'] === 'registered' ? 'profile' : $validated['candidate_type'];
+        $id = (int) $validated['candidate_id'];
+        $docType = $validated['document_type'] ?? 'photo';
+
+        $candidateCode = '';
+        $candidateName = null;
+        $phone = null;
+
+        if ($type === 'assisted') {
+            $listing = AssistedListing::find($id);
+            if (!$listing) {
+                return $this->errorResponse('Assisted listing not found.', [], Response::HTTP_NOT_FOUND);
+            }
+            $candidateCode = $listing->listing_code;
+            $candidateName = $listing->full_name ?? "Candidate #{$listing->listing_code}";
+            $phone = $listing->contact_number;
+        } else {
+            $profile = Profile::with('user')->find($id);
+            if (!$profile) {
+                return $this->errorResponse('Profile not found.', [], Response::HTTP_NOT_FOUND);
+            }
+            $candidateCode = $profile->profile_code;
+            $candidateName = $profile->user?->name ?? "Profile #{$profile->profile_code}";
+            $phone = $profile->user?->phone;
+        }
+
+        $token = Str::random(48);
+        $folder = "{$this->storageFolder}/{$token}";
+
+        $uploadedFile = $request->file('file');
+        $ext = $uploadedFile->getClientOriginalExtension();
+        $storedPath = $uploadedFile->storeAs($folder, "front_{$token}.{$ext}", $this->storageDisk);
+
+        $record = CandidateVerificationRequest::create([
+            'token' => $token,
+            'candidate_type' => $type,
+            'candidate_id' => $id,
+            'candidate_code' => $candidateCode,
+            'candidate_name' => $candidateName,
+            'phone' => $phone,
+            'document_type' => $docType,
+            'status' => 'approved',
+            'document_front_path' => $storedPath,
+            'notes' => $validated['notes'] ?? 'Uploaded directly by Admin via WhatsApp submission',
+            'expires_at' => now()->addYears(5),
+            'submitted_at' => now(),
+            'reviewed_at' => now(),
+            'reviewed_by_user_id' => $request->user()?->id,
+        ]);
+
+        return $this->successResponse($record, 'Candidate document/photo uploaded and approved successfully.');
+    }
+
+    /**
      * Public: Get verification details by token (no login required).
      */
     public function showPublic(string $token): JsonResponse
@@ -277,8 +348,8 @@ class CandidateVerificationLinkController extends Controller
         }
 
         $validated = $request->validate([
-            'front_image' => 'required|file|mimes:jpeg,jpg,png,pdf|max:5120',
-            'back_image'  => 'nullable|file|mimes:jpeg,jpg,png,pdf|max:5120',
+            'front_image' => 'required|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
+            'back_image'  => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
             'notes'       => 'nullable|string|max:500',
         ]);
 

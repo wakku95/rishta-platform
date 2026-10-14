@@ -162,6 +162,7 @@ export default function PublicDocumentVerificationPage() {
               Requested: {
                 record.document_type === 'salary_slip' ? 'Salary Slip / Income Proof' :
                 record.document_type === 'degree' ? 'Educational Degree / Certificate' :
+                record.document_type === 'photo' ? '📸 Matrimonial Photograph / Tasveer' :
                 record.document_type === 'other' ? 'Supporting Document' :
                 'CNIC / National Identity Card'
               }
@@ -219,16 +220,16 @@ export default function PublicDocumentVerificationPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               
-              {/* Front Side Upload */}
+              {/* Front Side / Photo Upload */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-white">
-                  Front Side (Photo &amp; Details) <span className="text-rose-400">*</span>
+                  {record.document_type === 'photo' ? 'Candidate Photograph (Face / Portrait)' : 'Front Side (Photo & Details)'} <span className="text-rose-400">*</span>
                 </label>
 
                 <label className="border-2 border-dashed border-white/15 hover:border-magenta-500/50 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition bg-navy-900/40 hover:bg-navy-900/60 group">
                   <input
                     type="file"
-                    accept="image/jpeg,image/png,image/jpg,application/pdf"
+                    accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf"
                     onChange={handleFrontChange}
                     className="hidden"
                   />
@@ -237,59 +238,61 @@ export default function PublicDocumentVerificationPage() {
                       <img 
                         src={frontPreview} 
                         alt="Front Preview" 
-                        className="max-h-40 rounded-lg mx-auto object-cover border border-white/10"
+                        className="max-h-48 rounded-lg mx-auto object-cover border border-white/10"
                       />
                       <p className="text-[11px] text-emerald-400 font-semibold flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Front Selected (Click to change)
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {record.document_type === 'photo' ? 'Photo Selected' : 'Front Selected'} (Tap to change)
                       </p>
                     </div>
                   ) : (
-                    <div className="text-center space-y-1 py-3">
-                      <Camera className="w-8 h-8 text-slate-500 group-hover:text-magenta-400 transition mx-auto" />
+                    <div className="text-center space-y-1 py-4">
+                      <Camera className="w-10 h-10 text-slate-500 group-hover:text-magenta-400 transition mx-auto" />
                       <p className="text-xs font-semibold text-slate-300">
-                        {frontFile ? frontFile.name : 'Tap to take photo or choose file'}
+                        {frontFile ? frontFile.name : record.document_type === 'photo' ? 'Tap to take or choose photograph' : 'Tap to take photo or choose file'}
                       </p>
-                      <p className="text-[10px] text-slate-500">JPG, PNG, PDF up to 5MB</p>
+                      <p className="text-[10px] text-slate-500">JPG, PNG, WebP up to 10MB</p>
                     </div>
                   )}
                 </label>
               </div>
 
-              {/* Back Side Upload */}
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-white">
-                  Back Side (Address &amp; Details) <span className="text-slate-400 font-normal">(Optional for single-page documents)</span>
-                </label>
+              {/* Back Side Upload (Only for non-photo documents like CNIC) */}
+              {record.document_type !== 'photo' && (
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-white">
+                    Back Side (Address &amp; Details) <span className="text-slate-400 font-normal">(Optional for single-page documents)</span>
+                  </label>
 
-                <label className="border-2 border-dashed border-white/15 hover:border-magenta-500/50 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition bg-navy-900/40 hover:bg-navy-900/60 group">
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/png,image/jpg,application/pdf"
-                    onChange={handleBackChange}
-                    className="hidden"
-                  />
-                  {backPreview ? (
-                    <div className="space-y-2 text-center">
-                      <img 
-                        src={backPreview} 
-                        alt="Back Preview" 
-                        className="max-h-40 rounded-lg mx-auto object-cover border border-white/10"
-                      />
-                      <p className="text-[11px] text-emerald-400 font-semibold flex items-center justify-center gap-1">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Back Selected (Click to change)
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-center space-y-1 py-3">
-                      <ImageIcon className="w-8 h-8 text-slate-500 group-hover:text-magenta-400 transition mx-auto" />
-                      <p className="text-xs font-semibold text-slate-300">
-                        {backFile ? backFile.name : 'Tap to choose back side (optional)'}
-                      </p>
-                      <p className="text-[10px] text-slate-500">JPG, PNG, PDF up to 5MB</p>
-                    </div>
-                  )}
-                </label>
-              </div>
+                  <label className="border-2 border-dashed border-white/15 hover:border-magenta-500/50 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition bg-navy-900/40 hover:bg-navy-900/60 group">
+                    <input
+                      type="file"
+                      accept="image/jpeg,image/png,image/jpg,image/webp,application/pdf"
+                      onChange={handleBackChange}
+                      className="hidden"
+                    />
+                    {backPreview ? (
+                      <div className="space-y-2 text-center">
+                        <img 
+                          src={backPreview} 
+                          alt="Back Preview" 
+                          className="max-h-40 rounded-lg mx-auto object-cover border border-white/10"
+                        />
+                        <p className="text-[11px] text-emerald-400 font-semibold flex items-center justify-center gap-1">
+                          <CheckCircle2 className="w-3.5 h-3.5" /> Back Selected (Click to change)
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-1 py-3">
+                        <ImageIcon className="w-8 h-8 text-slate-500 group-hover:text-magenta-400 transition mx-auto" />
+                        <p className="text-xs font-semibold text-slate-300">
+                          {backFile ? backFile.name : 'Tap to choose back side (optional)'}
+                        </p>
+                        <p className="text-[10px] text-slate-500">JPG, PNG, PDF up to 10MB</p>
+                      </div>
+                    )}
+                  </label>
+                </div>
+              )}
 
               {/* Optional Notes */}
               <div className="space-y-1">
@@ -300,7 +303,7 @@ export default function PublicDocumentVerificationPage() {
                   type="text"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  placeholder="e.g. Smart Card, NADRA CNIC, Degree, etc."
+                  placeholder={record.document_type === 'photo' ? "e.g. Recent wedding photo, taken last month" : "e.g. Smart Card, NADRA CNIC, Degree, etc."}
                   className="w-full text-xs rounded-xl bg-navy-900/80 border border-white/10 text-white px-3.5 py-2.5 focus:border-magenta-500 focus:outline-none"
                   maxLength={200}
                 />
@@ -314,7 +317,7 @@ export default function PublicDocumentVerificationPage() {
                 className="w-full justify-center py-3 bg-gradient-to-r from-magenta-500 to-purple-600 hover:from-magenta-400 hover:to-purple-500 font-bold text-sm shadow-lg shadow-magenta-500/20"
               >
                 <UploadCloud className="w-4 h-4 mr-2" />
-                {submitting ? 'Submitting Securely...' : 'Submit Document for Verification'}
+                {submitting ? 'Submitting Securely...' : record.document_type === 'photo' ? 'Submit Photograph Securely' : 'Submit Document for Verification'}
               </Button>
             </form>
           </Card>

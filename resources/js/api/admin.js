@@ -78,6 +78,9 @@ export const adminApi = {
 
   // Candidate Verification Links
   generateVerificationLink: (data) => api.post('/admin/verification-links/generate', data).then(r => r.data.data),
+  directUploadVerificationDoc: (formData) => api.post('/admin/verification-links/direct-upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  }).then(r => r.data.data),
   getVerificationLinks: (params) => api.get('/admin/verification-links', { params }).then(r => r.data.data),
   approveVerificationLink: (id, notes) => api.post(`/admin/verification-links/${id}/approve`, { notes }).then(r => r.data),
   rejectVerificationLink: (id, reason) => api.post(`/admin/verification-links/${id}/reject`, { reason }).then(r => r.data),
