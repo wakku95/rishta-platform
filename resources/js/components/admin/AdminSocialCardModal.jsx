@@ -25,7 +25,7 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
   function formatHeight(val) {
     if (!val) return "5'8\"";
     if (typeof val === 'string' && val.includes("'")) return val;
-    const num = Number(val);
+    const num = typeof val === 'string' ? parseFloat(val) : Number(val);
     if (!isNaN(num) && num > 80 && num < 250) {
       const totalInches = Math.round(num / 2.54);
       const feet = Math.floor(totalInches / 12);
@@ -38,8 +38,9 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
   function formatLookingSummary(cand) {
     if (cand.partner_expectations) return cand.partner_expectations;
     if (cand.public_biodata?.partner_expectations) return cand.public_biodata.partner_expectations;
+    if (cand.public_profile_snapshot?.partner_expectations) return cand.public_profile_snapshot.partner_expectations;
     
-    const prefs = cand.preferences;
+    const prefs = cand.preferences || cand.public_profile_snapshot?.preferences;
     if (prefs) {
       const parts = [];
       if (prefs.preferred_education) {
@@ -63,29 +64,38 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
     return 'Educated, responsible and family-oriented partner.';
   }
 
-  // Extract initial fields from candidate object
-  const initialCode = candidate.profile_code || candidate.listing_code || (candidate.id ? `AP-${candidate.id}` : 'RN-1024');
-  const initialGender = String(candidate.gender || candidate.public_biodata?.gender || 'male').toLowerCase();
-  const initialAge = candidate.age || candidate.public_biodata?.age || (candidate.date_of_birth ? getAgeFromDob(candidate.date_of_birth) : candidate.public_biodata?.date_of_birth ? getAgeFromDob(candidate.public_biodata.date_of_birth) : 29);
-  const initialCity = candidate.city || candidate.public_biodata?.city || 'Karachi';
-  const initialReligion = candidate.religion || candidate.public_biodata?.religion || 'Islam';
-  const initialSect = candidate.sect || candidate.public_biodata?.sect || 'Sunni';
-  const initialCaste = candidate.caste || candidate.public_biodata?.caste || '';
+  // Extract initial fields from candidate object across all tabs (Matchmaker, Assisted, Registered, Social Media)
+  const initialCode = 
+    candidate.profile_code || 
+    candidate.listing_code || 
+    candidate.code || 
+    candidate.profile?.profile_code || 
+    candidate.public_profile_snapshot?.profile_code || 
+    (candidate.id ? (candidate.type === 'assisted' || candidate.source === 'assisted' ? `AL-${candidate.id}` : `RP-${candidate.id}`) : 'RN-1024');
+
+  const initialGender = String(candidate.gender || candidate.public_biodata?.gender || candidate.public_profile_snapshot?.gender || 'male').toLowerCase();
+  const initialAge = candidate.age || candidate.public_biodata?.age || candidate.public_profile_snapshot?.age || 
+    (candidate.date_of_birth ? getAgeFromDob(candidate.date_of_birth) : candidate.public_biodata?.date_of_birth ? getAgeFromDob(candidate.public_biodata.date_of_birth) : 29);
+  const initialCity = candidate.city || candidate.public_biodata?.city || candidate.public_profile_snapshot?.city || 'Karachi';
+  const initialReligion = candidate.religion || candidate.public_biodata?.religion || candidate.public_profile_snapshot?.religion || 'Islam';
+  const initialSect = candidate.sect || candidate.public_biodata?.sect || candidate.public_profile_snapshot?.sect || 'Sunni';
+  const initialCaste = candidate.caste || candidate.public_biodata?.caste || candidate.public_profile_snapshot?.caste || '';
   const initialFaith = (initialReligion === 'Islam' && initialSect) ? `${initialReligion} • ${initialSect}` : initialReligion;
-  const initialEducation = candidate.education || candidate.public_biodata?.education || 'B.Com';
-  const initialProfession = candidate.profession || candidate.public_biodata?.profession || 'Business';
-  const initialHeight = candidate.height_formatted || formatHeight(candidate.height || candidate.public_biodata?.height);
-  const initialMarital = formatMarital(candidate.marital_status || candidate.public_biodata?.marital_status || 'never_married');
+  const initialEducation = candidate.education || candidate.public_biodata?.education || candidate.public_profile_snapshot?.education || 'B.Com';
+  const initialProfession = candidate.profession || candidate.public_biodata?.profession || candidate.public_profile_snapshot?.profession || 'Business';
+  const initialHeight = formatHeight(candidate.height || candidate.height_formatted || candidate.public_biodata?.height || candidate.public_profile_snapshot?.height || candidate.public_profile_snapshot?.height_formatted);
+  const initialMarital = formatMarital(candidate.marital_status || candidate.public_biodata?.marital_status || candidate.public_profile_snapshot?.marital_status || 'never_married');
   const initialFamilyType = candidate.family_status || candidate.public_biodata?.family_status || 
     (initialProfession && /Doctor|Engineer|Professor|Accountant|Officer/i.test(initialProfession) ? 'Educated Family' : 
      initialProfession && /Business|Trader|Merchant/i.test(initialProfession) ? 'Business Family' : 'Educated Family');
   const initialFamilyText = 
     candidate.family_background || 
     candidate.public_biodata?.family_background || 
-    candidate.public_biodata?.public_about || 
-    candidate.public_biodata?.about || 
     candidate.public_about || 
     candidate.about || 
+    candidate.public_biodata?.public_about || 
+    candidate.public_biodata?.about || 
+    candidate.public_profile_snapshot?.about || 
     candidate.about_family || 
     candidate.public_biodata?.about_family || 
     'Respectable, educated and family-oriented household.';

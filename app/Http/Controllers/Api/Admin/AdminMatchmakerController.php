@@ -51,6 +51,7 @@ class AdminMatchmakerController extends Controller
                     'id' => $c->id,
                     'type' => 'assisted',
                     'code' => $c->listing_code,
+                    'listing_code' => $c->listing_code,
                     'name' => $c->full_name,
                     'email' => $c->user?->email,
                     'phone' => $c->contact_number,
@@ -64,8 +65,12 @@ class AdminMatchmakerController extends Controller
                     'profession' => $c->profession,
                     'marital_status' => $c->marital_status,
                     'height' => $c->height,
+                    'height_formatted' => $c->height ? "{$c->height} cm" : null,
                     'managed_by' => $c->managed_by,
                     'contact_number' => $c->contact_number,
+                    'about' => $c->public_about,
+                    'public_about' => $c->public_about,
+                    'family_background' => $c->family_background,
                     'preferences' => null, // Assisted listings don't have a rigid preferences row
                     'last_contacted' => $lastLog ? [
                         'channel' => $lastLog->channel,
@@ -115,6 +120,7 @@ class AdminMatchmakerController extends Controller
                 'id' => $p->id,
                 'type' => 'registered',
                 'code' => $p->profile_code,
+                'profile_code' => $p->profile_code,
                 'name' => $p->user?->name ?? 'Candidate',
                 'email' => $p->user?->email,
                 'phone' => null,
@@ -125,11 +131,16 @@ class AdminMatchmakerController extends Controller
                 'city' => $p->city,
                 'religion' => $p->religion,
                 'sect' => $p->sect,
+                'caste' => $p->caste,
                 'education' => $p->education,
                 'profession' => $p->profession,
                 'marital_status' => $p->marital_status,
                 'height' => $p->height,
+                'height_formatted' => $p->height_formatted,
                 'managed_by' => $p->managed_by,
+                'about' => $p->about,
+                'family_background' => $p->family_background,
+                'partner_expectations' => $p->partner_expectations,
                 'preferences' => $p->preferences ? [
                     'preferred_gender' => $p->preferences->preferred_gender,
                     'min_age' => $p->preferences->min_age,
@@ -210,7 +221,7 @@ class AdminMatchmakerController extends Controller
 
         // 1. Query Registered Profiles
         $profileQuery = Profile::query()
-            ->with('user:id,name,email')
+            ->with(['user:id,name,email', 'preferences'])
             ->whereNull('created_by_admin_id')
             ->where('profile_status', 'active')
             ->where('gender', $preferredGender);
@@ -329,6 +340,7 @@ class AdminMatchmakerController extends Controller
                 'source' => 'registered',
                 'type' => 'registered',
                 'code' => $p->profile_code,
+                'profile_code' => $p->profile_code,
                 'name' => $p->user?->name ?? 'Candidate',
                 'email' => $p->user?->email,
                 'phone' => null,
@@ -338,6 +350,7 @@ class AdminMatchmakerController extends Controller
                 'city' => $p->city,
                 'religion' => $p->religion,
                 'sect' => $p->sect,
+                'caste' => $p->caste,
                 'education' => $p->education,
                 'profession' => $p->profession,
                 'marital_status' => $p->marital_status,
@@ -345,6 +358,9 @@ class AdminMatchmakerController extends Controller
                 'height_formatted' => $p->height_formatted,
                 'managed_by' => $p->managed_by,
                 'about' => $p->about,
+                'family_background' => $p->family_background,
+                'partner_expectations' => $p->partner_expectations,
+                'preferences' => $p->preferences,
                 'match_score' => min(100, $score),
                 'match_badges' => $badges,
                 'last_contacted' => $lastLog ? [
@@ -384,6 +400,7 @@ class AdminMatchmakerController extends Controller
                 'source' => 'assisted',
                 'type' => 'assisted',
                 'code' => $l->listing_code,
+                'listing_code' => $l->listing_code,
                 'name' => $l->full_name,
                 'email' => $l->user?->email,
                 'phone' => $l->contact_number,
@@ -393,6 +410,7 @@ class AdminMatchmakerController extends Controller
                 'city' => $l->city,
                 'religion' => $l->religion,
                 'sect' => $l->sect,
+                'caste' => $l->caste ?? null,
                 'education' => $l->education,
                 'profession' => $l->profession,
                 'marital_status' => $l->marital_status,
@@ -400,7 +418,9 @@ class AdminMatchmakerController extends Controller
                 'height_formatted' => $l->height ? "{$l->height} cm" : 'N/A',
                 'managed_by' => $l->managed_by,
                 'about' => $l->public_about,
-                'contact_number' => $l->contact_number,
+                'public_about' => $l->public_about,
+                'family_background' => $l->family_background,
+                'preferences' => null,
                 'match_score' => min(100, $score),
                 'match_badges' => $badges,
                 'last_contacted' => $lastLog ? [
