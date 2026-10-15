@@ -21,11 +21,12 @@ class AdminUserController extends Controller
     {
         $query = User::query()->with('profile:id,user_id,profile_code,gender,city,profile_status');
 
-        // Search name or email
+        // Search name, email, or phone
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                  ->orWhere('email', 'like', "%{$search}%");
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 

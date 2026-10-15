@@ -27,6 +27,8 @@ class AssistedListing extends Model
         'managed_by',
         'contact_number',
         'contact_number_verified_at',
+        'identity_verified_at',
+        'education_verified_at',
         'contact_otp_hash',
         'contact_otp_expires_at',
         'contact_otp_attempts',
@@ -41,11 +43,23 @@ class AssistedListing extends Model
     protected $casts = [
         'date_of_birth' => 'date',
         'contact_number_verified_at' => 'datetime',
+        'identity_verified_at' => 'datetime',
+        'education_verified_at' => 'datetime',
         'contact_otp_expires_at' => 'datetime',
         'contact_otp_sent_at' => 'datetime',
         'consent_given_at' => 'datetime',
         'published_externally_at' => 'datetime',
     ];
+
+    public function isIdentityVerified(): bool
+    {
+        return !is_null($this->identity_verified_at);
+    }
+
+    public function isEducationVerified(): bool
+    {
+        return !is_null($this->education_verified_at);
+    }
 
     protected $hidden = [
         'contact_otp_hash',

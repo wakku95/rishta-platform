@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getPublicAssistedListing } from '../../api/listings';
-import { ArrowLeft, User, MapPin, Briefcase, GraduationCap, Ruler, HeartHandshake, AlertCircle } from 'lucide-react';
+import { ArrowLeft, User, MapPin, Briefcase, GraduationCap, Ruler, HeartHandshake, AlertCircle, ShieldCheck } from 'lucide-react';
+import Badge from '../../components/ui/Badge';
 import ExpressInterestModal from './ExpressInterestModal';
 
 export default function AssistedListingDetailPage() {
@@ -93,6 +94,23 @@ export default function AssistedListingDetailPage() {
                 <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/10 capitalize">{listing.marital_status?.replace('_', ' ')}</span>
                 <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/10">{listing.religion} {listing.sect ? `(${listing.sect})` : ''}</span>
               </div>
+
+              {(listing.verifications?.identity_verified || listing.verifications?.education_verified) && (
+                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 mt-3">
+                  {listing.verifications?.identity_verified && (
+                    <Badge variant="success" size="sm" className="inline-flex items-center gap-1.5 bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-xs px-2.5 py-1">
+                      <ShieldCheck className="w-3.5 h-3.5" />
+                      <span>ID Submitted</span>
+                    </Badge>
+                  )}
+                  {listing.verifications?.education_verified && (
+                    <Badge variant="success" size="sm" className="inline-flex items-center gap-1.5 bg-purple-500/20 text-purple-300 border-purple-500/40 text-xs px-2.5 py-1">
+                      <GraduationCap className="w-3.5 h-3.5" />
+                      <span>Education Submitted</span>
+                    </Badge>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

@@ -2,16 +2,45 @@ import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
 import { 
   ArrowLeft, CheckCircle, XCircle, Phone, 
-  MessageSquare, UserPlus, Clock, ShieldCheck 
+  MessageSquare, UserPlus, Clock, ShieldCheck, GraduationCap 
 } from 'lucide-react';
 import ListingInterestManager from './ListingInterestManager';
 
 export default function AssistedListingDetailView({ listing, onClose, onUpdated }) {
+  const [currentListing, setCurrentListing] = useState(listing);
   const [otpPhone, setOtpPhone] = useState(listing.contact_number || '');
   const [otpCode, setOtpCode] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
   const [otpMessage, setOtpMessage] = useState('');
   const [otpError, setOtpError] = useState('');
+
+  const [docLoading, setDocLoading] = useState(false);
+  const [docMessage, setDocMessage] = useState('');
+  const [docError, setDocError] = useState('');
+
+  useEffect(() => {
+    setCurrentListing(listing);
+    setOtpPhone(listing.contact_number || '');
+  }, [listing]);
+
+  const handleToggleDocVerification = async (type, verified) => {
+    setDocLoading(true);
+    setDocMessage('');
+    setDocError('');
+    try {
+      const res = await axios.post(`/api/admin/listings/${currentListing.id}/verification`, {
+        type,
+        verified,
+      });
+      setDocMessage(res.data.message);
+      setCurrentListing(res.data.data);
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      setDocError(err.response?.data?.message || 'Failed to update verification status.');
+    } finally {
+      setDocLoading(false);
+    }
+  };
 
   const [interestsData, setInterestsData] = useState(null);
 
@@ -103,9 +132,9 @@ export default function AssistedListingDetailView({ listing, onClose, onUpdated 
               <div className="flex items-center justify-between p-3 bg-navy-950 rounded-xl border border-white/5">
                 <div>
                   <div className="text-xs text-slate-400">Current Contact</div>
-                  <div className="text-sm font-semibold text-white">{listing.contact_number}</div>
+                  <div className="text-sm font-semibold text-white">{currentListing.contact_number}</div>
                 </div>
-                {listing.contact_number_verified_at ? (
+                {currentListing.contact_number_verified_at ? (
                   <span className="flex items-center gap-1 text-emerald-400 text-xs font-bold bg-emerald-500/10 px-2 py-1 rounded">
                     <CheckCircle className="w-3.5 h-3.5" /> Verified
                   </span>
@@ -116,7 +145,7 @@ export default function AssistedListingDetailView({ listing, onClose, onUpdated 
                 )}
               </div>
 
-              {!listing.contact_number_verified_at && listing.listing_status !== 'converted' && (
+              {!currentListing.contact_number_verified_at && currentListing.listing_status !== 'converted' && (
                 <div className="space-y-3 pt-3 border-t border-white/5">
                   <p className="text-xs text-slate-400">Send an OTP via SMS to verify this contact number.</p>
                   <div className="flex gap-2">
@@ -158,6 +187,92 @@ export default function AssistedListingDetailView({ listing, onClose, onUpdated 
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Document Verifications (CNIC & Education) */}
+          <div className="bg-navy-800/50 rounded-2xl border border-white/5 p-5 space-y-4">
+            <h3 className="text-sm font-bold text-white flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                Document Verification (Badges)
+              </span>
+              {docLoading && (
+                <div className="w-3.5 h-3.5 rounded-full border-2 border-emerald-400 border-t-transparent animate-spin"></div>
+              )}
+            </h3>
+
+            {docMessage && <div className="text-xs text-emerald-400 bg-emerald-500/10 p-2 rounded">{docMessage}</div>}
+            {docError && <div className="text-xs text-rose-400 bg-rose-500/10 p-2 rounded">{docError}</div>}
+
+            {/* CNIC / Identity */}
+            <div className="p-3 bg-navy-950 rounded-xl border border-white/5 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <div className="text-xs font-semibold text-white flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    CNIC / Identity Verification
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    {currentListing.is_identity_verified ? (
+                      <span className="text-emerald-400 font-medium">
+                        ✓ Verified {currentListing.identity_verified_at ? `(${new Date(currentListing.identity_verified_at).toLocaleDateString()})` : ''}
+                      </span>
+                    ) : (
+                      <span>Not submitted / Unverified</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={docLoading}
+                  onClick={() => handleToggleDocVerification('identity', !currentListing.is_identity_verified)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition disabled:opacity-50 shrink-0 ${
+                    currentListing.is_identity_verified
+                      ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      : 'bg-emerald-500 hover:bg-emerald-600 text-slate-950 shadow-sm'
+                  }`}
+                >
+                  {currentListing.is_identity_verified ? 'Remove' : 'Mark ID Submitted'}
+                </button>
+              </div>
+            </div>
+
+            {/* Education Degree */}
+            <div className="p-3 bg-navy-950 rounded-xl border border-white/5 space-y-2">
+              <div className="flex items-center justify-between gap-2">
+                <div>
+                  <div className="text-xs font-semibold text-white flex items-center gap-1.5">
+                    <GraduationCap className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                    Education Degree Verification
+                  </div>
+                  <div className="text-[11px] text-slate-400 mt-0.5">
+                    {currentListing.is_education_verified ? (
+                      <span className="text-purple-300 font-medium">
+                        ✓ Verified {currentListing.education_verified_at ? `(${new Date(currentListing.education_verified_at).toLocaleDateString()})` : ''}
+                      </span>
+                    ) : (
+                      <span>Not submitted / Unverified</span>
+                    )}
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  disabled={docLoading}
+                  onClick={() => handleToggleDocVerification('education', !currentListing.is_education_verified)}
+                  className={`px-2.5 py-1 text-xs font-bold rounded-lg transition disabled:opacity-50 shrink-0 ${
+                    currentListing.is_education_verified
+                      ? 'bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                      : 'bg-purple-600 hover:bg-purple-700 text-white shadow-sm'
+                  }`}
+                >
+                  {currentListing.is_education_verified ? 'Remove' : 'Mark Edu Submitted'}
+                </button>
+              </div>
+            </div>
+
+            <p className="text-[10px] text-slate-500 italic leading-snug">
+              Verified items display public badges ("ID Submitted", "Education Submitted") on search cards and detail pages.
+            </p>
           </div>
 
           <div className="bg-navy-800/50 rounded-2xl border border-white/5 p-5 space-y-4">

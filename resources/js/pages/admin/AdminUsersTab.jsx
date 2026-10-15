@@ -125,7 +125,7 @@ export default function AdminUsersTab() {
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
-              placeholder="Search by name or email..."
+              placeholder="Search by name, email or phone..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full pl-10 pr-4 py-2 bg-navy-800/90 border border-slate-700/80 rounded-xl text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-magenta-500"
@@ -196,6 +196,11 @@ export default function AdminUsersTab() {
                     <td className="px-5 py-3.5">
                       <div className="font-semibold text-white">{u.name}</div>
                       <div className="text-xs text-slate-400 font-mono">{u.email}</div>
+                      {u.phone && (
+                        <div className="text-xs text-emerald-400 font-mono mt-0.5 flex items-center gap-1" title="User Phone">
+                          <span>📞 {u.phone}</span>
+                        </div>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       {isSuperAdmin ? (
@@ -374,7 +379,7 @@ export default function AdminUsersTab() {
               </button>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 text-xs">
               <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5">
                 <span className="text-slate-400 block mb-1">Status & Role</span>
                 <span className="font-semibold text-white capitalize">{selectedUserDetail.status} • {selectedUserDetail.role}</span>
@@ -384,6 +389,22 @@ export default function AdminUsersTab() {
                 <span className="font-semibold text-white">
                   {selectedUserDetail.email_verified_at ? 'Yes (Verified)' : 'No (Unverified)'}
                 </span>
+              </div>
+              <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5 col-span-2 sm:col-span-1">
+                <span className="text-slate-400 block mb-1">Phone / WhatsApp</span>
+                {selectedUserDetail.phone ? (
+                  <a 
+                    href={`https://wa.me/${selectedUserDetail.phone.replace(/[^0-9]/g, '')}`} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="text-emerald-400 font-mono font-semibold hover:underline flex items-center gap-1.5"
+                    title="Open chat on WhatsApp"
+                  >
+                    💬 {selectedUserDetail.phone}
+                  </a>
+                ) : (
+                  <span className="text-slate-500 italic">Not provided</span>
+                )}
               </div>
             </div>
 

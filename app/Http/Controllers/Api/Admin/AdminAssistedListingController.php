@@ -218,6 +218,24 @@ class AdminAssistedListingController extends Controller
         return response()->json(['message' => 'Contact number verified successfully']);
     }
 
+    public function toggleVerification(Request $request, AssistedListing $assistedListing)
+    {
+        $request->validate([
+            'type' => ['required', 'string', 'in:identity,education'],
+            'verified' => ['required', 'boolean'],
+        ]);
+
+        $field = $request->type === 'identity' ? 'identity_verified_at' : 'education_verified_at';
+        $assistedListing->update([
+            $field => $request->boolean('verified') ? now() : null,
+        ]);
+
+        return response()->json([
+            'message' => ($request->type === 'identity' ? 'CNIC / Identity' : 'Education') . ' verification updated successfully.',
+            'data' => new AssistedListingAdminResource($assistedListing->fresh())
+        ]);
+    }
+
     public function convert(Request $request, AssistedListing $assistedListing)
     {
         $request->validate([

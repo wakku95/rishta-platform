@@ -231,6 +231,7 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{assistedListing}/unpublish', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'unpublish']);
         Route::post('/{assistedListing}/otp/send', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'sendOtp']);
         Route::post('/{assistedListing}/otp/verify', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'verifyOtp']);
+        Route::post('/{assistedListing}/verification', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'toggleVerification']);
         Route::post('/{assistedListing}/convert', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'convert']);
 
         // Listing Interests

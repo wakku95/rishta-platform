@@ -199,6 +199,20 @@ export default function AdminAssistedListingsTab() {
                   <td className="px-6 py-4">
                     <div className="font-semibold text-white">{listing.full_name}</div>
                     <div className="text-xs text-slate-400 mt-0.5">{listing.contact_number}</div>
+                    {(listing.is_identity_verified || listing.is_education_verified) && (
+                      <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
+                        {listing.is_identity_verified && (
+                          <span className="text-[10px] font-bold text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.5 rounded">
+                            ✓ ID Submitted
+                          </span>
+                        )}
+                        {listing.is_education_verified && (
+                          <span className="text-[10px] font-bold text-purple-300 bg-purple-500/15 border border-purple-500/30 px-1.5 py-0.5 rounded">
+                            ✓ Education Submitted
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4">
                     {getStatusBadge(listing.listing_status)}

@@ -28,6 +28,11 @@ class AssistedListingPublicResource extends JsonResource
             'public_about' => $this->public_about,
             'managed_by' => $this->managed_by,
             'listing_status' => $this->listing_status,
+            'verifications' => [
+                'identity_verified' => !is_null($this->identity_verified_at),
+                'education_verified' => !is_null($this->education_verified_at),
+                'contact_verified' => !is_null($this->contact_number_verified_at),
+            ],
             'published_externally_at' => $this->published_externally_at,
             'created_at' => $this->created_at,
         ];

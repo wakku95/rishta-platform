@@ -272,6 +272,7 @@ export default function AdminProfilesTab() {
                           ...p,
                           name: p.user?.name || 'Candidate',
                           code: p.profile_code,
+                          phone: p.user?.phone,
                           type: 'registered',
                         })}
                         title="Send WhatsApp or Email Message"
@@ -354,7 +355,22 @@ export default function AdminProfilesTab() {
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-white">{selectedProfile.profile_code}</h3>
-                <p className="text-xs text-slate-400">Created by {selectedProfile.user?.name} ({selectedProfile.user?.email})</p>
+                <div className="text-xs text-slate-400 flex items-center gap-2 flex-wrap mt-0.5">
+                  <span>Created by <strong className="text-white">{selectedProfile.user?.name}</strong> ({selectedProfile.user?.email})</span>
+                  {selectedProfile.user?.phone ? (
+                    <a 
+                      href={`https://wa.me/${selectedProfile.user.phone.replace(/[^0-9]/g, '')}`} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-flex items-center gap-1 text-emerald-400 font-mono font-semibold hover:underline bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20"
+                      title="Open WhatsApp Chat"
+                    >
+                      💬 {selectedProfile.user.phone}
+                    </a>
+                  ) : (
+                    <span className="text-slate-500 italic">No phone provided</span>
+                  )}
+                </div>
               </div>
               <button 
                 onClick={() => { setSelectedProfile(null); setEditingDob(false); }}

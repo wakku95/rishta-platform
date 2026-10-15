@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    phone: '',
     password: '',
     password_confirmation: '',
   });
@@ -118,6 +119,19 @@ export default function RegisterPage() {
               onChange={handleChange}
               error={errors.email?.[0]}
               helperText="Used for login and secure identity verification."
+            />
+
+            <Input
+              label="WhatsApp / Mobile Number (Optional)"
+              id="phone"
+              name="phone"
+              type="tel"
+              autoComplete="tel"
+              placeholder="e.g. 03001234567 or +923001234567"
+              value={formData.phone}
+              onChange={handleChange}
+              error={errors.phone?.[0]}
+              helperText="Confidential: Visible only to support admin to assist you. Never shown to candidates."
             />
 
             <Input

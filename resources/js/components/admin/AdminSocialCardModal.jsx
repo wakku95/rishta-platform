@@ -101,6 +101,22 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
     'Respectable, educated and family-oriented household.';
   const initialLooking = formatLookingSummary(candidate);
 
+  const initialIdentityVerified = Boolean(
+    candidate.is_identity_verified || 
+    candidate.identity_verified_at || 
+    candidate.verifications?.identity_verified || 
+    candidate.user?.verifications?.some?.(v => v.type === 'identity' && v.status === 'approved') ||
+    candidate.public_profile_snapshot?.verifications?.identity_verified
+  );
+
+  const initialEducationVerified = Boolean(
+    candidate.is_education_verified || 
+    candidate.education_verified_at || 
+    candidate.verifications?.education_verified || 
+    candidate.user?.verifications?.some?.(v => v.type === 'education' && v.status === 'approved') ||
+    candidate.public_profile_snapshot?.verifications?.education_verified
+  );
+
   const [form, setForm] = useState({
     code: initialCode,
     gender: initialGender,
@@ -115,14 +131,16 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
     familyType: initialFamilyType,
     familyText: initialFamilyText,
     looking: initialLooking,
+    showIdBadge: initialIdentityVerified,
+    showEducationBadge: initialEducationVerified,
   });
 
   const canvasRef = useRef(null);
   const [rendering, setRendering] = useState(false);
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    const { name, value, type, checked } = e.target;
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
   const isMale = form.gender === 'male';
@@ -261,6 +279,65 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
 
       ctx.fillStyle = accent;
       ctx.fillText(commText, textX + 18, curY + 33);
+
+      // 3b. Trust & Verification Badges (Rendered under Community Pill)
+      if (form.showIdBadge || form.showEducationBadge) {
+        let badgeX = textX;
+        let badgeY = curY + 60;
+        const badgeH = 40;
+        const badgeRadius = 20;
+
+        ctx.font = '800 20px Inter, Arial, sans-serif';
+
+        if (form.showIdBadge) {
+          const idText = '✓ ID Submitted';
+          const idTextWidth = ctx.measureText(idText).width;
+          const idBadgeWidth = idTextWidth + 32;
+
+          // Soft emerald pill
+          ctx.fillStyle = '#eaf5f0';
+          roundRect(ctx, badgeX, badgeY, idBadgeWidth, badgeH, badgeRadius, true, false);
+
+          // Subtle border
+          ctx.strokeStyle = '#a4d7c0';
+          ctx.lineWidth = 1.5;
+          roundRect(ctx, badgeX, badgeY, idBadgeWidth, badgeH, badgeRadius, false, true);
+
+          // Emerald text
+          ctx.fillStyle = '#0f7654';
+          ctx.fillText(idText, badgeX + 16, badgeY + 27);
+
+          badgeX += idBadgeWidth + 12;
+        }
+
+        if (form.showEducationBadge) {
+          const eduText = '✓ Education Submitted';
+          const eduTextWidth = ctx.measureText(eduText).width;
+          const eduBadgeWidth = eduTextWidth + 32;
+
+          let currentEduX = badgeX;
+          let currentEduY = badgeY;
+
+          // If both badges together exceed content width, place on next line gracefully
+          if (badgeX + eduBadgeWidth > contentX + contentW && form.showIdBadge) {
+            currentEduX = textX;
+            currentEduY = badgeY + badgeH + 8;
+          }
+
+          // Soft purple pill
+          ctx.fillStyle = '#f3effa';
+          roundRect(ctx, currentEduX, currentEduY, eduBadgeWidth, badgeH, badgeRadius, true, false);
+
+          // Subtle border
+          ctx.strokeStyle = '#cebee8';
+          ctx.lineWidth = 1.5;
+          roundRect(ctx, currentEduX, currentEduY, eduBadgeWidth, badgeH, badgeRadius, false, true);
+
+          // Purple text
+          ctx.fillStyle = '#65389e';
+          ctx.fillText(eduText, currentEduX + 16, currentEduY + 27);
+        }
+      }
 
       // 4. Rule
       const ruleY = 600;
@@ -639,6 +716,35 @@ export default function AdminSocialCardModal({ candidate, onClose }) {
                 onChange={handleChange}
                 className="w-full px-2.5 py-1.5 bg-[#FAF7F2] border border-slate-300 rounded-lg text-xs text-slate-900 focus:outline-none focus:border-[#a77a27] resize-none"
               />
+            </div>
+
+            {/* Trust & Verification Badges */}
+            <div className="p-3 bg-[#FAF7F2] border border-slate-300/80 rounded-xl space-y-2">
+              <span className="block text-[11px] font-bold text-slate-700 uppercase tracking-wider">
+                Trust & Verification Badges
+              </span>
+              <div className="flex flex-col sm:flex-row gap-3 text-xs text-slate-800">
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    name="showIdBadge"
+                    checked={form.showIdBadge}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 border-slate-300 cursor-pointer"
+                  />
+                  <span className="font-semibold text-emerald-800">✓ ID Submitted</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    name="showEducationBadge"
+                    checked={form.showEducationBadge}
+                    onChange={handleChange}
+                    className="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-slate-300 cursor-pointer"
+                  />
+                  <span className="font-semibold text-purple-800">✓ Education Submitted</span>
+                </label>
+              </div>
             </div>
 
             <div className="pt-2">

@@ -25,7 +25,18 @@ class RegisterRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
+            'phone' => ['nullable', 'string', 'max:25', 'regex:/^[0-9+\-\s()]{7,25}$/'],
             'password' => ['required', 'string', 'confirmed', Password::min(8)->letters()->numbers()],
+        ];
+    }
+
+    /**
+     * Custom messages for validation errors.
+     */
+    public function messages(): array
+    {
+        return [
+            'phone.regex' => 'Please provide a valid phone or mobile number.',
         ];
     }
 
@@ -34,9 +45,11 @@ class RegisterRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
+        $phone = trim((string) $this->input('phone'));
         $this->merge([
             'name' => trim((string) $this->input('name')),
             'email' => strtolower(trim((string) $this->input('email'))),
+            'phone' => $phone !== '' ? $phone : null,
         ]);
     }
 }

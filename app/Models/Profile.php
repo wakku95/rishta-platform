@@ -48,6 +48,7 @@ class Profile extends Model
      */
     protected $appends = [
         'age',
+        'verifications',
     ];
 
     /**
@@ -157,6 +158,19 @@ class Profile extends Model
         $inches = $totalInches % 12;
 
         return sprintf("%d'%d\" (%d cm)", $feet, $inches, $this->height);
+    }
+
+    /**
+     * Get verifications status mapping for the profile.
+     *
+     * @return array{identity_verified: bool, education_verified: bool}
+     */
+    public function getVerificationsAttribute(): array
+    {
+        return [
+            'identity_verified' => $this->user ? $this->user->isIdentityVerified() : false,
+            'education_verified' => $this->user ? $this->user->isEducationVerified() : false,
+        ];
     }
 
     /**

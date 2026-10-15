@@ -18,7 +18,7 @@ class AdminProfileController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Profile::query()->with(['user:id,name,email,status', 'preferences']);
+        $query = Profile::query()->with(['user:id,name,email,phone,status', 'preferences']);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
@@ -27,7 +27,8 @@ class AdminProfileController extends Controller
                   ->orWhere('profession', 'like', "%{$search}%")
                   ->orWhereHas('user', function ($uq) use ($search) {
                       $uq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
+                         ->orWhere('email', 'like', "%{$search}%")
+                         ->orWhere('phone', 'like', "%{$search}%");
                   });
             });
         }

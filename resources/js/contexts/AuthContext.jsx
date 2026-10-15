@@ -49,11 +49,12 @@ export function AuthProvider({ children }) {
   };
 
   // Register handler
-  const register = async ({ name, email, password, password_confirmation }) => {
+  const register = async ({ name, email, phone, password, password_confirmation }) => {
     await getCsrfCookie();
     const response = await api.post('/auth/register', {
       name,
       email,
+      phone: phone || undefined,
       password,
       password_confirmation,
     });

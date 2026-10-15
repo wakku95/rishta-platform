@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Briefcase, GraduationCap, Ruler, AlertCircle, EyeOff } from 'lucide-react';
+import { MapPin, Briefcase, GraduationCap, Ruler, AlertCircle, EyeOff, ShieldCheck } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import GenderAvatar from '../ui/GenderAvatar';
@@ -36,13 +36,25 @@ export default function AssistedListingCard({ listing, onHide }) {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          <Badge variant="outline" className="text-slate-300 border-white/10">
+        <div className="flex flex-wrap items-center gap-1.5 mb-4">
+          <Badge variant="outline" className="text-slate-300 border-white/10 text-xs">
             {listing.religion} {listing.sect ? `(${listing.sect})` : ''}
           </Badge>
-          <Badge variant="outline" className="text-slate-300 border-white/10 capitalize">
+          <Badge variant="outline" className="text-slate-300 border-white/10 capitalize text-xs">
             {listing.marital_status?.replace('_', ' ')}
           </Badge>
+          {listing.verifications?.identity_verified && (
+            <Badge variant="success" size="sm" className="inline-flex items-center gap-1 bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-[10px]">
+              <ShieldCheck className="w-3 h-3" />
+              <span>ID Submitted</span>
+            </Badge>
+          )}
+          {listing.verifications?.education_verified && (
+            <Badge variant="success" size="sm" className="inline-flex items-center gap-1 bg-purple-500/20 text-purple-300 border-purple-500/40 text-[10px]">
+              <GraduationCap className="w-3 h-3" />
+              <span>Education Submitted</span>
+            </Badge>
+          )}
         </div>
 
         {/* Details Grid */}
