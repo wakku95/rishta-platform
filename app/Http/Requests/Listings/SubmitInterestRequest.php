@@ -12,7 +12,7 @@ class SubmitInterestRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true; // Anyone can submit interest
+        return $this->user() !== null;
     }
 
     /**
@@ -32,6 +32,19 @@ class SubmitInterestRequest extends FormRequest
 
     public function prepareForValidation()
     {
+        $user = $this->user();
+        if ($user) {
+            if (!$this->has('submitter_name') || empty($this->input('submitter_name'))) {
+                $this->merge(['submitter_name' => $user->name]);
+            }
+            if ((!$this->has('submitter_contact') || empty($this->input('submitter_contact'))) && $user->phone) {
+                $this->merge(['submitter_contact' => $user->phone]);
+            }
+            if ((!$this->has('submitter_email') || empty($this->input('submitter_email'))) && $user->email) {
+                $this->merge(['submitter_email' => $user->email]);
+            }
+        }
+
         // Normalise contact number
         if ($this->has('submitter_contact')) {
             $contact = preg_replace('/[^0-9+]/', '', $this->submitter_contact);

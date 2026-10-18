@@ -100,7 +100,7 @@ Route::prefix('listings')->group(function () {
     Route::get('/{listing_code}', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'show'])
         ->middleware('throttle:60,1');
     Route::post('/{listing_code}/interest', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'submitInterest'])
-        ->middleware('throttle:5,1'); // Rate limited heavily for anti-abuse
+        ->middleware(['auth:sanctum', 'throttle:10,1']);
 });
 
 /*

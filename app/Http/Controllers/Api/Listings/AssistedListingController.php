@@ -110,11 +110,24 @@ class AssistedListingController extends Controller
             ->where('listing_status', 'published')
             ->firstOrFail();
 
+        $user = $request->user();
+
+        // Enforce that authenticated user has created their matrimonial profile
+        if (!$user->profile) {
+            return response()->json([
+                'message' => 'Please create your matrimonial profile first before expressing interest, so the candidate family can review your biodata.',
+                'error_code' => 'PROFILE_REQUIRED'
+            ], 422);
+        }
+
         $validated = $request->validated();
         
-        // Anti-abuse: Check if this exact normalized contact has submitted interest for this exact listing in the last 24 hours.
+        // Anti-abuse: Check if this user or contact has submitted interest for this exact listing in the last 24 hours.
         $recentInterest = AssistedListingInterest::where('assisted_listing_id', $listing->id)
-            ->where('submitter_contact', $validated['submitter_contact'])
+            ->where(function ($q) use ($user, $validated) {
+                $q->where('user_id', $user->id)
+                  ->orWhere('submitter_contact', $validated['submitter_contact']);
+            })
             ->where('created_at', '>=', now()->subHours(24))
             ->exists();
 
@@ -126,22 +139,19 @@ class AssistedListingController extends Controller
 
         $interestData = [
             'assisted_listing_id' => $listing->id,
-            'submitter_name' => $validated['submitter_name'],
-            'submitter_contact' => $validated['submitter_contact'],
-            'submitter_email' => $validated['submitter_email'] ?? null,
+            'user_id' => $user->id,
+            'submitter_name' => $validated['submitter_name'] ?? $user->name,
+            'submitter_contact' => $validated['submitter_contact'] ?? $user->phone,
+            'submitter_email' => $validated['submitter_email'] ?? $user->email,
             'message' => $validated['message'] ?? null,
             'status' => AssistedListingInterest::STATUS_NEW,
         ];
-
-        // Attach logged-in user if available
-        if ($request->user('sanctum')) {
-            $interestData['user_id'] = $request->user('sanctum')->id;
-        }
 
         $interest = AssistedListingInterest::create($interestData);
 
         return response()->json([
             'message' => 'Your interest has been submitted. An admin will review and may contact you.',
+            'data' => $interest,
         ], 201);
     }
 }

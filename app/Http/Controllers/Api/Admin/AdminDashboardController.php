@@ -109,7 +109,9 @@ class AdminDashboardController extends Controller
 
         // Action Center: Pending items requiring Admin intervention
         $pendingBioApprovals = Profile::whereNotNull('about')->where('about', '!=', '')->whereNull('about_approved_at')->count();
-        $pendingDirectInquiries = ProfileInquiry::where('status', ProfileInquiry::STATUS_NEW)->count();
+        $pendingDirectInquiries = ProfileInquiry::where('status', ProfileInquiry::STATUS_NEW)
+            ->whereHas('profile')
+            ->count();
         $pendingProfileVerifications = ProfileVerification::where('status', 'pending')->count();
         $pendingMagicLinkVerifications = CandidateVerificationRequest::where('status', 'submitted')->count();
         $totalPendingVerifications = $pendingProfileVerifications + $pendingMagicLinkVerifications;
@@ -129,7 +131,9 @@ class AdminDashboardController extends Controller
 
         $pendingFinancialUnlocks = Payment::where('status', Payment::STATUS_PENDING)->count();
         $pendingAssistedSubmissions = AssistedProfileSubmission::where('status', 'pending')->count();
-        $newAssistedInterests = AssistedListingInterest::where('status', AssistedListingInterest::STATUS_NEW)->count();
+        $newAssistedInterests = AssistedListingInterest::where('status', AssistedListingInterest::STATUS_NEW)
+            ->whereHas('assistedListing')
+            ->count();
 
         $totalPendingActions = $pendingBioApprovals 
             + $pendingDirectInquiries 

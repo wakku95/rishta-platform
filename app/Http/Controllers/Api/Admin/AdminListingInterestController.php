@@ -14,6 +14,7 @@ class AdminListingInterestController extends Controller
     public function index(Request $request, AssistedListing $assistedListing)
     {
         $interests = $assistedListing->interests()
+            ->with('user.profile')
             ->when($request->status, function ($query, $status) {
                 $query->where('status', $status);
             })

@@ -132,6 +132,7 @@ class AdminAssistedListingController extends Controller
             ], 403);
         }
 
+        $assistedListing->interests()->delete();
         $assistedListing->delete();
         
         return response()->json([

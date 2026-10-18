@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { X, HeartHandshake, AlertCircle, CheckCircle } from 'lucide-react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { X, HeartHandshake, AlertCircle, CheckCircle, Lock, UserPlus, LogIn, FileText, ShieldCheck } from 'lucide-react';
 import { submitListingInterest } from '../../api/listings';
 import useAuth from '../../hooks/useAuth';
 
 export default function ExpressInterestModal({ isOpen, onClose, listing }) {
-  const { user, isAuthenticated } = useAuth();
+  const { user, authenticated, hasProfile } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const [formData, setFormData] = useState({
     submitter_name: '',
@@ -23,7 +26,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
       setSuccess(false);
       setError(null);
       // Pre-fill if logged in
-      if (isAuthenticated && user) {
+      if (authenticated && user) {
         setFormData({
           submitter_name: user.name || '',
           submitter_contact: user.phone || user.contact_number || '',
@@ -41,7 +44,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
         });
       }
     }
-  }, [isOpen, isAuthenticated, user]);
+  }, [isOpen, authenticated, user]);
 
   if (!isOpen || !listing) return null;
 
@@ -118,6 +121,83 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                 Close / بند کریں
               </button>
             </div>
+          ) : !authenticated ? (
+            <div className="text-center py-6 px-2 space-y-4">
+              <div className="w-14 h-14 bg-amber-500/15 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-amber-400">
+                <Lock className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-white">
+                  Account Required / اکاؤنٹ ضروری ہے
+                </h3>
+                <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+                  To ensure candidate safety and serious matrimonial inquiries, please sign in or register your free account to express interest in <strong>#{listing.listing_code}</strong>.
+                </p>
+                <p className="text-xs text-amber-300/90 leading-relaxed font-urdu" dir="rtl">
+                  امیدوار کے تحفظ اور سنجیدہ رشتوں کو یقینی بنانے کے لیے، اظہارِ دلچسپی سے قبل لاگ ان یا مفت اکاؤنٹ بنانا ضروری ہے۔
+                </p>
+              </div>
+
+              <div className="p-3.5 bg-navy-800/80 border border-white/5 rounded-xl text-left text-xs text-slate-300 space-y-1.5">
+                <div className="flex items-center gap-1.5 text-amber-400 font-semibold">
+                  <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                  <span>Why is an Account Required?</span>
+                </div>
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  Your registered profile biodata (age, education, city, profession) will be securely presented by our matchmaker to the candidate's family for mutual review.
+                </p>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/login?redirect=${encodeURIComponent(location.pathname)}`)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-navy-800 hover:bg-navy-750 border border-slate-750 text-white rounded-xl text-xs font-bold transition shadow-xs cursor-pointer"
+                >
+                  <LogIn className="w-4 h-4 text-slate-400" />
+                  <span>Log In to Account</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/register?redirect=${encodeURIComponent(location.pathname)}`)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-black transition shadow-md shadow-amber-500/20 cursor-pointer"
+                >
+                  <UserPlus className="w-4 h-4" />
+                  <span>Register Free Profile</span>
+                </button>
+              </div>
+            </div>
+          ) : !hasProfile ? (
+            <div className="text-center py-6 px-2 space-y-4">
+              <div className="w-14 h-14 bg-magenta-500/15 border border-magenta-500/30 rounded-2xl flex items-center justify-center mx-auto text-magenta-400">
+                <FileText className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-white">
+                  Create Your Matrimonial Profile First
+                </h3>
+                <h4 className="text-sm font-urdu text-amber-300 font-bold" dir="rtl">
+                  پہلے اپنا رشتہ پروفائل بنائیں
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+                  You are signed in as <strong>{user?.name}</strong>, but you haven't created your matrimonial biodata profile yet. Please complete your basic profile so the candidate family can review your suitability.
+                </p>
+                <p className="text-xs text-amber-300/90 leading-relaxed font-urdu" dir="rtl">
+                  آپ لاگ ان ہیں لیکن آپ کا رشتہ بائیوڈیٹا نہیں بنا ہوا۔ پہلے اپنا پروفائل بنائیں تاکہ فیملی آپ کی تفصیلات دیکھ سکے۔
+                </p>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/profile')}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-magenta-500 to-purple-600 hover:from-magenta-600 hover:to-purple-700 text-white rounded-xl text-xs font-black transition shadow-md shadow-magenta-500/20 cursor-pointer"
+                >
+                  <FileText className="w-4 h-4" />
+                  <span>Create My Biodata Profile Now</span>
+                </button>
+              </div>
+            </div>
           ) : (
             <>
               {/* Notice Banner & Fee Policy */}
@@ -151,12 +231,17 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
 
               <form id="interest-form" onSubmit={handleSubmit} className="space-y-4">
                 
-                {isAuthenticated && (
-                  <div className="text-xs text-emerald-400 bg-emerald-500/10 p-2.5 rounded-lg font-semibold flex items-center gap-2">
-                    <CheckCircle className="w-3.5 h-3.5" />
-                    Using your verified RaabtaNow profile details.
+                <div className="text-xs text-emerald-400 bg-emerald-500/10 border border-emerald-500/25 p-2.5 rounded-xl font-semibold flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <span>Using your registered profile (<strong>{user?.name}</strong>)</span>
                   </div>
-                )}
+                  {user?.profile?.profile_code && (
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-navy-900 border border-emerald-500/30 text-emerald-300">
+                      #{user.profile.profile_code}
+                    </span>
+                  )}
+                </div>
 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
@@ -169,8 +254,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                     placeholder="Enter your full name"
                     value={formData.submitter_name} 
                     onChange={handleChange} 
-                    disabled={isAuthenticated}
-                    className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none disabled:opacity-70" 
+                    className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none" 
                   />
                 </div>
                 
@@ -185,8 +269,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                     placeholder="+923XXXXXXXXX"
                     value={formData.submitter_contact} 
                     onChange={handleChange} 
-                    disabled={isAuthenticated && !!user?.phone}
-                    className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none disabled:opacity-70 font-mono" 
+                    className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono" 
                   />
                   <span className="text-[11px] text-slate-400 mt-0.5 block">
                     Our agent will contact you on this number via WhatsApp.
@@ -203,8 +286,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                     placeholder="name@example.com"
                     value={formData.submitter_email} 
                     onChange={handleChange} 
-                    disabled={isAuthenticated}
-                    className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none disabled:opacity-70" 
+                    className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none" 
                   />
                 </div>
 
@@ -240,7 +322,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
           )}
         </div>
 
-        {!success && (
+        {!success && authenticated && hasProfile && (
           <div className="shrink-0 p-4 border-t border-white/10 bg-navy-800/50 flex items-center justify-between gap-3">
             <span className="text-[11px] text-slate-400 hidden sm:inline">
               Coordinated via Matchmaker
@@ -257,7 +339,7 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                 type="submit"
                 form="interest-form"
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-sm font-bold transition disabled:opacity-50 shadow-md shadow-amber-500/20"
+                className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 rounded-xl text-sm font-bold transition disabled:opacity-50 shadow-md shadow-amber-500/20 cursor-pointer"
               >
                 {loading ? 'Submitting...' : 'Submit Inquiry / انکوائری بھیجیں'}
               </button>

@@ -78,9 +78,14 @@ export default function ListingInterestManager({ listing, interest, onUpdated })
             <User className="w-5 h-5 text-slate-400" />
           </div>
           <div>
-            <h4 className="font-bold text-white flex items-center gap-2">
+            <h4 className="font-bold text-white flex items-center flex-wrap gap-2">
               {interest.submitter_name}
               {interest.user_id && <span className="text-[10px] uppercase font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-500">Registered</span>}
+              {interest.applicant_profile?.profile_code && (
+                <span className="text-[11px] font-semibold px-2 py-0.5 rounded bg-magenta-500/20 border border-magenta-500/30 text-magenta-300">
+                  Profile #{interest.applicant_profile.profile_code} ({interest.applicant_profile.age || '?'} yrs • {interest.applicant_profile.city || 'N/A'})
+                </span>
+              )}
             </h4>
             <div className="text-xs text-slate-400 mt-1 flex flex-wrap items-center gap-3">
               <span className="flex items-center gap-1"><Phone className="w-3 h-3" /> {interest.submitter_contact}</span>
