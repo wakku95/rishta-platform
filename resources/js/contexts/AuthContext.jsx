@@ -3,6 +3,10 @@ import api, { getCsrfCookie } from '../api/client';
 
 export const AuthContext = createContext(null);
 
+export function useAuth() {
+  return React.useContext(AuthContext);
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -77,6 +81,13 @@ export function AuthProvider({ children }) {
     return response.data;
   };
 
+  // Update user contact phone/WhatsApp number
+  const updateUserPhone = async (phone) => {
+    const response = await api.put('/auth/phone', { phone });
+    setUser(response.data.data);
+    return response.data;
+  };
+
   const value = {
     user,
     loading,
@@ -90,6 +101,7 @@ export function AuthProvider({ children }) {
     register,
     logout,
     refreshUser,
+    updateUserPhone,
     resendVerification,
   };
 

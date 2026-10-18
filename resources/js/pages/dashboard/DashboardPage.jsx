@@ -1,16 +1,42 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import Input from '../../components/ui/Input';
 import Alert from '../../components/ui/Alert';
-import { User, Mail, Clock, CheckCircle2, AlertTriangle, Sparkles, LogOut, ArrowRight } from 'lucide-react';
+import { User, Mail, Phone, Clock, CheckCircle2, AlertTriangle, Sparkles, LogOut, ArrowRight, ShieldCheck } from 'lucide-react';
 import SEOHead from '../../components/seo/SEOHead';
 import VerificationSection from '../../components/profile/VerificationSection';
 
 export default function DashboardPage() {
-  const { user, emailVerified, logout } = useAuth();
+  const { user, emailVerified, logout, updateUserPhone } = useAuth();
+
+  const [isPhoneModalOpen, setIsPhoneModalOpen] = useState(false);
+  const [phoneInput, setPhoneInput] = useState('');
+  const [phoneSaving, setPhoneSaving] = useState(false);
+  const [phoneError, setPhoneError] = useState('');
+  const [phoneSuccess, setPhoneSuccess] = useState('');
+
+  const handleSavePhone = async (e) => {
+    e.preventDefault();
+    setPhoneSaving(true);
+    setPhoneError('');
+    setPhoneSuccess('');
+    try {
+      await updateUserPhone(phoneInput);
+      setPhoneSuccess('Phone number saved successfully.');
+      setTimeout(() => {
+        setIsPhoneModalOpen(false);
+        setPhoneSuccess('');
+      }, 1000);
+    } catch (err) {
+      setPhoneError(err.response?.data?.errors?.phone?.[0] || err.response?.data?.message || 'Failed to update phone number.');
+    } finally {
+      setPhoneSaving(false);
+    }
+  };
 
   return (
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10 space-y-8">
@@ -52,6 +78,41 @@ export default function DashboardPage() {
             </Link>
           </div>
         </Alert>
+      )}
+
+      {/* Old User Reminder: Add Phone Number */}
+      {!user?.phone && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-navy-850 to-navy-800 border border-emerald-500/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+          <div className="flex items-start gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 mt-0.5 border border-emerald-500/30">
+              <Phone className="w-5 h-5" />
+            </div>
+            <div className="space-y-0.5">
+              <div className="flex items-center gap-2 flex-wrap">
+                <h4 className="text-sm font-bold text-white">Add WhatsApp / Contact Number</h4>
+                <span className="text-[10px] font-bold bg-emerald-500/20 text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  Admin Only • Confidential
+                </span>
+              </div>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                Enable RaabtaNow support team to assist you faster with proposal inquiries. Never displayed publicly to other candidates.
+              </p>
+            </div>
+          </div>
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => {
+              setPhoneInput(user?.phone || '');
+              setPhoneError('');
+              setPhoneSuccess('');
+              setIsPhoneModalOpen(true);
+            }}
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold whitespace-nowrap shrink-0 shadow-md"
+          >
+            + Add Number Now
+          </Button>
+        </div>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -98,6 +159,38 @@ export default function DashboardPage() {
                     </span>
                   )}
                 </div>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 rounded-xl bg-navy-850 border border-slate-750">
+              <div className="w-11 h-11 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
+                <Phone className="w-6 h-6" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2">
+                  <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    WhatsApp / Contact Number <span className="text-[10px] text-emerald-400 lowercase font-normal">(confidential)</span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setPhoneInput(user?.phone || '');
+                      setPhoneError('');
+                      setPhoneSuccess('');
+                      setIsPhoneModalOpen(true);
+                    }}
+                    className="text-xs text-magenta-400 hover:text-magenta-300 font-semibold underline cursor-pointer"
+                  >
+                    {user?.phone ? 'Edit Number' : '+ Add Number'}
+                  </button>
+                </div>
+                <p className="text-base font-bold text-white truncate font-mono mt-0.5">
+                  {user?.phone ? (
+                    <span className="text-emerald-300 font-mono">📞 {user.phone}</span>
+                  ) : (
+                    <span className="text-slate-500 text-sm font-normal italic">Not provided yet</span>
+                  )}
+                </p>
               </div>
             </div>
 
@@ -157,6 +250,79 @@ export default function DashboardPage() {
 
       {/* Trust & Verification Badges Section */}
       <VerificationSection />
+
+      {/* Update Phone Modal */}
+      {isPhoneModalOpen && (
+        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="bg-navy-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl animate-in fade-in duration-200">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
+              <div className="flex items-center gap-2 text-white font-bold text-base">
+                <Phone className="w-5 h-5 text-emerald-400" />
+                <span>{user?.phone ? 'Update Contact Number' : 'Add WhatsApp / Phone'}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsPhoneModalOpen(false)}
+                className="text-slate-400 hover:text-white text-sm px-2 py-1 rounded-lg bg-navy-800"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-3 bg-emerald-950/40 border border-emerald-500/25 rounded-xl text-xs text-emerald-200 leading-relaxed">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 inline mr-1.5 -mt-0.5" />
+              <strong>Confidential:</strong> Your phone number is strictly visible to the RaabtaNow support team to assist you. It is never shown to prospective candidates.
+            </div>
+
+            {phoneSuccess && (
+              <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 rounded-xl text-xs text-emerald-300 font-semibold">
+                ✓ {phoneSuccess}
+              </div>
+            )}
+
+            {phoneError && (
+              <div className="p-3 bg-rose-500/15 border border-rose-500/30 rounded-xl text-xs text-rose-300 font-semibold">
+                {phoneError}
+              </div>
+            )}
+
+            <form onSubmit={handleSavePhone} className="space-y-4">
+              <Input
+                label="Mobile / WhatsApp Number"
+                name="phone"
+                type="tel"
+                placeholder="e.g. 03001234567 or +923001234567"
+                value={phoneInput}
+                onChange={(e) => setPhoneInput(e.target.value)}
+                autoFocus
+                required
+                helperText="Pakistan mobile format (7 to 25 digits with optional country code)."
+              />
+
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsPhoneModalOpen(false)}
+                  disabled={phoneSaving}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  size="sm"
+                  loading={phoneSaving}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold"
+                >
+                  Save Number
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

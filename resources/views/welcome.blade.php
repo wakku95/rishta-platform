@@ -122,10 +122,18 @@
                         },
                         {
                             "&#64;type": "Question",
+                            "name": "How does private photo viewing work and what is the fee?",
+                            "acceptedAnswer": {
+                                "&#64;type": "Answer",
+                                "text": "Photographs are completely hidden from the public to protect family privacy and modesty. When both candidates mutually agree to exchange photos, the viewing party pays a nominal fee of Rs. 300 PKR only after admin quality review and approval. All approved photos are protected by an irreversible dynamic watermark with the viewer's identity and hold-to-view screenshot prevention."
+                            }
+                        },
+                        {
+                            "&#64;type": "Question",
                             "name": "When and how are contact details shared between families?",
                             "acceptedAnswer": {
                                 "&#64;type": "Answer",
-                                "text": "Contact information is never shared automatically. First, candidate A sends a formal proposal request. If candidate B reviews the biodata and explicitly accepts, candidate A pays a one-time micro-fee of Rs. 300 PKR. Both parties then complete SMS OTP verification on their active mobile numbers. Once verified, mutual phone numbers, names, and emails are unlocked on screen."
+                                "text": "Contact information is never shared automatically. First, candidate A sends a formal proposal request. If candidate B reviews the biodata and explicitly accepts, candidate A pays a one-time fee of Rs. 2,500 PKR. Both parties then complete SMS OTP verification on their active mobile numbers. Once verified, mutual phone numbers, names, and emails are unlocked on screen."
                             }
                         },
                         {
@@ -185,9 +193,10 @@
         <link rel="alternate icon" href="/favicon.ico">
         <meta name="theme-color" content="#161B26">
 
-        <!-- Preconnect Google Fonts for Inter and Playfair -->
+        <!-- Preconnect Google Fonts for Inter, Playfair and Urdu -->
         <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,600&family=Inter:wght@300;400;500;600;700&family=Noto+Nastaliq+Urdu:wght@400;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
 
         <!-- Early Theme Initialization Script (Prevent Flash) -->
         <script>

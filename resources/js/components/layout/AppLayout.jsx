@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import ThemeToggle from '../ui/ThemeToggle';
+import WhatsAppFloatingButton from '../ui/WhatsAppFloatingButton';
 import OnboardingBanner from '../ui/OnboardingBanner';
 import OnboardingModal from '../ui/OnboardingModal';
 
@@ -35,8 +35,8 @@ export default function AppLayout() {
 
       <Footer />
 
-      {/* Floating Theme Switcher at bottom-right */}
-      <ThemeToggle />
+      {/* Floating WhatsApp Action Button at bottom-right */}
+      <WhatsAppFloatingButton />
     </div>
   );
 }

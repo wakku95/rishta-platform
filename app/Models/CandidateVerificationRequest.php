@@ -22,6 +22,7 @@ class CandidateVerificationRequest extends Model
         'status',
         'document_front_path',
         'document_back_path',
+        'live_selfie_path',
         'notes',
         'rejection_reason',
         'expires_at',

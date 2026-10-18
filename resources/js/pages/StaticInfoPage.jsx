@@ -1,7 +1,8 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Badge from '../components/ui/Badge';
-import { ShieldCheck, Lock, CheckCircle2, HeartHandshake, PhoneCall, Mail, Clock, MapPin } from 'lucide-react';
+import { ShieldCheck, Lock, CheckCircle2, HeartHandshake, PhoneCall, Mail, Clock, MapPin, Eye, Sparkles, MessageCircle, ArrowRight, UserCheck, Search, FileText, Camera } from 'lucide-react';
 import SEOHead from '../components/seo/SEOHead';
 
 export function HowItWorksPage() {
@@ -9,68 +10,142 @@ export function HowItWorksPage() {
     {
       num: '1',
       badge: 'Free Registration',
+      badge_ur: 'مفت رجسٹریشن',
       badgeVariant: 'success',
       title: 'Dignified Private Profile Creation',
+      title_ur: 'باوقار اور پرائیویٹ بائیوڈیٹا کی تیاری',
       image: '/images/raabtanow/step-profile-creation.jpg',
-      alt: 'Pakistani woman thoughtfully creating a dignified matrimonial biodata on a tablet',
-      desc: 'Create an account and fill in your comprehensive matrimonial biodata—education, profession, religious sect, family background, and partner preferences. No public photos, phone numbers, or residential addresses are ever exposed to the public or searchable on search engines.',
+      alt: 'Pakistani candidate creating a dignified matrimonial biodata on a tablet',
+      desc: 'Create your account for free and fill in your comprehensive matrimonial biodata—education, profession, religious sect, family background, and partner preferences. No public photos, phone numbers, or residential addresses are ever exposed or indexed on search engines.',
+      desc_ur: 'بغیر کسی فیس کے باآسانی اپنا اکاؤنٹ بنائیں اور روایات کے مطابق مکمل خاندانی بائیوڈیٹا درج کریں—تعلیم، پیشہ، مسلک، خاندانی پس منظر اور جیون ساتھی کے لیے ترجیحات۔ آپ کی تصاویر، فون نمبر یا رہائشی پتہ کبھی بھی پبلک نہیں کیا جاتا اور نہ ہی انٹرنیٹ پر سرچ ہو سکتا ہے۔ خاندانی وقار اور پردہ داری ہمیشہ 100 فیصد محفوظ رہتی ہے۔',
+      points: [
+        { en: 'Free registration & private biodata builder', ur: 'مفت اکاؤنٹ اور پرائیویٹ بائیوڈیٹا' },
+        { en: 'Zero public photos, names or phone numbers', ur: 'تصاویر اور فون نمبر مکمل پوشیدہ' },
+      ],
     },
     {
       num: '2',
-      badge: 'Smart Discovery',
+      badge: 'Safety & Trust',
+      badge_ur: 'مکمل جانچ پڑتال',
       badgeVariant: 'magenta',
-      title: 'Demographic Filtering & Compatibility Search',
-      image: '/images/raabtanow/step-search-discovery.jpg',
-      alt: 'Father and son reviewing filtered matrimonial candidate profiles together',
-      desc: 'Filter verified candidates by age, city, education, profession, sect, marital status, and height. Shortlist compatible profiles privately and consult with your family in a comfortable, respectful home setting.',
+      title: 'CNIC & Live Selfie Authenticity Check',
+      title_ur: 'نادرا شناختی کارڈ اور لائیو سیلفی ویریفکیشن',
+      image: '/images/raabtanow/privacy-trust.jpg',
+      alt: 'Privacy architecture and CNIC authenticity verification check',
+      desc: 'To protect families from fake profiles, scammers, and impersonators, candidates submit their government CNIC and a live selfie. Our administration manually audits and verifies identity details before granting the verified green trust badge.',
+      desc_ur: 'جعلی پروفائلز اور دھوکہ دہی کے مکمل سدِباب کے لیے امیدوار نادرا شناختی کارڈ اور لائیو سیلفی جمع کرواتے ہیں جس کی ایڈمن ٹیم دستی جانچ پڑتال کرتی ہے۔ تصدیق کے بعد پروفائل کو گرین تصدیقی بیج (Verified Account) جاری کیا جاتا ہے، تاکہ دونوں خاندان مکمل اطمینان اور اعتماد کے ساتھ بات آگے بڑھا سکیں۔',
+      points: [
+        { en: 'Manual admin audit of CNIC & live photo', ur: 'شناختی کارڈ اور لائیو تصویر کی دستی تصدیق' },
+        { en: 'Green Verified Trust Badge for serious families', ur: 'سنجیدہ امیدواروں کے لیے تصدیقی گرین بیج' },
+      ],
     },
     {
       num: '3',
-      badge: 'Mutual Consent',
-      badgeVariant: 'magenta',
-      title: 'Formal Rishta Proposal with Full Dignity',
-      image: '/images/raabtanow/step-mutual-proposal.jpg',
-      alt: 'Formal matrimonial proposal with gold seal representing mutual honor and consent',
-      desc: 'Send a formal expression of matrimonial interest. The candidate and their family review your biodata and can accept or decline freely without awkwardness. No contact details are exchanged without explicit two-way acceptance.',
+      badge: '100% Free Search',
+      badge_ur: 'مفت تلاش و فلٹر',
+      badgeVariant: 'success',
+      title: 'Demographic Filtering & Family Consultation',
+      title_ur: 'فلٹرز کے ذریعے تلاش اور خاندانی مشاورت',
+      image: '/images/raabtanow/step-search-discovery.jpg',
+      alt: 'Pakistani father and son reviewing filtered matrimonial profiles together at home',
+      desc: 'Filter verified candidates by age, city, education, profession, sect, marital status, and height. Shortlist compatible profiles privately and consult with your parents and elders in a comfortable, respectful home setting.',
+      desc_ur: 'شہر، عمر، تعلیم، پیشہ، مسلک اور قد کی بنیاد پر فلٹرز لگا کر موزوں ترین رشتے تلاش کریں۔ پسندیدہ رشتوں کو اپنی پرائیویٹ شارٹ لسٹ میں محفوظ کریں اور گھر میں والدین اور بزرگوں کے ساتھ باوقار انداز میں بیٹھ کر تسلی سے مشاورت فرمائیں۔',
+      points: [
+        { en: 'Precise filters: City, Sect, Education & Caste', ur: 'شہر، مسلک، تعلیم اور عمر کے مخصوص فلٹرز' },
+        { en: 'Private family shortlisting at zero cost', ur: 'خاندان کے لیے مفت شارٹ لسٹ اور مشاورت' },
+      ],
     },
     {
       num: '4',
-      badge: 'Rs. 300 Unlock Fee',
+      badge: 'Mutual Consent',
+      badge_ur: 'باہمی رضامندی',
+      badgeVariant: 'magenta',
+      title: 'Formal Rishta Proposal with Full Dignity',
+      title_ur: 'باضابطہ رشتہ پرپوزل اور باہمی رضامندی',
+      image: '/images/raabtanow/step-mutual-proposal.jpg',
+      alt: 'Formal matrimonial proposal with gold seal representing mutual honor and consent',
+      desc: 'Send a formal expression of matrimonial interest with custom questions about values, career, or timeline. The recipient candidate and their family review your biodata and can accept or decline freely without awkwardness. No contact details are exchanged without mutual consent.',
+      desc_ur: 'بغیر کسی ہچکچاہٹ یا سماجی دباؤ کے باضابطہ رشتہ پرپوزل ارسال کریں اور ساتھ ضروری سوالات بھی شامل کر سکتے ہیں۔ دوسرا خاندان آپ کا تفصیلی بائیوڈیٹا دیکھ کر اسے قبول یا باعزت طور پر مسترد کر سکتا ہے۔ دونوں اطراف کی باہمی رضامندی کے بغیر کوئی رابطہ معلومات ظاہر نہیں کی جاتیں۔',
+      points: [
+        { en: 'Respectful proposal with custom inquiries', ur: 'باعزت درخواست اور ضروری سوالات کا تبادلہ' },
+        { en: 'Zero pressure: Accept or decline with dignity', ur: 'بغیر کسی خفت کے قبول یا باعزت انکار' },
+      ],
+    },
+    {
+      num: '5',
+      badge: 'Optional • Rs. 300 PKR',
+      badge_ur: 'اختیاری • 300 روپے',
+      badgeVariant: 'cyan',
+      title: 'Private Photo Viewing with Anti-Leak Watermark',
+      title_ur: 'اینٹی لیک واٹر مارک کے ساتھ نجی تصویر کا مشاہدہ',
+      image: '/images/raabtanow/photo-privacy-ad.jpg',
+      alt: 'Anti-leak dynamic watermarked photo privacy security preview',
+      desc: 'When mutually interested, candidates can request private photo viewing for an optional nominal fee of Rs. 300 PKR (charged only after Admin photo audit approval). Photos are secured with an irreversible dynamic viewer-ID watermark and screenshot-prevention hold-to-view security.',
+      desc_ur: 'اگر دونوں فریقین تصویر دیکھنے پر آمادہ ہوں، تو صرف 300 روپے کی معمولی فیس پر محفوظ تصویر دیکھی جا سکتی ہے (فیس صرف ایڈمن اپروول کے بعد لی جاتی ہے)۔ ہر تصویر پر دیکھنے والے کا فون اور یوزر آئی ڈی واٹر مارک کے طور پر آتا ہے اور ہولڈ ٹو ویو (Hold to view) پروٹیکشن سے سکرین شاٹ اور غلط استعمال ناممکن ہو جاتا ہے۔',
+      points: [
+        { en: 'Strict admin quality audit before approval', ur: 'ایڈمن کی سخت جانچ پڑتال کے بعد اپروول' },
+        { en: 'Dynamic viewer watermark & screenshot prevention', ur: 'متحرک واٹر مارک اور سکرین شاٹ پروٹیکشن' },
+      ],
+    },
+    {
+      num: '6',
+      badge: 'Rs. 2,500 PKR Upon Mutual Acceptance',
+      badge_ur: 'باہمی قبولیت پر • 2,500 روپے',
       badgeVariant: 'gold',
-      title: 'SMS OTP Verification & Direct Contact Unlock',
+      title: 'Dual SMS OTP Verification & Direct Contact Unlock',
+      title_ur: 'دوطرفہ ایس ایم ایس او ٹی پی اور براہِ راست رابطہ',
       image: '/images/raabtanow/step-contact-unlock.jpg',
       alt: 'Smartphone showing verified SMS code and unlocked direct WhatsApp connection',
-      desc: 'Upon mutual acceptance, the initiator pays a nominal Rs. 300 fee via Safepay. Both parties complete two-way SMS OTP phone verification. Verified mobile numbers and a direct WhatsApp connection are instantly unlocked for families to communicate.',
+      desc: 'Once both parties mutually accept the proposal, a one-time fee of Rs. 2,500 PKR is paid via JazzCash (Till / QR / App), IBAN transfer, or Safepay. Both parties complete two-way SMS OTP phone verification. Verified mobile numbers and direct 1-click WhatsApp buttons are instantly unlocked for families to communicate.',
+      desc_ur: 'جب دونوں خاندان رشتہ باہمی طور پر قبول فرما لیں، تو رابطہ ان لاک کرنے کے لیے 2,500 روپے کی یکمشت فیس ادا کی جاتی ہے (جاز کیش، بینک ٹرانسفر یا کارڈ کے ذریعے)۔ دونوں اطراف کے موبائل فون پر 2-way ایس ایم ایس او ٹی پی تصدیق ہوتی ہے، جس کے فوری بعد تصدیق شدہ موبائل نمبرز اور 1-کلک واٹس ایپ بٹن کھل جاتے ہیں تاکہ بزرگ براہِ راست بات چیت کر سکیں۔',
+      points: [
+        { en: 'Two-way cellular PTA SMS OTP verification', ur: 'دوطرفہ پی ٹی اے تصدیق شدہ ایس ایم ایس او ٹی پی' },
+        { en: 'Direct WhatsApp link & phone numbers for parents', ur: 'والدین کے لیے براہِ راست فون نمبر اور واٹس ایپ' },
+      ],
     },
   ];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-10 py-6 px-4">
+    <div className="max-w-5xl mx-auto space-y-10 py-6 px-4 sm:px-6">
       <SEOHead
         title="How Online Rishta Works | Safe & Private Pakistani Matrimonial | RaabtaNow"
-        description="Learn how RaabtaNow works: private matrimonial biodata, mutual consent proposals, and secure SMS OTP contact verification for Pakistani families."
+        description="Learn how RaabtaNow works: private matrimonial biodata, mutual consent proposals, photo watermark security, and secure SMS OTP contact verification for Pakistani families."
         canonicalPath="/how-it-works"
         isIndexable={true}
       />
 
-      <div className="text-center space-y-3 max-w-2xl mx-auto">
-        <Badge variant="magenta" size="md">Step-by-Step Guide</Badge>
-        <h1 className="font-serif text-3xl sm:text-4xl font-extrabold text-white">
+      {/* Bilingual Hero Header */}
+      <div className="text-center space-y-3 max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-2">
+          <Badge variant="magenta" size="md" className="font-semibold px-3 py-1">
+            Step-by-Step Guide
+          </Badge>
+          <Badge variant="gold" size="md" className="font-urdu font-medium px-3 py-1">
+            مکمل رہنمائی
+          </Badge>
+        </div>
+
+        <h1 className="font-serif text-3xl sm:text-4xl md:text-5xl font-extrabold text-white tracking-tight">
           How RaabtaNow Works
         </h1>
-        <p className="text-sm sm:text-base text-slate-400 font-normal leading-relaxed">
+        <p className="font-urdu text-xl sm:text-2xl text-magenta-500 dark:text-magenta-400 font-bold leading-relaxed" dir="rtl">
+          رابطہ ناؤ پر رشتہ تلاش کرنے کا مکمل، محفوظ اور باوقار طریقہ کار
+        </p>
+
+        <p className="text-sm sm:text-base text-slate-400 dark:text-slate-300 font-normal leading-relaxed pt-1">
           A transparent, family-centric matrimonial process built on privacy, mutual consent, and verified contact exchange.
         </p>
       </div>
 
-      {/* 4 Visual Step Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* 6 Visual Bilingual Step Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 lg:gap-8">
         {steps.map((step) => (
           <div
             key={step.num}
-            className="bg-navy-800 border border-slate-750 rounded-2xl shadow-xl hover:border-magenta-500/50 transition-all overflow-hidden flex flex-col group"
+            className="bg-navy-800 border border-slate-750 rounded-2xl shadow-xl hover:border-magenta-500/50 transition-all duration-300 overflow-hidden flex flex-col group"
           >
-            <div className="relative h-52 sm:h-56 w-full overflow-hidden bg-navy-900 shrink-0">
+            {/* Step Image with Number & Dual Badge */}
+            <div className="relative h-52 sm:h-60 w-full overflow-hidden bg-navy-900 shrink-0">
               <img
                 src={step.image}
                 alt={step.alt}
@@ -78,39 +153,149 @@ export function HowItWorksPage() {
                 decoding="async"
                 className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-transparent to-black/20" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-black/30" />
 
+              {/* Step Number */}
               <div className="absolute top-3 left-3 z-10">
-                <span className="w-8 h-8 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 text-white font-extrabold text-sm flex items-center justify-center shadow-lg border border-white/25">
+                <span className="w-9 h-9 rounded-xl bg-gradient-to-tr from-magenta-500 to-purple-600 text-white font-extrabold text-base flex items-center justify-center shadow-lg border border-white/30 backdrop-blur-sm">
                   {step.num}
                 </span>
               </div>
 
-              <div className="absolute top-3 right-3 z-10">
-                <Badge variant={step.badgeVariant} size="sm" className="shadow-md font-bold">
-                  {step.badge}
+              {/* Badge with English & Urdu text */}
+              <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+                <Badge variant={step.badgeVariant} size="sm" className="shadow-lg font-bold px-2.5 py-1 flex items-center gap-1.5">
+                  <span>{step.badge}</span>
+                  <span className="opacity-60">•</span>
+                  <span className="font-urdu text-[11px] font-normal">{step.badge_ur}</span>
                 </Badge>
               </div>
             </div>
 
-            <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-2 bg-navy-800">
-              <div>
-                <h3 className="font-serif font-bold text-white text-lg tracking-tight mb-2 group-hover:text-magenta-400 transition-colors">
+            {/* Step Content: English + Urdu Script */}
+            <div className="p-5 sm:p-6 flex-1 flex flex-col justify-between space-y-4 bg-navy-800">
+              {/* English Section */}
+              <div className="space-y-2">
+                <h2 className="font-serif font-bold text-white text-lg sm:text-xl tracking-tight group-hover:text-magenta-400 transition-colors">
                   {step.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-slate-400 leading-relaxed font-normal">
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-300 leading-relaxed font-normal">
                   {step.desc}
                 </p>
+              </div>
+
+              {/* Urdu Section Callout */}
+              <div className="bg-navy-850/80 dark:bg-navy-900/60 border border-slate-750/80 rounded-xl p-3.5 sm:p-4 space-y-1.5" dir="rtl">
+                <h3 className="font-urdu font-bold text-magenta-600 dark:text-magenta-400 text-base sm:text-lg leading-snug">
+                  {step.title_ur}
+                </h3>
+                <p className="font-urdu text-xs sm:text-[13px] text-slate-700 dark:text-slate-300 leading-[2.1] font-normal">
+                  {step.desc_ur}
+                </p>
+              </div>
+
+              {/* Bullet Key Highlights */}
+              <div className="pt-2 border-t border-slate-750/60 space-y-2">
+                {step.points.map((pt, idx) => (
+                  <div key={idx} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 text-[11px] sm:text-xs">
+                    <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400 font-medium">
+                      <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
+                      <span>{pt.en}</span>
+                    </span>
+                    <span className="font-urdu text-slate-600 dark:text-slate-400 text-right sm:text-left pr-5 sm:pr-0" dir="rtl">
+                      {pt.ur}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Trust & Privacy Architecture Card */}
+      {/* Admin Assisted Matchmaker Guidance Card */}
+      <Card className="p-6 sm:p-8 bg-navy-800 border border-amber-500/30 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 bg-gradient-to-l from-amber-500 to-amber-600 text-slate-950 text-[10px] sm:text-xs font-black px-4 py-1.5 uppercase tracking-wider rounded-bl-xl shadow-md">
+          Assisted Service • ایڈمن معاونت
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+          <div className="lg:col-span-5 w-full h-56 sm:h-64 rounded-2xl overflow-hidden border border-slate-700/80 shadow-lg relative shrink-0">
+            <img
+              src="/images/raabtanow/family-discussion.jpg"
+              alt="Pakistani family consulting respectfully with matchmaker"
+              className="w-full h-full object-cover object-center"
+              loading="lazy"
+              decoding="async"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="absolute bottom-3 left-3 right-3 text-white">
+              <span className="text-xs font-semibold bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/20 inline-block">
+                Dedicated Family Matchmaker
+              </span>
+            </div>
+          </div>
+
+          <div className="lg:col-span-7 space-y-4 text-left">
+            <div>
+              <div className="inline-flex items-center gap-2 mb-1.5">
+                <Badge variant="gold" size="sm" className="font-bold">
+                  Personal Guidance
+                </Badge>
+                <span className="text-xs text-amber-500 dark:text-amber-400 font-semibold">• برائے والدین و بزرگ</span>
+              </div>
+              <h2 className="font-serif font-bold text-white text-xl sm:text-2xl tracking-tight">
+                Admin Assisted Matchmaker Service
+              </h2>
+              <p className="font-urdu text-lg sm:text-xl text-amber-500 dark:text-amber-400 font-bold mt-1" dir="rtl">
+                والدین اور خاندانوں کے لیے وقف رشتہ کونسلر و اسسٹڈ سروس
+              </p>
+            </div>
+
+            <p className="text-xs sm:text-sm text-slate-400 dark:text-slate-300 leading-relaxed">
+              Prefer personal, hands-on guidance for your family? Our dedicated matchmakers coordinate directly between families on WhatsApp, vet proposals, verify credentials, and arrange respectful introductions aligned with Pakistani cultural and Islamic values.
+            </p>
+
+            <div className="bg-navy-850/80 dark:bg-navy-900/60 border border-slate-750/80 rounded-xl p-3.5 space-y-1" dir="rtl">
+              <p className="font-urdu text-xs sm:text-[13px] text-slate-700 dark:text-slate-300 leading-[2.1] font-normal">
+                اگر آپ والدین ہیں یا چاہتے ہیں کہ ہماری تجربہ کار ٹیم ذاتی طور پر آپ کی پسند اور شرائط کے مطابق موزوں رشتوں کی تلاش، نادرا تصدیق اور دونوں خاندانوں کے درمیان واٹس ایپ پر باعزت رابطہ کروائے، تو آپ ہماری ایڈمن اسسٹڈ سروس سے رہنمائی حاصل کر سکتے ہیں۔
+              </p>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Link
+                to="/search"
+                className="gradient-btn text-white px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm flex items-center gap-2 shadow-lg hover:shadow-magenta-500/25 transition cursor-pointer"
+              >
+                <span>Browse Verified Profiles</span>
+                <span className="font-urdu text-xs font-normal">/ تمام رشتے دیکھیں</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+              <Link
+                to="/assisted-profile"
+                className="px-4 py-2.5 rounded-xl border border-amber-500/40 bg-amber-500/10 hover:bg-amber-500/20 text-amber-500 dark:text-amber-400 text-xs sm:text-sm font-semibold flex items-center gap-2 transition cursor-pointer"
+              >
+                <span>Create Assisted Profile</span>
+                <span className="font-urdu text-xs font-normal">/ اسسٹڈ رشتہ بنائیں</span>
+              </Link>
+              <a
+                href="https://wa.me/923239225450?text=Assisted%20Rishta%20Inquiry%20from%20RaabtaNow"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-4 py-2.5 rounded-xl border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-semibold flex items-center gap-2 transition"
+              >
+                <MessageCircle className="w-4 h-4" />
+                <span>Chat on WhatsApp</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </Card>
+
+      {/* Core Privacy & Trust Guarantees */}
       <Card className="p-6 sm:p-8 bg-navy-850 border border-slate-750 shadow-xl space-y-4">
         <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden shrink-0 border border-slate-700 shadow-lg">
+          <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden shrink-0 border border-slate-700 shadow-lg">
             <img
               src="/images/raabtanow/privacy-trust.jpg"
               alt="Privacy & Trust Architecture"
@@ -119,32 +304,63 @@ export function HowItWorksPage() {
               decoding="async"
             />
           </div>
-          <div className="space-y-2 text-center sm:text-left">
+          <div className="space-y-2 text-center sm:text-left flex-1">
             <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
-              <h3 className="font-serif font-bold text-white text-lg">
+              <h3 className="font-serif font-bold text-white text-lg sm:text-xl">
                 Privacy Protection as a Core Guarantee
               </h3>
               <Badge variant="success" size="sm" className="inline-flex items-center gap-1 font-semibold">
                 <ShieldCheck className="w-3.5 h-3.5" />
-                <span>Verified Process</span>
+                <span>100% Verified Process</span>
               </Badge>
             </div>
-            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-normal">
+            <p className="text-xs sm:text-sm text-slate-300 dark:text-slate-300 leading-relaxed font-normal">
               RaabtaNow strictly prohibits arbitrary photo sharing, public phone scraping, or automated algorithmic matching. Every match inquiry is intentional, mutual, and authenticated through PTA-compliant cellular SMS verification.
+            </p>
+            <p className="font-urdu text-xs sm:text-[13px] text-slate-400 dark:text-slate-300 leading-[2] font-normal text-center sm:text-left" dir="rtl">
+              رابطہ ناؤ پر کوئی غیر ضروری تصویر یا فون نمبر پبلک نہیں ہوتا۔ ہر رابطہ خاندانی وقار، شرعی پردہ داری اور دوطرفہ رضامندی کے تحت انجام پاتا ہے۔
             </p>
           </div>
         </div>
       </Card>
+
+      {/* Quick Action Footer Bar */}
+      <div className="text-center pt-4 pb-2 space-y-4">
+        <h3 className="font-serif text-xl sm:text-2xl font-bold text-white">
+          Ready to Begin Your Honorable Journey?
+        </h3>
+        <p className="font-urdu text-base text-magenta-500 dark:text-magenta-400 font-semibold" dir="rtl">
+          آج ہی مفت رجسٹریشن مکمل کریں اور باوقار رشتہ تلاش فرمائیں
+        </p>
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Link
+            to="/register"
+            className="gradient-btn text-white px-6 py-3 rounded-xl font-bold text-sm shadow-xl hover:shadow-magenta-500/30 transition cursor-pointer flex items-center gap-2"
+          >
+            <span>Register Free Account</span>
+            <span className="font-urdu text-xs font-normal">/ مفت اکاؤنٹ بنائیں</span>
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+          <Link
+            to="/search"
+            className="px-5 py-3 rounded-xl border border-slate-700 bg-navy-800 hover:bg-navy-750 text-slate-200 hover:text-white text-sm font-semibold transition flex items-center gap-2 cursor-pointer"
+          >
+            <Search className="w-4 h-4 text-magenta-400" />
+            <span>Search Profiles</span>
+            <span className="font-urdu text-xs font-normal text-slate-400">/ رشتے دیکھیں</span>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
 
 export function PricingPage() {
   return (
-    <div className="max-w-2xl mx-auto space-y-8 py-6 px-4">
+    <div className="max-w-4xl mx-auto space-y-8 py-6 px-4">
       <SEOHead
         title="RaabtaNow Pricing | Transparent Pakistani Online Rishta & Matrimonial Service"
-        description="Completely free registration, browsing, and proposals. Transparent Rs. 300 PKR micro-fee charged only upon mutual acceptance to unlock verified contacts."
+        description="Completely free registration, browsing, and proposals. Transparent Rs. 2,500 PKR fee charged only upon mutual acceptance to unlock verified contacts. Optional photo viewing fee of Rs. 300 PKR for approved private photos."
         canonicalPath="/pricing"
         isIndexable={true}
       />
@@ -154,26 +370,58 @@ export function PricingPage() {
         <p className="text-sm text-slate-400">No monthly subscriptions. No pay-per-search. Pay only upon mutual interest.</p>
       </div>
 
-      <Card className="text-center p-8 bg-navy-800 border border-slate-750">
-        <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Contact Unlock Fee</div>
-        <div className="font-serif text-4xl sm:text-5xl font-extrabold text-white mb-2">
-          Rs. 300 <span className="text-base font-normal text-slate-400">PKR</span>
-        </div>
-        <p className="text-xs text-slate-400 mb-8">One-time micro-fee per mutually accepted proposal.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Contact Unlock Card */}
+        <Card className="text-center p-6 sm:p-8 bg-navy-800 border border-slate-750 flex flex-col justify-between">
+          <div>
+            <div className="text-xs uppercase tracking-wider text-slate-400 font-semibold mb-2">Mutual Contact Unlock</div>
+            <div className="font-serif text-4xl sm:text-5xl font-extrabold text-white mb-2">
+              Rs. 2,500 <span className="text-base font-normal text-slate-400">PKR</span>
+            </div>
+            <p className="text-xs text-slate-400 mb-6">One-time fee per mutually accepted proposal.</p>
 
-        <div className="text-left space-y-3.5 max-w-md mx-auto text-xs text-slate-300 bg-navy-750 p-5 rounded-2xl border border-slate-700 mb-8">
-          <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Free to register and create profile</div>
-          <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Free to search and shortlist</div>
-          <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Free to send Rishta Requests</div>
-          <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Free to accept or decline requests</div>
-          <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Charged ONLY to original requester after recipient accepts</div>
-          <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Covers secure SMS OTP verification for both sides</div>
-        </div>
+            <div className="text-left space-y-3 max-w-md mx-auto text-xs text-slate-300 bg-navy-750 p-4.5 rounded-2xl border border-slate-700 mb-6">
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Free to register and create biodata</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Free to search, filter & shortlist</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Free to send & receive Rishta Requests</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Charged ONLY when both parties accept</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Dual-side 2-way SMS OTP phone verification</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" /> Unlocks verified phone, email & direct WhatsApp</div>
+            </div>
+          </div>
 
-        <p className="text-[12px] text-slate-400">
-          Secure payment processed via Safepay (debit/credit card, bank account, and mobile wallets).
-        </p>
-      </Card>
+          <p className="text-[12px] text-slate-400">
+            Pay via JazzCash App (QR / Till), IBAN bank transfer, or Safepay.
+          </p>
+        </Card>
+
+        {/* Private Photo Viewing Card */}
+        <Card className="text-center p-6 sm:p-8 bg-navy-800 border border-cyan-500/30 flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 bg-cyan-600 text-white text-[10px] font-bold px-3 py-1 uppercase tracking-wider rounded-bl-lg">
+            Privacy Protected
+          </div>
+          <div>
+            <div className="text-xs uppercase tracking-wider text-cyan-400 font-semibold mb-2 mt-1">Private Photo Viewing</div>
+            <div className="font-serif text-4xl sm:text-5xl font-extrabold text-white mb-2">
+              Rs. 300 <span className="text-base font-normal text-slate-400">PKR</span>
+            </div>
+            <p className="text-xs text-slate-400 mb-6">Per verified candidate photo unlock.</p>
+
+            <div className="text-left space-y-3 max-w-md mx-auto text-xs text-slate-300 bg-navy-750 p-4.5 rounded-2xl border border-slate-700 mb-6">
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" /> 100% Admin Quality Audit & Approval first</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" /> No charge if photo rejected by Admin</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" /> Irreversible custom watermark with viewer ID</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" /> Hold-to-view screenshot prevention security</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" /> Independent requests & viewing for both sides</div>
+              <div className="flex items-center gap-2.5"><CheckCircle2 className="w-4 h-4 text-cyan-400 shrink-0" /> Instant activation upon payment verification</div>
+            </div>
+          </div>
+
+          <p className="text-[12px] text-slate-400">
+            Fee charged only after admin approves the uploaded photo.
+          </p>
+        </Card>
+      </div>
 
       {/* Admin Assisted Pricing Card */}
       <Card className="text-center p-8 bg-navy-800 border border-amber-500/20 mt-6 relative overflow-hidden">
@@ -307,7 +555,7 @@ export function PrivacyPolicyPage() {
           <ol className="list-decimal pl-5 space-y-1 text-xs text-slate-400 mt-1">
             <li>A candidate sends a formal Rishta expression of interest.</li>
             <li>The recipient explicitly reviews and accepts the proposal.</li>
-            <li>The initiator completes the standard contact unlock fee (Rs. 300 PKR).</li>
+            <li>The initiator completes the standard contact unlock fee (Rs. 2,500 PKR).</li>
             <li>Both parties successfully verify their phone numbers via a 6-digit SMS OTP code.</li>
           </ol>
         </div>
@@ -374,7 +622,7 @@ export function TermsPage() {
         <div>
           <h3 className="font-bold text-base text-white mb-2">4. Fees & Payment Terms</h3>
           <p>
-            Registration, browsing, profile creation, and receiving connection requests are completely free of charge. A standard micro-fee of <strong className="text-white">Rs. 300 PKR</strong> is levied only on the proposal initiator upon mutual proposal acceptance to unlock verified contact details and finance two-way SMS OTP infrastructure. All electronic payments are processed securely via Safepay. For Admin Assisted services, service charges may vary depending on the type and level of assistance required. Payment arrangements for Assisted services are handled separately with RaabtaNow and do not use the standard Rs. 300 flow.
+            Registration, browsing, profile creation, and receiving connection requests are completely free of charge. A standard fee of <strong className="text-white">Rs. 2,500 PKR</strong> is levied only on the proposal initiator upon mutual proposal acceptance to unlock verified contact details and finance two-way SMS OTP infrastructure. Private photo exchange, where requested and approved by administration, carries a nominal fee of <strong className="text-white">Rs. 300 PKR</strong> per party to view verified watermarked photos. All electronic payments are processed securely via Safepay or JazzCash. For Admin Assisted services, service charges may vary depending on the type and level of assistance required. Payment arrangements for Assisted services are handled separately with RaabtaNow and do not use the standard Rs. 2,500 flow.
           </p>
         </div>
 
@@ -427,7 +675,7 @@ export function RefundPolicyPage() {
         <div>
           <h3 className="font-bold text-base text-white mb-2">1. Overview of Digital Services</h3>
           <p>
-            RaabtaNow provides online matrimonial discovery services. Browsing, shortlisting, and proposal exchange are free. The single chargeable service is the <strong className="text-white">Contact Unlock Fee (Rs. 300 PKR)</strong>, charged only after mutual acceptance to initiate phone verification and contact release.
+            RaabtaNow provides online matrimonial discovery services. Browsing, shortlisting, and proposal exchange are free. Chargeable services are the <strong className="text-white">Contact Unlock Fee (Rs. 2,500 PKR)</strong>, charged only after mutual acceptance to initiate phone verification and contact release, and the optional <strong className="text-white">Photo Viewing Fee (Rs. 300 PKR)</strong>, charged only upon viewing admin-approved private photos.
           </p>
         </div>
 
@@ -493,7 +741,7 @@ export function DeliveryPolicyPage() {
             All paid services—namely the Contact Unlock feature—are delivered electronically and immediately:
           </p>
           <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-400 mt-1">
-            <li>Upon confirmed payment gateway checkout (Rs. 300 PKR), the SMS OTP verification interface is instantly enabled for both candidates within 0 to 60 seconds.</li>
+            <li>Upon confirmed payment gateway checkout (Rs. 2,500 PKR), the SMS OTP verification interface is instantly enabled for both candidates within 0 to 60 seconds.</li>
             <li>Upon valid completion of SMS OTP verification, the counterpart's phone number, email address, and direct WhatsApp contact link are displayed immediately on the screen and archived in the user's dashboard.</li>
             <li>An immediate email confirmation with connection details is dispatched simultaneously to the user's registered inbox.</li>
           </ul>
@@ -592,7 +840,7 @@ export function ContactUsPage() {
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Verified Pakistani Matrimonial Profiles</li>
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Confidential & Private Biodata Discovery</li>
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Two-Way Mutual Consent Proposal Requests</li>
-            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Secure Dual SMS OTP Verification (Rs. 300)</li>
+            <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Secure Dual SMS OTP Verification (Rs. 2,500)</li>
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Direct Family WhatsApp & Mobile Release</li>
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Dedicated Matchmaking Assistance</li>
             <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-magenta-400 shrink-0" /> Overseas Pakistani Matrimonial Search</li>

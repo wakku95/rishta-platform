@@ -202,12 +202,17 @@ export default function AdminVerificationLinkModal({ isOpen, onClose, candidate 
               disabled={loading || uploading}
               className="w-full text-xs px-3 py-2 bg-navy-950 border border-slate-750 rounded-xl text-white font-medium focus:outline-none focus:border-cyan-500 transition-colors"
             >
-              <option value="photo">📸 Candidate Photo / Tasveer (Private)</option>
-              <option value="cnic">🪪 CNIC / National Identity Card</option>
+              <option value="cnic">🪪 CNIC + Live Camera Selfie (Face Match Verification)</option>
+              <option value="photo">📸 Candidate Photo / Tasveer (Private Matrimonial)</option>
               <option value="salary_slip">💼 Salary Slip / Income Proof</option>
               <option value="degree">🎓 Educational Degree / Certificate</option>
               <option value="other">📄 Other Supporting Document</option>
             </select>
+            {docType === 'cnic' && (
+              <p className="text-[11px] text-cyan-300/90 bg-cyan-950/40 border border-cyan-800/40 p-2 rounded-lg leading-relaxed">
+                💡 <strong>Includes Live Selfie:</strong> When the candidate opens this link, they are required to take a <strong>live front-camera selfie</strong> and upload their <strong>CNIC (front & back)</strong> so you can compare them side-by-side.
+              </p>
+            )}
           </div>
 
           {/* TAB 1: MAGIC LINK MODE */}

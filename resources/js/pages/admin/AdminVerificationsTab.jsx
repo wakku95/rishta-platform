@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { 
   ShieldCheck, ShieldAlert, CheckCircle2, XCircle, 
   Eye, RefreshCw, FileText, Search, AlertCircle, ExternalLink, Trash2,
-  Link as LinkIcon, Clock, Copy, Check, UserCheck, PhoneCall, AlertTriangle, Sparkles
+  Link as LinkIcon, Clock, Copy, Check, UserCheck, PhoneCall, AlertTriangle, Sparkles, Camera
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
@@ -43,8 +43,13 @@ export default function AdminVerificationsTab() {
 
   // Document Preview State
   const [activeDoc, setActiveDoc] = useState(null); // { url, mime, side, label }
-  const [docLoading, setDocLoading] = useState(null); // 'front' | 'back' | null
+  const [docLoading, setDocLoading] = useState(null); // 'front' | 'back' | 'selfie' | null
   const [docError, setDocError] = useState(null);
+
+  // Side-by-Side Face Comparison State
+  const [isCompareMode, setIsCompareMode] = useState(false);
+  const [compareDocs, setCompareDocs] = useState({ front: null, selfie: null });
+  const [compareLoading, setCompareLoading] = useState(false);
 
   // Storage Purge State
   const [showPurgeModal, setShowPurgeModal] = useState(false);
@@ -73,6 +78,14 @@ export default function AdminVerificationsTab() {
     if (activeDoc?.url) {
       URL.revokeObjectURL(activeDoc.url);
     }
+    if (compareDocs.front?.url) {
+      URL.revokeObjectURL(compareDocs.front.url);
+    }
+    if (compareDocs.selfie?.url) {
+      URL.revokeObjectURL(compareDocs.selfie.url);
+    }
+    setCompareDocs({ front: null, selfie: null });
+    setIsCompareMode(false);
     setActiveDoc(null);
     setDocLoading(null);
     setDocError(null);
@@ -117,6 +130,7 @@ export default function AdminVerificationsTab() {
 
   const handleLoadDoc = async (item, side, label, isMagicLink = false) => {
     if (!item) return;
+    setIsCompareMode(false);
     setDocLoading(side);
     setDocError(null);
     try {
@@ -139,22 +153,77 @@ export default function AdminVerificationsTab() {
     }
   };
 
+  const handleLoadCompare = async (item, isMagicLink = false) => {
+    if (!item) return;
+    setIsCompareMode(true);
+    setCompareLoading(true);
+    setDocError(null);
+    try {
+      const [frontRes, selfieRes] = await Promise.all([
+        isMagicLink
+          ? adminApi.getVerificationLinkDocBlob(item.id, 'front')
+          : adminApi.getDocumentBlob(item.id, 'front'),
+        isMagicLink
+          ? adminApi.getVerificationLinkDocBlob(item.id, 'selfie')
+          : adminApi.getDocumentBlob(item.id, 'selfie'),
+      ]);
+
+      const frontMime = frontRes.headers['content-type'] || 'image/jpeg';
+      const selfieMime = selfieRes.headers['content-type'] || 'image/jpeg';
+
+      const frontBlob = new Blob([frontRes.data], { type: frontMime });
+      const selfieBlob = new Blob([selfieRes.data], { type: selfieMime });
+
+      if (compareDocs.front?.url) URL.revokeObjectURL(compareDocs.front.url);
+      if (compareDocs.selfie?.url) URL.revokeObjectURL(compareDocs.selfie.url);
+
+      setCompareDocs({
+        front: { url: URL.createObjectURL(frontBlob), mime: frontMime },
+        selfie: { url: URL.createObjectURL(selfieBlob), mime: selfieMime },
+      });
+    } catch (err) {
+      console.error('Failed to load compare images:', err);
+      setDocError(err.response?.data?.message || 'Failed to load side-by-side comparison images.');
+    } finally {
+      setCompareLoading(false);
+    }
+  };
+
   const openReviewModal = (item, type = 'registered') => {
     setSelectedItem(item);
     setModalType(type);
     setShowRejectForm(false);
     setRejectReason('');
+    setIsCompareMode(false);
+    if (compareDocs.front?.url) URL.revokeObjectURL(compareDocs.front.url);
+    if (compareDocs.selfie?.url) URL.revokeObjectURL(compareDocs.selfie.url);
+    setCompareDocs({ front: null, selfie: null });
+
+    const hasSelfie = Boolean(item.live_selfie_path || item.has_live_selfie);
+    const hasFront = Boolean(item.document_front_path);
+
+    // If candidate submitted both live selfie and front side document, default to Side-by-Side comparison!
+    if (hasSelfie && hasFront && !item.documents_purged_at) {
+      handleLoadCompare(item, type === 'magic_link');
+      return;
+    }
 
     if (type === 'magic_link') {
       if (item.document_front_path) {
         handleLoadDoc(item, 'front', 'Document Front Side', true);
       } else if (item.document_back_path) {
         handleLoadDoc(item, 'back', 'Document Back Side', true);
+      } else if (item.live_selfie_path) {
+        handleLoadDoc(item, 'selfie', 'Live Front Camera Selfie', true);
       }
     } else {
-      if (!item.documents_purged_at && (item.document_front_path || item.document_back_path)) {
-        const defaultLabel = item.type === 'identity' ? 'CNIC Front Side' : (item.document_name || 'Education Certificate');
-        handleLoadDoc(item, 'front', defaultLabel, false);
+      if (!item.documents_purged_at && (item.document_front_path || item.document_back_path || item.live_selfie_path)) {
+        if (item.document_front_path) {
+          const defaultLabel = item.type === 'identity' ? 'CNIC Front Side' : (item.document_name || 'Education Certificate');
+          handleLoadDoc(item, 'front', defaultLabel, false);
+        } else if (item.live_selfie_path) {
+          handleLoadDoc(item, 'selfie', 'Live Front Camera Selfie', false);
+        }
       }
     }
   };
@@ -482,7 +551,14 @@ export default function AdminVerificationsTab() {
                         <div className="text-xs text-slate-400 font-mono">{v.user?.email}</div>
                       </td>
                       <td className="px-5 py-3.5 capitalize font-semibold text-white">
-                        {v.type === 'identity' ? 'Identity (CNIC)' : 'Education'}
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span>{v.type === 'identity' ? 'Identity (CNIC)' : 'Education'}</span>
+                          {(v.live_selfie_path || v.has_live_selfie) && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-magenta-500/20 text-magenta-300 border border-magenta-500/30">
+                              <Camera className="w-2.5 h-2.5" /> Live Selfie
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-5 py-3.5">{renderStatusBadge(v.status)}</td>
                       <td className="px-5 py-3.5 text-xs text-slate-400">
@@ -617,7 +693,7 @@ export default function AdminVerificationsTab() {
               <tbody className="divide-y divide-white/5">
                 {magicLinks.length > 0 ? (
                   magicLinks.map((link) => {
-                    const hasPhotos = !!(link.document_front_path || link.document_back_path);
+                    const hasPhotos = !!(link.document_front_path || link.document_back_path || link.live_selfie_path);
                     return (
                       <tr key={link.id} className="hover:bg-white/[0.02] transition-colors">
                         <td className="px-5 py-3.5">
@@ -649,9 +725,16 @@ export default function AdminVerificationsTab() {
                           {(() => {
                             const info = formatDocType(link.document_type);
                             return (
-                              <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${info.badgeColor}`}>
-                                {info.label}
-                              </span>
+                              <div className="flex items-center gap-1.5 flex-wrap">
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border ${info.badgeColor}`}>
+                                  {info.label}
+                                </span>
+                                {link.live_selfie_path && (
+                                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-bold bg-magenta-500/20 text-magenta-300 border border-magenta-500/30">
+                                    <Camera className="w-2.5 h-2.5" /> Live Selfie
+                                  </span>
+                                )}
+                              </div>
                             );
                           })()}
                         </td>
@@ -860,7 +943,7 @@ export default function AdminVerificationsTab() {
             </div>
 
             {/* Document Content / Photos */}
-            {modalType === 'magic_link' && !selectedItem.document_front_path && !selectedItem.document_back_path ? (
+            {modalType === 'magic_link' && !selectedItem.document_front_path && !selectedItem.document_back_path && !selectedItem.live_selfie_path ? (
               <div className="p-6 rounded-xl bg-navy-800/80 border border-white/5 text-center space-y-3">
                 <AlertCircle className="w-8 h-8 text-amber-400 mx-auto" />
                 <div className="text-sm font-bold text-white">No Photos Uploaded Yet</div>
@@ -892,9 +975,9 @@ export default function AdminVerificationsTab() {
               <div className="p-4 rounded-xl bg-navy-800/80 border border-white/5 space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                    Uploaded Document Photos
+                    Uploaded Document &amp; Verification Media
                   </span>
-                  {activeDoc && (
+                  {!isCompareMode && activeDoc && (
                     <button
                       type="button"
                       onClick={() => window.open(activeDoc.url, '_blank')}
@@ -907,98 +990,224 @@ export default function AdminVerificationsTab() {
                 </div>
 
                 {/* Side / Document Selectors */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handleLoadDoc(selectedItem, 'front', 'Document Front Side', modalType === 'magic_link')}
-                    disabled={docLoading === 'front' || !selectedItem.document_front_path}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
-                      activeDoc?.side === 'front'
-                        ? 'bg-cyan-600/20 border-cyan-500/60 text-white shadow-sm'
-                        : selectedItem.document_front_path
-                        ? 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
-                        : 'bg-navy-950/50 border-dashed border-slate-700/50 text-slate-600 cursor-not-allowed'
-                    }`}
-                  >
-                    {docLoading === 'front' ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Eye className="w-3.5 h-3.5" />
-                    )}
-                    Front Side {selectedItem.document_front_path ? '✓' : '(Not Uploaded)'}
-                  </button>
+                {(() => {
+                  const hasSelfie = Boolean(selectedItem.live_selfie_path || selectedItem.has_live_selfie);
+                  const hasFront = Boolean(selectedItem.document_front_path);
+                  const canCompare = hasSelfie && hasFront;
 
-                  <button
-                    type="button"
-                    onClick={() => handleLoadDoc(selectedItem, 'back', 'Document Back Side', modalType === 'magic_link')}
-                    disabled={docLoading === 'back' || !selectedItem.document_back_path}
-                    className={`p-2.5 rounded-xl border text-xs font-semibold flex items-center justify-center gap-2 transition ${
-                      activeDoc?.side === 'back'
-                        ? 'bg-cyan-600/20 border-cyan-500/60 text-white shadow-sm'
-                        : selectedItem.document_back_path
-                        ? 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
-                        : 'bg-navy-950/50 border-dashed border-slate-700/50 text-slate-600 cursor-not-allowed'
-                    }`}
-                  >
-                    {docLoading === 'back' ? (
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    ) : (
-                      <Eye className="w-3.5 h-3.5" />
-                    )}
-                    Back Side {selectedItem.document_back_path ? '✓' : '(Optional / None)'}
-                  </button>
-                </div>
-
-                {/* Live Preview Container */}
-                <div className="rounded-xl border border-white/10 bg-navy-950 p-2 min-h-[240px] flex items-center justify-center overflow-hidden">
-                  {docLoading ? (
-                    <div className="flex flex-col items-center gap-2 py-8 text-slate-400 text-xs">
-                      <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
-                      <span>Loading private document photo securely...</span>
-                    </div>
-                  ) : docError ? (
-                    <div className="flex flex-col items-center gap-2 py-6 text-rose-400 text-xs text-center px-4">
-                      <AlertCircle className="w-6 h-6 text-rose-500" />
-                      <span>{docError}</span>
-                      <Button
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => handleLoadDoc(selectedItem, activeDoc?.side || 'front', activeDoc?.label || 'Document', modalType === 'magic_link')}
-                      >
-                        Retry
-                      </Button>
-                    </div>
-                  ) : activeDoc ? (
-                    activeDoc.mime.startsWith('image/') ? (
-                      <img
-                        src={activeDoc.url}
-                        alt={activeDoc.label}
-                        className="max-h-[380px] max-w-full object-contain rounded shadow-lg"
-                      />
-                    ) : activeDoc.mime === 'application/pdf' ? (
-                      <iframe
-                        src={activeDoc.url}
-                        title={activeDoc.label}
-                        className="w-full h-[400px] rounded border-0 bg-white"
-                      />
-                    ) : (
-                      <div className="text-center py-6 text-xs text-slate-300">
-                        <p className="mb-2">Document format: {activeDoc.mime}</p>
+                  return (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {canCompare && (
                         <button
                           type="button"
-                          onClick={() => window.open(activeDoc.url, '_blank')}
-                          className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-medium hover:bg-cyan-500 transition"
+                          onClick={() => handleLoadCompare(selectedItem, modalType === 'magic_link')}
+                          disabled={compareLoading}
+                          className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition ${
+                            isCompareMode
+                              ? 'bg-gradient-to-r from-magenta-600 to-cyan-600 text-white border-magenta-400 shadow-md shadow-magenta-500/20'
+                              : 'bg-navy-900 hover:bg-navy-750 border-magenta-500/40 text-magenta-300'
+                          }`}
                         >
-                          Open Document
+                          {compareLoading ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                          )}
+                          ⚡ Side-by-Side Face Match
                         </button>
-                      </div>
-                    )
-                  ) : (
-                    <div className="py-8 text-center text-xs text-slate-500">
-                      Click a document button above to view photo
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleLoadDoc(selectedItem, 'front', 'Document Front Side', modalType === 'magic_link')}
+                        disabled={docLoading === 'front' || !selectedItem.document_front_path}
+                        className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${
+                          !isCompareMode && activeDoc?.side === 'front'
+                            ? 'bg-cyan-600/20 border-cyan-500/60 text-white shadow-sm'
+                            : selectedItem.document_front_path
+                            ? 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
+                            : 'bg-navy-950/50 border-dashed border-slate-700/50 text-slate-600 cursor-not-allowed'
+                        }`}
+                      >
+                        {docLoading === 'front' ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Eye className="w-3.5 h-3.5" />
+                        )}
+                        Front Side {selectedItem.document_front_path ? '✓' : '(None)'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleLoadDoc(selectedItem, 'back', 'Document Back Side', modalType === 'magic_link')}
+                        disabled={docLoading === 'back' || !selectedItem.document_back_path}
+                        className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${
+                          !isCompareMode && activeDoc?.side === 'back'
+                            ? 'bg-cyan-600/20 border-cyan-500/60 text-white shadow-sm'
+                            : selectedItem.document_back_path
+                            ? 'bg-navy-900 hover:bg-navy-750 border-white/10 text-slate-300'
+                            : 'bg-navy-950/50 border-dashed border-slate-700/50 text-slate-600 cursor-not-allowed'
+                        }`}
+                      >
+                        {docLoading === 'back' ? (
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Eye className="w-3.5 h-3.5" />
+                        )}
+                        Back Side {selectedItem.document_back_path ? '✓' : '(None)'}
+                      </button>
+
+                      {hasSelfie && (
+                        <button
+                          type="button"
+                          onClick={() => handleLoadDoc(selectedItem, 'selfie', 'Live Front Camera Selfie', modalType === 'magic_link')}
+                          disabled={docLoading === 'selfie'}
+                          className={`px-3 py-2 rounded-xl border text-xs font-semibold flex items-center gap-1.5 transition ${
+                            !isCompareMode && activeDoc?.side === 'selfie'
+                              ? 'bg-magenta-600/20 border-magenta-500/60 text-white shadow-sm'
+                              : 'bg-navy-900 hover:bg-navy-750 border-magenta-500/30 text-magenta-300'
+                          }`}
+                        >
+                          {docLoading === 'selfie' ? (
+                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          ) : (
+                            <Camera className="w-3.5 h-3.5" />
+                          )}
+                          Live Selfie ✓
+                        </button>
+                      )}
                     </div>
-                  )}
-                </div>
+                  );
+                })()}
+
+                {/* Display Container: Side-by-Side OR Single Document */}
+                {isCompareMode ? (
+                  <div className="space-y-3">
+                    <div className="p-2.5 rounded-xl bg-magenta-950/40 border border-magenta-500/30 text-xs text-slate-300 flex items-center justify-between flex-wrap gap-2">
+                      <div className="flex items-center gap-2">
+                        <Sparkles className="w-4 h-4 text-magenta-400 shrink-0" />
+                        <span><strong>Free Visual Face Match:</strong> Compare the live front-camera selfie with the candidate's CNIC document photo.</span>
+                      </div>
+                      <span className="text-[10px] text-emerald-400 font-mono bg-emerald-950/60 border border-emerald-500/30 px-2 py-0.5 rounded">
+                        100% Free • Anti-Spoofing
+                      </span>
+                    </div>
+
+                    {compareLoading ? (
+                      <div className="flex flex-col items-center justify-center gap-2 py-12 text-slate-400 text-xs">
+                        <RefreshCw className="w-6 h-6 animate-spin text-magenta-400" />
+                        <span>Loading live selfie and document side-by-side...</span>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {/* Live Selfie Column */}
+                        <div className="bg-navy-950 rounded-xl p-3 border border-magenta-500/30 flex flex-col items-center">
+                          <div className="w-full flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-xs font-bold text-magenta-300">
+                            <span className="flex items-center gap-1.5">
+                              <Camera className="w-3.5 h-3.5 text-magenta-400" /> Live Captured Selfie
+                            </span>
+                            {compareDocs.selfie?.url && (
+                              <button
+                                type="button"
+                                onClick={() => window.open(compareDocs.selfie.url, '_blank')}
+                                className="text-[10px] text-slate-400 hover:text-white inline-flex items-center gap-1"
+                              >
+                                <ExternalLink className="w-3 h-3" /> Full Size
+                              </button>
+                            )}
+                          </div>
+                          {compareDocs.selfie?.url ? (
+                            <img
+                              src={compareDocs.selfie.url}
+                              alt="Live Selfie"
+                              className="max-h-[360px] max-w-full rounded-lg object-contain shadow-lg border border-white/5"
+                            />
+                          ) : (
+                            <div className="py-12 text-center text-xs text-slate-500">Live selfie not available</div>
+                          )}
+                        </div>
+
+                        {/* CNIC Front Column */}
+                        <div className="bg-navy-950 rounded-xl p-3 border border-cyan-500/30 flex flex-col items-center">
+                          <div className="w-full flex items-center justify-between pb-2 mb-2 border-b border-white/10 text-xs font-bold text-cyan-300">
+                            <span className="flex items-center gap-1.5">
+                              <FileText className="w-3.5 h-3.5 text-cyan-400" /> CNIC / Document Front
+                            </span>
+                            {compareDocs.front?.url && (
+                              <button
+                                type="button"
+                                onClick={() => window.open(compareDocs.front.url, '_blank')}
+                                className="text-[10px] text-slate-400 hover:text-white inline-flex items-center gap-1"
+                              >
+                                <ExternalLink className="w-3 h-3" /> Full Size
+                              </button>
+                            )}
+                          </div>
+                          {compareDocs.front?.url ? (
+                            <img
+                              src={compareDocs.front.url}
+                              alt="Document Front"
+                              className="max-h-[360px] max-w-full rounded-lg object-contain shadow-lg border border-white/5"
+                            />
+                          ) : (
+                            <div className="py-12 text-center text-xs text-slate-500">Front document not available</div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Single Document Container */
+                  <div className="rounded-xl border border-white/10 bg-navy-950 p-2 min-h-[240px] flex items-center justify-center overflow-hidden">
+                    {docLoading ? (
+                      <div className="flex flex-col items-center gap-2 py-8 text-slate-400 text-xs">
+                        <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
+                        <span>Loading private document photo securely...</span>
+                      </div>
+                    ) : docError ? (
+                      <div className="flex flex-col items-center gap-2 py-6 text-rose-400 text-xs text-center px-4">
+                        <AlertCircle className="w-6 h-6 text-rose-500" />
+                        <span>{docError}</span>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => handleLoadDoc(selectedItem, activeDoc?.side || 'front', activeDoc?.label || 'Document', modalType === 'magic_link')}
+                        >
+                          Retry
+                        </Button>
+                      </div>
+                    ) : activeDoc ? (
+                      activeDoc.mime?.startsWith('image/') ? (
+                        <img
+                          src={activeDoc.url}
+                          alt={activeDoc.label}
+                          className="max-h-[380px] max-w-full object-contain rounded shadow-lg"
+                        />
+                      ) : activeDoc.mime === 'application/pdf' ? (
+                        <iframe
+                          src={activeDoc.url}
+                          title={activeDoc.label}
+                          className="w-full h-[400px] rounded border-0 bg-white"
+                        />
+                      ) : (
+                        <div className="text-center py-6 text-xs text-slate-300">
+                          <p className="mb-2">Document format: {activeDoc.mime}</p>
+                          <button
+                            type="button"
+                            onClick={() => window.open(activeDoc.url, '_blank')}
+                            className="px-3 py-1.5 rounded-lg bg-cyan-600 text-white font-medium hover:bg-cyan-500 transition"
+                          >
+                            Open Document
+                          </button>
+                        </div>
+                      )
+                    ) : (
+                      <div className="py-8 text-center text-xs text-slate-500">
+                        Click a document button above to view photo
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             )}
 
@@ -1031,9 +1240,9 @@ export default function AdminVerificationsTab() {
                 </div>
               </form>
             ) : (
-              <div className="flex items-center justify-between pt-3 border-t border-white/10 flex-wrap gap-2">
-                <div className="flex items-center gap-2">
-                  <Button size="sm" variant="danger" onClick={() => setShowRejectForm(true)}>
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-3 border-t border-white/10 gap-2.5">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                  <Button size="sm" variant="danger" onClick={() => setShowRejectForm(true)} className="flex-1 sm:flex-none justify-center">
                     Reject Submission
                   </Button>
                   {isSuperAdmin && (
@@ -1041,7 +1250,7 @@ export default function AdminVerificationsTab() {
                       size="sm" 
                       variant="ghost" 
                       icon={Trash2}
-                      className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20"
+                      className="text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 border border-rose-500/20 flex-1 sm:flex-none justify-center"
                       onClick={() => {
                         if (modalType === 'magic_link') {
                           handleDeleteMagicLink(selectedItem.id);
@@ -1055,13 +1264,13 @@ export default function AdminVerificationsTab() {
                     </Button>
                   )}
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                   {activeDoc && activeDoc.mime?.startsWith('image/') && (
                     <Button 
                       size="sm" 
                       variant="primary" 
                       icon={Sparkles} 
-                      className="bg-gradient-to-r from-magenta-600 to-purple-600 hover:from-magenta-500 text-white font-bold"
+                      className="bg-gradient-to-r from-magenta-600 to-purple-600 hover:from-magenta-500 text-white font-bold flex-1 sm:flex-none justify-center"
                       onClick={() => setWatermarkModalData({
                         isOpen: true,
                         photoBlobUrl: activeDoc.url,
@@ -1078,6 +1287,7 @@ export default function AdminVerificationsTab() {
                     icon={CheckCircle2} 
                     onClick={() => handleApprove(selectedItem.id)}
                     isLoading={actionLoadingId === selectedItem.id}
+                    className="flex-1 sm:flex-none justify-center font-bold"
                   >
                     Approve Verification
                   </Button>

@@ -20,7 +20,8 @@ return [
     | a Rishta Request is accepted.
     |
     */
-    'contact_unlock_fee' => (float) env('PAYMENT_CONTACT_UNLOCK_FEE', 300.00),
+    'contact_unlock_fee' => (float) env('PAYMENT_CONTACT_UNLOCK_FEE', 2500.00),
+    'photo_view_fee' => (float) env('PAYMENT_PHOTO_VIEW_FEE', 300.00),
     'currency' => env('PAYMENT_CURRENCY', 'PKR'),
 
     /*

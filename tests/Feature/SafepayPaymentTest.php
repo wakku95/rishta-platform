@@ -107,7 +107,7 @@ class SafepayPaymentTest extends TestCase
                 'success' => true,
                 'data' => [
                     'request_code' => $request->request_code,
-                    'amount' => 300,
+                    'amount' => 2500,
                     'currency' => 'PKR',
                     'status' => 'pending',
                     'gateway' => 'safepay',

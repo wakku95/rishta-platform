@@ -91,6 +91,9 @@ class ContactUnlockController extends Controller
         if (!$isPaid) {
             $latestManualPayment = \App\Models\Payment::where('rishta_request_id', $rishtaRequest->id)
                 ->where('gateway', 'jazzcash_qr')
+                ->where(function ($q) {
+                    $q->whereNull('purpose')->orWhere('purpose', 'contact_unlock');
+                })
                 ->latest()
                 ->first();
 
@@ -99,12 +102,14 @@ class ContactUnlockController extends Controller
                     $pendingPayment = [
                         'payment_uuid' => $latestManualPayment->payment_uuid,
                         'transaction_reference' => $latestManualPayment->transaction_reference,
+                        'amount' => (float) $latestManualPayment->amount,
                         'created_at' => $latestManualPayment->created_at?->toIso8601String(),
                     ];
                 } elseif ($latestManualPayment->status === \App\Models\Payment::STATUS_FAILED) {
                     $rejectedPayment = [
                         'payment_uuid' => $latestManualPayment->payment_uuid,
                         'transaction_reference' => $latestManualPayment->transaction_reference,
+                        'amount' => (float) $latestManualPayment->amount,
                         'admin_notes' => $latestManualPayment->admin_notes,
                         'rejected_at' => ($latestManualPayment->reviewed_at ?? $latestManualPayment->updated_at)?->toIso8601String(),
                     ];

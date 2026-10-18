@@ -37,6 +37,7 @@ Route::prefix('auth')->group(function () {
     // Authenticated session routes
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
+        Route::put('/phone', [AuthController::class, 'updatePhone']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/email/verification-notification', [EmailVerificationController::class, 'resend'])
             ->middleware('throttle:3,10');
@@ -124,10 +125,19 @@ Route::middleware('auth:sanctum')->prefix('requests')->group(function () {
     Route::get('/received', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'received']);
     Route::get('/{request_code}', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'show']);
     Route::post('/{request_code}/accept', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'accept']);
+    Route::post('/{request_code}/reply', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'reply']);
+    Route::post('/{request_code}/edit', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'editProposal']);
+    Route::post('/{request_code}/request-verification', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'requestVerification']);
+    Route::post('/{request_code}/upload-photo', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'uploadPhoto']);
+    Route::get('/{request_code}/view-photo', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'viewPhoto']);
+    Route::get('/{request_code}/view-my-photo', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'viewMyPhoto']);
+    Route::post('/{request_code}/photo/payment/initiate', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'initiatePhotoPayment']);
+    Route::post('/{request_code}/photo/payment/submit-proof', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'submitManualPhotoProof'])->middleware('throttle:10,1');
+    Route::post('/{request_code}/share-nic', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'shareNic']);
     Route::post('/{request_code}/decline', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'decline']);
     Route::post('/{request_code}/cancel', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'cancel']);
 
-    // Phase 5: Payment (Rs. 300 initiator payment)
+    // Phase 5: Payment (Rs. 2500 initiator payment)
     Route::post('/{request_code}/payment/initiate', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'initiate']);
     Route::post('/{request_code}/payment/submit-proof', [\App\Http\Controllers\Api\Payments\PaymentController::class, 'submitManualProof'])->middleware('throttle:10,1');
 
@@ -199,6 +209,12 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
 
     // Requests Oversight & Intervention
     Route::get('/requests', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'requests']);
+    Route::post('/requests/{id}/approve', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'approveProposal']);
+    Route::post('/requests/{id}/reject', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'rejectProposal']);
+    Route::post('/requests/{id}/request-revision', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'requestRevisionProposal']);
+    Route::post('/requests/{id}/approve-photo', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'approvePhoto']);
+    Route::post('/requests/{id}/reject-photo', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'rejectPhoto']);
+    Route::get('/requests/{id}/view-photo', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'viewCandidatePhoto']);
     Route::post('/requests/{id}/cancel', [\App\Http\Controllers\Api\Admin\AdminActivityController::class, 'cancelRequest']);
 
     // Financial & Contact Unlock Logs

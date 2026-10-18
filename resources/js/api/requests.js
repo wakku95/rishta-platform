@@ -1,13 +1,14 @@
 import api from './client';
 
 /**
- * Send a new Rishta request to a candidate.
+ * Send a new Rishta request / proposal to a candidate.
  *
- * @param {string} profileCode - Target candidate profile code
+ * @param {string|Object} payload - Target candidate profile code or payload object { profile_code, sender_intro, sender_questions }
  * @returns {Promise<Object>}
  */
-export const sendRishtaRequest = async (profileCode) => {
-  const response = await api.post('/requests', { profile_code: profileCode });
+export const sendRishtaRequest = async (payload) => {
+  const data = typeof payload === 'string' ? { profile_code: payload } : payload;
+  const response = await api.post('/requests', data);
   return response.data;
 };
 
@@ -45,13 +46,26 @@ export const getRequestDetails = async (requestCode) => {
 };
 
 /**
- * Accept a received request.
+ * Accept a received request with optional Q&A response.
  *
  * @param {string} requestCode
+ * @param {Object} [payload={}] - { receiver_intro, receiver_answers, receiver_questions }
  * @returns {Promise<Object>}
  */
-export const acceptRequest = async (requestCode) => {
-  const response = await api.post(`/requests/${requestCode}/accept`);
+export const acceptRequest = async (requestCode, payload = {}) => {
+  const response = await api.post(`/requests/${requestCode}/accept`, payload);
+  return response.data;
+};
+
+/**
+ * Sender replies to candidate's counter-questions.
+ *
+ * @param {string} requestCode
+ * @param {Object} payload - { sender_answers }
+ * @returns {Promise<Object>}
+ */
+export const replyRequest = async (requestCode, payload = {}) => {
+  const response = await api.post(`/requests/${requestCode}/reply`, payload);
   return response.data;
 };
 
@@ -77,6 +91,80 @@ export const cancelRequest = async (requestCode) => {
   return response.data;
 };
 
+/**
+ * Edit initial proposal intro and questions if admin requested revision.
+ */
+export const editProposal = async (requestCode, payload = {}) => {
+  const response = await api.post(`/requests/${requestCode}/edit`, payload);
+  return response.data;
+};
+
+/**
+ * Request Photo or CNIC verification before paying contact unlock fee.
+ */
+export const requestVerification = async (requestCode, type) => {
+  const response = await api.post(`/requests/${requestCode}/request-verification`, { type });
+  return response.data;
+};
+
+/**
+ * Upload and share private photo for proposal.
+ */
+export const uploadProposalPhoto = async (requestCode, formData) => {
+  const response = await api.post(`/requests/${requestCode}/upload-photo`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+/**
+ * Fetch candidate photo blob securely.
+ */
+export const getProposalPhotoBlob = async (requestCode) => {
+  const response = await api.get(`/requests/${requestCode}/view-photo`, {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+/**
+ * Fetch own uploaded photo blob securely.
+ */
+export const getMyProposalPhotoBlob = async (requestCode) => {
+  const response = await api.get(`/requests/${requestCode}/view-my-photo`, {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+/**
+ * Initiate private photo unlock fee payment.
+ */
+export const initiatePhotoPayment = async (requestCode) => {
+  const response = await api.post(`/requests/${requestCode}/photo/payment/initiate`);
+  return response.data;
+};
+
+/**
+ * Submit manual payment proof for photo unlock.
+ */
+export const submitManualPhotoProof = async (requestCode, formData) => {
+  const response = await api.post(`/requests/${requestCode}/photo/payment/submit-proof`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+/**
+ * Share verified CNIC badge & status with candidate.
+ */
+export const shareProposalNic = async (requestCode) => {
+  const response = await api.post(`/requests/${requestCode}/share-nic`);
+  return response.data;
+};
+
 /*
 |--------------------------------------------------------------------------
 | Phase 5: Payment & Contact Unlock APIs
@@ -84,7 +172,7 @@ export const cancelRequest = async (requestCode) => {
 */
 
 /**
- * Initiate contact unlock fee payment (Rs. 300 PKR) for accepted request.
+ * Initiate contact unlock fee payment (Rs. 2500 PKR) for accepted request.
  * Restricted to request sender.
  *
  * @param {string} requestCode

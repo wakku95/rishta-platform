@@ -7,6 +7,7 @@ import {
 import { verificationApi } from '../../api/verification';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
+import LiveSelfieCamera from '../../components/verification/LiveSelfieCamera';
 
 export default function PublicDocumentVerificationPage() {
   const { token } = useParams();
@@ -19,6 +20,7 @@ export default function PublicDocumentVerificationPage() {
   const [frontPreview, setFrontPreview] = useState(null);
   const [backFile, setBackFile] = useState(null);
   const [backPreview, setBackPreview] = useState(null);
+  const [selfieFile, setSelfieFile] = useState(null);
   const [notes, setNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
@@ -90,6 +92,9 @@ export default function PublicDocumentVerificationPage() {
     formData.append('front_image', frontFile);
     if (backFile) {
       formData.append('back_image', backFile);
+    }
+    if (selfieFile) {
+      formData.append('live_selfie', selfieFile, 'live_selfie.jpg');
     }
     if (notes.trim()) {
       formData.append('notes', notes.trim());
@@ -220,10 +225,31 @@ export default function PublicDocumentVerificationPage() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               
+              {/* Step 1: Live Selfie Capture for Identity/CNIC */}
+              {record.document_type === 'cnic' && (
+                <div className="space-y-2 pb-2 border-b border-white/10">
+                  <label className="block text-xs font-bold text-white flex items-center justify-between">
+                    <span>Step 1: Live Selfie Presence <span className="text-magenta-400 font-normal">(Free Face Match)</span></span>
+                    {selfieFile && (
+                      <span className="text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> Selfie Captured
+                      </span>
+                    )}
+                  </label>
+                  <p className="text-[11px] text-slate-400">
+                    Take a quick live photo using your camera. Our team matches your live face against your CNIC photo to prevent fake profiles.
+                  </p>
+                  <LiveSelfieCamera
+                    onCapture={(blob) => setSelfieFile(blob)}
+                    onClear={() => setSelfieFile(null)}
+                  />
+                </div>
+              )}
+
               {/* Front Side / Photo Upload */}
               <div className="space-y-2">
                 <label className="block text-xs font-bold text-white">
-                  {record.document_type === 'photo' ? 'Candidate Photograph (Face / Portrait)' : 'Front Side (Photo & Details)'} <span className="text-rose-400">*</span>
+                  {record.document_type === 'cnic' ? 'Step 2: CNIC Front Side (Photo & CNIC Number)' : record.document_type === 'photo' ? 'Candidate Photograph (Face / Portrait)' : 'Front Side (Photo & Details)'} <span className="text-rose-400">*</span>
                 </label>
 
                 <label className="border-2 border-dashed border-white/15 hover:border-magenta-500/50 rounded-2xl p-4 flex flex-col items-center justify-center cursor-pointer transition bg-navy-900/40 hover:bg-navy-900/60 group">

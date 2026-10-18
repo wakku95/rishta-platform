@@ -12,6 +12,11 @@ import {
   Calendar,
   Lock,
   Unlock,
+  MessageSquare,
+  AlertCircle,
+  Sparkles,
+  ShieldCheck,
+  Camera,
 } from 'lucide-react';
 import {
   getReceivedRequests,
@@ -19,6 +24,7 @@ import {
   acceptRequest,
   declineRequest,
   cancelRequest,
+  requestVerification,
 } from '../../api/requests';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -29,6 +35,11 @@ import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import Alert from '../../components/ui/Alert';
 import Pagination from '../../components/ui/Pagination';
 import ContactUnlockModal from '../../components/requests/ContactUnlockModal';
+import AcceptProposalModal from '../../components/requests/AcceptProposalModal';
+import ReplyProposalModal from '../../components/requests/ReplyProposalModal';
+import EditProposalModal from '../../components/requests/EditProposalModal';
+import PhotoExchangeModal from '../../components/requests/PhotoExchangeModal';
+import IdentityVerificationGateModal from '../../components/verification/IdentityVerificationGateModal';
 
 export default function RequestsPage() {
   const [activeTab, setActiveTab] = useState('received'); // 'received' | 'sent'
@@ -43,10 +54,16 @@ export default function RequestsPage() {
   const [actionFeedback, setActionFeedback] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [confirmAcceptOpen, setConfirmAcceptOpen] = useState(false);
+  const [replyModalOpen, setReplyModalOpen] = useState(false);
+  const [editProposalModalOpen, setEditProposalModalOpen] = useState(false);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [confirmDeclineOpen, setConfirmDeclineOpen] = useState(false);
   const [confirmCancelOpen, setConfirmCancelOpen] = useState(false);
+  const [confirmPhotoRequestOpen, setConfirmPhotoRequestOpen] = useState(false);
+  const [photoRequestTarget, setPhotoRequestTarget] = useState(null);
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
   const [unlockRequest, setUnlockRequest] = useState(null);
+  const [identityGateOpen, setIdentityGateOpen] = useState(false);
 
   useEffect(() => {
     fetchRequests(activeTab, page, statusFilter);
@@ -111,8 +128,19 @@ export default function RequestsPage() {
       setActionFeedback({ type: 'success', message: 'Rishta request accepted!' });
       fetchRequests(activeTab, page, statusFilter);
     } catch (err) {
-      setActionFeedback({ type: 'error', message: err.response?.data?.message || 'Failed to accept request.' });
       setConfirmAcceptOpen(false);
+      const errData = err.response?.data;
+      const errCode = errData?.error_code || errData?.error;
+      const isIdentityReq = errCode === 'IDENTITY_VERIFICATION_REQUIRED'
+        || errData?.errors?.identity_verified === false
+        || errData?.message?.toLowerCase().includes('identity verification')
+        || errData?.message?.toLowerCase().includes('cnic');
+
+      if (isIdentityReq) {
+        setIdentityGateOpen(true);
+      } else {
+        setActionFeedback({ type: 'error', message: errData?.message || 'Failed to accept request.' });
+      }
     } finally {
       setActionLoading(false);
     }
@@ -150,9 +178,55 @@ export default function RequestsPage() {
     }
   };
 
-  const getStatusBadge = (status) => {
+  const handleRequestVerification = async (requestCode, type) => {
+    setActionLoading(true);
+    try {
+      const res = await requestVerification(requestCode, type);
+      setActionFeedback({ type: 'success', message: res.message });
+      fetchRequests(activeTab, page, statusFilter);
+    } catch (err) {
+      setActionFeedback({ type: 'error', message: err.response?.data?.message || 'Verification request failed.' });
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleConfirmPhotoRequest = async () => {
+    if (!photoRequestTarget) return;
+    const reqCode = photoRequestTarget.request_code;
+    setConfirmPhotoRequestOpen(false);
+    await handleRequestVerification(reqCode, 'photo');
+    setPhotoRequestTarget(null);
+  };
+
+  const getStatusBadge = (status, adminStatus, isSender) => {
+    if (adminStatus === 'needs_revision') {
+      return (
+        <Badge variant="warning" className="inline-flex items-center gap-1 font-bold bg-amber-500/20 text-amber-300 border-amber-500/40">
+          <AlertCircle className="w-3 h-3 text-amber-400" />
+          <span>Needs Correction / ترمیم درکار ہے</span>
+        </Badge>
+      );
+    }
+
     switch (status) {
       case 'pending':
+        if (isSender && adminStatus === 'pending_review') {
+          return (
+            <Badge variant="warning" className="inline-flex items-center gap-1 font-bold">
+              <Clock className="w-3 h-3" />
+              <span>Under Admin Review / زیرِ جائزہ</span>
+            </Badge>
+          );
+        }
+        if (isSender && adminStatus === 'rejected') {
+          return (
+            <Badge variant="danger" className="inline-flex items-center gap-1 font-bold">
+              <XCircle className="w-3 h-3" />
+              <span>Review Rejected</span>
+            </Badge>
+          );
+        }
         return (
           <Badge variant="warning" className="inline-flex items-center gap-1 font-bold">
             <Clock className="w-3 h-3" />
@@ -160,6 +234,14 @@ export default function RequestsPage() {
           </Badge>
         );
       case 'accepted':
+        if (adminStatus === 'pending_review') {
+          return (
+            <Badge variant="warning" className="inline-flex items-center gap-1 font-bold">
+              <Clock className="w-3 h-3" />
+              <span>{isSender ? 'Response Under Review' : 'Awaiting Admin Approval'}</span>
+            </Badge>
+          );
+        }
         return (
           <Badge variant="success" className="inline-flex items-center gap-1 font-bold">
             <CheckCircle className="w-3 h-3" />
@@ -290,104 +372,400 @@ export default function RequestsPage() {
             return (
               <Card
                 key={req.request_code}
-                className="p-3.5 sm:p-5 bg-navy-800 border border-slate-750 shadow-md hover:border-magenta-500/40 transition-colors rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4"
+                className="p-3.5 sm:p-5 bg-navy-800 border border-slate-750 shadow-md hover:border-magenta-500/40 transition-colors rounded-2xl flex flex-col gap-3 sm:gap-4"
               >
-                {/* Left: Request info & Candidate summary */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <span className="font-mono text-xs font-bold text-slate-500">
-                      {req.request_code}
-                    </span>
-                    {getStatusBadge(req.status)}
-                    <span className="text-xs text-slate-400">
-                      {req.created_at ? new Date(req.created_at).toLocaleDateString() : ''}
-                    </span>
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+                  {/* Left: Request info & Candidate summary */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-3">
+                      <span className="font-mono text-xs font-bold text-slate-500">
+                        {req.request_code}
+                      </span>
+                      {getStatusBadge(req.status, req.admin_status, req.is_sender)}
+                      <span className="text-xs text-slate-400">
+                        {req.created_at ? new Date(req.created_at).toLocaleDateString() : ''}
+                      </span>
+                    </div>
+
+                    {candidate ? (
+                      <div>
+                        <div className="flex items-baseline gap-2">
+                          <Link
+                            to={`/profiles/${candidate.profile_code}`}
+                            className="font-serif text-lg font-bold text-white hover:text-magenta-400 transition-colors"
+                          >
+                            Candidate #{candidate.profile_code}
+                          </Link>
+                          <span className="text-xs font-bold text-slate-400">
+                            ({candidate.age} yrs • {candidate.gender} • {candidate.city})
+                          </span>
+                        </div>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {candidate.education} • {candidate.profession} • {candidate.religion}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-500 italic">Candidate profile unavailable</p>
+                    )}
                   </div>
 
-                  {candidate ? (
-                    <div>
-                      <div className="flex items-baseline gap-2">
-                        <Link
-                          to={`/profiles/${candidate.profile_code}`}
-                          className="font-serif text-lg font-bold text-white hover:text-magenta-400 transition-colors"
-                        >
-                          Candidate #{candidate.profile_code}
-                        </Link>
-                        <span className="text-xs font-bold text-slate-400">
-                          ({candidate.age} yrs • {candidate.gender} • {candidate.city})
+                  {/* Right: Actions */}
+                  <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-750/70">
+                    {candidate && (
+                      <Link to={`/profiles/${candidate.profile_code}`}>
+                        <Button variant="secondary" size="sm" icon={Eye}>
+                          View Profile
+                        </Button>
+                      </Link>
+                    )}
+
+                    {/* Accepted Connection Actions */}
+                    {req.status === 'accepted' && (
+                      req.admin_status === 'pending_review' ? (
+                        <span className="text-xs text-amber-300 font-semibold bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/30 flex items-center gap-1.5">
+                          <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                          <span>{req.is_sender ? 'Response under admin moderation' : 'Awaiting admin approval of your response'}</span>
                         </span>
+                      ) : req.admin_status === 'needs_revision' ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={AlertCircle}
+                          onClick={() => {
+                            setSelectedRequest(req);
+                            if (req.is_sender) {
+                              setReplyModalOpen(true);
+                            } else {
+                              setConfirmAcceptOpen(true);
+                            }
+                          }}
+                          className="font-bold shadow-md bg-amber-600 hover:bg-amber-500 text-white"
+                        >
+                          Edit & Resubmit Response
+                        </Button>
+                      ) : req.is_sender && req.receiver_questions && !req.sender_answers ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={MessageSquare}
+                          onClick={() => {
+                            setSelectedRequest(req);
+                            setReplyModalOpen(true);
+                          }}
+                          className="font-bold shadow-md bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-500 hover:to-blue-500 text-white"
+                        >
+                          Answer Candidate's Questions
+                        </Button>
+                      ) : (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={Lock}
+                          onClick={() => {
+                            setUnlockRequest(req);
+                            setUnlockModalOpen(true);
+                          }}
+                          className="font-bold shadow-md bg-gradient-to-r from-magenta-500 to-purple-600 text-white"
+                        >
+                          Unlock Verified Contact
+                        </Button>
+                      )
+                    )}
+
+                    {/* Received Pending Actions */}
+                    {activeTab === 'received' && req.status === 'pending' && (
+                      <>
+                        <Button
+                          variant="success"
+                          size="sm"
+                          icon={CheckCircle}
+                          onClick={() => {
+                            setSelectedRequest(req);
+                            if (!req.i_am_identity_verified) {
+                              setIdentityGateOpen(true);
+                            } else {
+                              setConfirmAcceptOpen(true);
+                            }
+                          }}
+                          className="whitespace-nowrap font-bold"
+                        >
+                          Review & Accept Proposal
+                        </Button>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          icon={XCircle}
+                          onClick={() => { setSelectedRequest(req); setConfirmDeclineOpen(true); }}
+                          className="whitespace-nowrap"
+                        >
+                          Decline
+                        </Button>
+                      </>
+                    )}
+
+                    {/* Sent Pending Actions */}
+                    {activeTab === 'sent' && req.status === 'pending' && (
+                      <div className="flex items-center gap-2">
+                        {req.admin_status === 'needs_revision' && (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon={AlertCircle}
+                            onClick={() => { setSelectedRequest(req); setEditProposalModalOpen(true); }}
+                            className="whitespace-nowrap font-bold bg-amber-600 hover:bg-amber-500 text-white"
+                          >
+                            Edit Proposal
+                          </Button>
+                        )}
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => { setSelectedRequest(req); setConfirmCancelOpen(true); }}
+                          className="whitespace-nowrap"
+                        >
+                          Cancel Request
+                        </Button>
                       </div>
-                      <p className="text-xs text-slate-400 mt-0.5">
-                        {candidate.education} • {candidate.profession} • {candidate.religion}
-                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Proposal Q&A Section */}
+                {(req.sender_intro || req.sender_questions || req.receiver_intro || req.receiver_answers || req.receiver_questions || req.sender_answers) && (
+                  <div className="w-full pt-3 border-t border-slate-750/70 space-y-2.5">
+                    <div className="flex items-center gap-1.5 text-[11px] font-bold text-magenta-400">
+                      <MessageSquare className="w-3.5 h-3.5" />
+                      <span>Proposal Communication & Questions / رشتہ انکوائری و سوالات</span>
                     </div>
-                  ) : (
-                    <p className="text-xs text-slate-500 italic">Candidate profile unavailable</p>
-                  )}
-                </div>
 
-                {/* Right: Actions */}
-                <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-750/70">
-                  {candidate && (
-                    <Link to={`/profiles/${candidate.profile_code}`}>
-                      <Button variant="secondary" size="sm" icon={Eye}>
-                        View Profile
-                      </Button>
-                    </Link>
-                  )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+                      {req.sender_intro && (
+                        <div className="bg-navy-900/80 p-2.5 rounded-xl border border-slate-750/80">
+                          <span className="font-bold text-slate-400 block text-[10px] uppercase">
+                            {req.is_sender ? 'Your Introduction' : 'Candidate Introduction'}:
+                          </span>
+                          <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.sender_intro}"</p>
+                        </div>
+                      )}
 
-                  {/* Accepted Connection Actions */}
-                  {req.status === 'accepted' && (
-                    <Button
-                      variant="primary"
-                      size="sm"
-                      icon={Lock}
-                      onClick={() => {
-                        setUnlockRequest(req);
-                        setUnlockModalOpen(true);
-                      }}
-                      className="font-bold shadow-md"
-                    >
-                      Contact Details & Verification
-                    </Button>
-                  )}
+                      {req.sender_questions && (
+                        <div className="bg-navy-900/80 p-2.5 rounded-xl border border-cyan-500/20">
+                          <span className="font-bold text-cyan-400 block text-[10px] uppercase">
+                            {req.is_sender ? 'Your Questions for Candidate' : 'Candidate\'s Questions for You'}:
+                          </span>
+                          <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.sender_questions}"</p>
+                        </div>
+                      )}
 
-                  {/* Received Pending Actions */}
-                  {activeTab === 'received' && req.status === 'pending' && (
-                    <>
+                      {req.receiver_intro && (
+                        <div className="bg-navy-900/80 p-2.5 rounded-xl border border-purple-500/20">
+                          <span className="font-bold text-purple-400 block text-[10px] uppercase">
+                            {req.is_sender ? "Candidate's Family & Background" : 'Your Family & Background'}:
+                          </span>
+                          <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.receiver_intro}"</p>
+                        </div>
+                      )}
+
+                      {req.is_sender && req.admin_status === 'pending_review' && (req.receiver_answers || req.receiver_questions) ? (
+                        <div className="col-span-1 md:col-span-2 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+                          <Clock className="w-4 h-4 shrink-0 text-amber-400" />
+                          <span>Candidate has responded to your proposal! Their answers are currently under admin review and will appear here once approved.</span>
+                        </div>
+                      ) : (
+                        <>
+                          {req.receiver_answers && (
+                            <div className="bg-navy-900/80 p-2.5 rounded-xl border border-emerald-500/20">
+                              <span className="font-bold text-emerald-400 block text-[10px] uppercase">
+                                {req.is_sender ? "Candidate's Answers" : 'Your Answers'}:
+                              </span>
+                              <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.receiver_answers}"</p>
+                            </div>
+                          )}
+
+                          {req.receiver_questions && (
+                            <div className="bg-navy-900/80 p-2.5 rounded-xl border border-amber-500/20">
+                              <span className="font-bold text-amber-400 block text-[10px] uppercase">
+                                {req.is_sender ? "Candidate's Questions" : 'Your Questions'}:
+                              </span>
+                              <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.receiver_questions}"</p>
+                            </div>
+                          )}
+
+                          {req.sender_answers && (!req.is_sender && req.admin_status === 'pending_review' ? (
+                            <div className="col-span-1 md:col-span-2 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
+                              <Clock className="w-4 h-4 shrink-0 text-amber-400" />
+                              <span>Sender has submitted answers to your questions! They are currently under moderation review and will appear here shortly.</span>
+                            </div>
+                          ) : (
+                            <div className="bg-navy-900/80 p-2.5 rounded-xl border border-teal-500/20">
+                              <span className="font-bold text-teal-400 block text-[10px] uppercase">
+                                {req.is_sender ? 'Your Answers to Questions' : "Candidate's Answers"}:
+                              </span>
+                              <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.sender_answers}"</p>
+                            </div>
+                          ))}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* Mutual Trust & Next Steps Gate (Phase 4.5) */}
+                {req.status === 'accepted' && req.admin_status === 'approved' && (!req.receiver_questions || req.sender_answers) && (
+                  <div className="w-full mt-2 p-3.5 bg-gradient-to-r from-navy-900 via-navy-850 to-navy-900 border border-magenta-500/30 rounded-xl space-y-2.5 shadow-sm">
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                          <Sparkles className="w-4 h-4 text-magenta-400" />
+                          <span>Stage: Mutual Q&A Completed / سوال و جواب کا مرحلہ مکمل</span>
+                        </span>
+                        <p className="text-[11px] text-slate-400 mt-0.5">
+                          Carefully evaluate candidate answers. You may exchange photos with candidate before deciding to unlock contact details.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        {/* Photo Exchange Action */}
+                        {req.candidate_photo_shared ? (
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            icon={Camera}
+                            onClick={() => { setSelectedRequest(req); setPhotoModalOpen(true); }}
+                            className="text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-sm"
+                          >
+                            📷 View Candidate Photo
+                          </Button>
+                        ) : req.photo_requested_by_candidate && req.photo_requested_by_me ? (
+                          <Button
+                            size="sm"
+                            variant="primary"
+                            icon={Camera}
+                            onClick={() => { setSelectedRequest(req); setPhotoModalOpen(true); }}
+                            className="text-xs font-bold bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-sm"
+                          >
+                            {req.my_photo_shared ? '📷 Mutual Photo: Awaiting Candidate' : '📷 Mutual Exchange: Upload My Photo'}
+                          </Button>
+                        ) : req.photo_requested_by_candidate ? (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              icon={Camera}
+                              onClick={() => { setSelectedRequest(req); setPhotoModalOpen(true); }}
+                              className="text-xs font-bold bg-gradient-to-r from-magenta-600 to-pink-600 text-white shadow-sm"
+                            >
+                              {req.my_photo_shared ? '📷 Photo Exchanged' : '📷 Candidate Requested Photo (Upload)'}
+                            </Button>
+                            {!req.photo_requested_by_me && (
+                              <Button
+                                size="sm"
+                                variant="secondary"
+                                icon={Camera}
+                                disabled={actionLoading}
+                                onClick={() => {
+                                  setPhotoRequestTarget(req);
+                                  setConfirmPhotoRequestOpen(true);
+                                }}
+                                className="text-xs font-semibold text-cyan-300 border-cyan-500/40 hover:bg-cyan-500/10"
+                              >
+                                Request Their Photo Too
+                              </Button>
+                            )}
+                          </div>
+                        ) : req.photo_requested_by_me ? (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={Camera}
+                            onClick={() => { setSelectedRequest(req); setPhotoModalOpen(true); }}
+                            className="text-xs font-semibold text-cyan-300 border-cyan-500/40"
+                          >
+                            📷 {req.my_photo_shared ? 'Manage My Photo' : 'Photo Requested (Awaiting Candidate)'}
+                          </Button>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={Camera}
+                            disabled={actionLoading}
+                            onClick={() => {
+                              setPhotoRequestTarget(req);
+                              setConfirmPhotoRequestOpen(true);
+                            }}
+                            className="text-xs font-semibold"
+                          >
+                            Request Photo
+                          </Button>
+                        )}
+
+                        {/* CNIC Verified Status Badge (Safe & Admin Audited) */}
+                        {req.candidate_nic_shared || req.candidate_is_identity_verified ? (
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-emerald-300 bg-emerald-950/40 border border-emerald-500/30 rounded-lg shadow-sm">
+                            <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+                            <span>CNIC & Identity Verified ✅</span>
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] text-slate-400 bg-slate-900/50 border border-slate-750 rounded-lg">
+                            <ShieldCheck className="w-3.5 h-3.5 text-slate-500 shrink-0" />
+                            <span>Verification Pending</span>
+                          </span>
+                        )}
+
+                        {/* Unlock Contact */}
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={Unlock}
+                          onClick={() => {
+                            setUnlockRequest(req);
+                            setUnlockModalOpen(true);
+                          }}
+                          className="font-bold text-xs bg-gradient-to-r from-magenta-500 to-purple-600 shadow-md text-white"
+                        >
+                          Satisfied? Unlock Contact
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Needs Revision Feedback Alert */}
+                {req.admin_status === 'needs_revision' && req.admin_notes && (
+                  <div className="w-full p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-200 text-xs space-y-1.5">
+                    <div className="flex items-center gap-1.5 font-bold text-amber-400 uppercase text-[11px]">
+                      <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                      <span>Moderator Feedback / درکار ترمیم:</span>
+                    </div>
+                    <p className="leading-relaxed pl-5 italic text-amber-100">"{req.admin_notes}"</p>
+                    <div className="pl-5 pt-1">
                       <Button
-                        variant="success"
                         size="sm"
-                        icon={CheckCircle}
-                        onClick={() => { setSelectedRequest(req); setConfirmAcceptOpen(true); }}
-                        className="whitespace-nowrap"
+                        variant="primary"
+                        onClick={() => {
+                          setSelectedRequest(req);
+                          if (req.status === 'pending') {
+                            setEditProposalModalOpen(true);
+                          } else if (req.is_sender) {
+                            setReplyModalOpen(true);
+                          } else {
+                            setConfirmAcceptOpen(true);
+                          }
+                        }}
+                        className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs"
                       >
-                        Accept
+                        Edit & Resubmit Answers
                       </Button>
-                      <Button
-                        variant="danger"
-                        size="sm"
-                        icon={XCircle}
-                        onClick={() => { setSelectedRequest(req); setConfirmDeclineOpen(true); }}
-                        className="whitespace-nowrap"
-                      >
-                        Decline
-                      </Button>
-                    </>
-                  )}
+                    </div>
+                  </div>
+                )}
 
-                  {/* Sent Pending Actions */}
-                  {activeTab === 'sent' && req.status === 'pending' && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => { setSelectedRequest(req); setConfirmCancelOpen(true); }}
-                      className="whitespace-nowrap"
-                    >
-                      Cancel Request
-                    </Button>
-                  )}
-                </div>
+                {req.admin_status === 'rejected' && req.admin_notes && (
+                  <div className="w-full p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-300 text-xs">
+                    <strong className="block text-[11px] uppercase text-rose-400">Admin Review Note:</strong>
+                    <span>{req.admin_notes}</span>
+                  </div>
+                )}
               </Card>
             );
           })}
@@ -420,17 +798,56 @@ export default function RequestsPage() {
         />
       )}
 
-      {/* Confirm Dialogs */}
-      <ConfirmDialog
+      {/* Accept Proposal Modal */}
+      <AcceptProposalModal
         isOpen={confirmAcceptOpen}
         onClose={() => setConfirmAcceptOpen(false)}
-        onConfirm={handleAccept}
-        title="Accept Rishta Request"
-        message="Are you sure you want to accept this Rishta request? Both candidates will enter the mutual interest stage."
-        confirmText="Accept Request"
-        cancelText="Cancel"
-        variant="primary"
-        loading={actionLoading}
+        request={selectedRequest}
+        onSuccess={() => {
+          setActionFeedback({ type: 'success', message: 'Proposal accepted successfully!' });
+          fetchRequests(activeTab, page, statusFilter);
+        }}
+      />
+
+      {/* Reply Proposal Modal (Sender answers receiver's questions) */}
+      <ReplyProposalModal
+        isOpen={replyModalOpen}
+        onClose={() => {
+          setReplyModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
+        onSuccess={() => {
+          setActionFeedback({ type: 'success', message: 'Your answers have been submitted for moderation review!' });
+          fetchRequests(activeTab, page, statusFilter);
+        }}
+      />
+
+      {/* Edit Initial Proposal Modal (When Admin requests revision) */}
+      <EditProposalModal
+        isOpen={editProposalModalOpen}
+        onClose={() => {
+          setEditProposalModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
+        onSuccess={() => {
+          setActionFeedback({ type: 'success', message: 'Your proposal has been updated and resubmitted for moderation review!' });
+          fetchRequests(activeTab, page, statusFilter);
+        }}
+      />
+
+      {/* Private Photo Exchange Modal */}
+      <PhotoExchangeModal
+        isOpen={photoModalOpen}
+        onClose={() => {
+          setPhotoModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
+        onSuccess={() => {
+          fetchRequests(activeTab, page, statusFilter);
+        }}
       />
 
       <ConfirmDialog
@@ -456,6 +873,51 @@ export default function RequestsPage() {
         variant="danger"
         loading={actionLoading}
       />
+
+      <ConfirmDialog
+        isOpen={confirmPhotoRequestOpen}
+        onClose={() => {
+          setConfirmPhotoRequestOpen(false);
+          setPhotoRequestTarget(null);
+        }}
+        onConfirm={handleConfirmPhotoRequest}
+        title="Request Candidate Photo / تصویر کی درخواست"
+        variant="primary"
+        icon={Camera}
+        confirmText="جی ہاں، ریکویسٹ بھیجیں"
+        cancelText="منسوخ کریں"
+        loading={actionLoading}
+        description={
+          <div className="space-y-3 text-left">
+            <div className="p-3 bg-navy-900/80 border border-slate-700/60 rounded-xl space-y-1.5">
+              <p className="text-sm font-semibold text-white">
+                کیا آپ امیدوار سے تصویر شیئر کرنے کی درخواست کرنا چاہتے ہیں؟
+              </p>
+              <p className="text-xs text-slate-300 leading-relaxed">
+                امیدوار کے لائیو تصویر اپلوڈ کرنے اور <strong>ایڈمن کی کوالٹی جانچ و منظوری (Approval)</strong> کے بعد، واٹر مارک شدہ تصویر دیکھنے کے لیے <strong>Rs. 300</strong> فیس ادا کرنی ہوگی۔
+              </p>
+            </div>
+            <div className="p-2.5 bg-cyan-950/40 border border-cyan-800/50 rounded-lg text-xs text-cyan-200 flex items-start gap-2">
+              <span className="text-base shrink-0">🛡️</span>
+              <span className="leading-snug">
+                <strong>فیس کی حفاظت:</strong> ایڈمن کے منظور کرنے سے پہلے آپ سے <strong>کوئی فیس چارج نہیں ہوگی</strong>۔ اگر امیدوار غلط یا غیر معیاری تصویر دے گا تو آپ کے پیسے بالکل ضائع نہیں ہوں گے۔
+              </span>
+            </div>
+          </div>
+        }
+      />
+
+      {identityGateOpen && (
+        <IdentityVerificationGateModal
+          isOpen={identityGateOpen}
+          onClose={() => setIdentityGateOpen(false)}
+          actionType="accept"
+          onVerified={() => {
+            setIdentityGateOpen(false);
+            fetchRequests(activeTab, page, statusFilter);
+          }}
+        />
+      )}
     </div>
   );
 }

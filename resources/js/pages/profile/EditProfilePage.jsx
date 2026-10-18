@@ -328,11 +328,17 @@ export default function EditProfilePage() {
             />
 
             <Select
-              label="Marital Status"
+              label={isIdentityVerified ? "Marital Status (Locked)" : "Marital Status"}
               name="marital_status"
               value={formData.marital_status}
               onChange={handleChange}
               error={errors.marital_status?.[0]}
+              disabled={isIdentityVerified}
+              helperText={
+                isIdentityVerified
+                  ? "🔒 Marital status is verified and locked via CNIC identity document. Contact Support if administrative correction is required."
+                  : undefined
+              }
               options={
                 formData.gender === 'male'
                   ? options.marital_statuses

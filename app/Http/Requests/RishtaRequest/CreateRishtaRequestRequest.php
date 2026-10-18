@@ -15,6 +15,8 @@ class CreateRishtaRequestRequest extends FormRequest
     {
         return [
             'profile_code' => ['required', 'string', 'regex:/^RK-[A-Z0-9]{6}$/'],
+            'sender_intro' => ['nullable', 'string', 'max:2500'],
+            'sender_questions' => ['nullable', 'string', 'max:2500'],
         ];
     }
 

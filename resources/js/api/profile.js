@@ -63,3 +63,11 @@ export const getProfilePreview = async () => {
   const response = await api.get('/profile/preview');
   return response.data;
 };
+
+/**
+ * Update authenticated user's confidential contact phone/WhatsApp number.
+ */
+export const updatePhone = async (phone) => {
+  const response = await api.put('/auth/phone', { phone });
+  return response.data;
+};

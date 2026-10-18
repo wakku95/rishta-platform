@@ -105,7 +105,7 @@ export default function AdminPage() {
 
         {/* Tab Body */}
         <div className="mt-6">
-          {activeTab === 'overview' && <AdminOverviewTab />}
+          {activeTab === 'overview' && <AdminOverviewTab onNavigateTab={setTab} />}
           {activeTab === 'matchmaker' && <AdminMatchmakerTab />}
           {activeTab === 'users' && <AdminUsersTab />}
           {activeTab === 'profiles' && <AdminProfilesTab />}

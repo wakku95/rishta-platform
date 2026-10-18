@@ -31,6 +31,8 @@ import Alert from '../../components/ui/Alert';
 import Modal from '../../components/ui/Modal';
 import ConfirmDialog from '../../components/ui/ConfirmDialog';
 import ContactUnlockModal from '../../components/requests/ContactUnlockModal';
+import SendProposalModal from '../../components/requests/SendProposalModal';
+import AcceptProposalModal from '../../components/requests/AcceptProposalModal';
 import CandidateInquiryModal from './CandidateInquiryModal';
 import useAuth from '../../hooks/useAuth';
 
@@ -370,16 +372,23 @@ export default function CandidateDetailPage() {
                 size="sm"
                 icon={Send}
                 onClick={handleInitiateRequestClick}
-                className="font-bold w-full sm:w-auto justify-center shadow-md"
+                className="font-bold w-full sm:w-auto justify-center shadow-md bg-gradient-to-r from-magenta-600 to-purple-600 hover:from-magenta-500 hover:to-purple-500"
               >
-                Send Rishta Request
+                Send Proposal / تجویز بھیجیں
               </Button>
             ) : activeRequest.status === 'pending' && activeRequest.is_sender ? (
               <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-                <Badge variant="warning" size="sm" className="inline-flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  <span>Request Pending</span>
-                </Badge>
+                {activeRequest.admin_status === 'pending_review' ? (
+                  <Badge variant="warning" size="sm" className="inline-flex items-center gap-1 font-semibold">
+                    <Clock className="w-3 h-3" />
+                    <span>Under Admin Review / زیرِ جائزہ</span>
+                  </Badge>
+                ) : (
+                  <Badge variant="info" size="sm" className="inline-flex items-center gap-1 font-semibold">
+                    <Clock className="w-3 h-3 text-cyan-400" />
+                    <span>Delivered to Candidate / امیدوار کو ارسال</span>
+                  </Badge>
+                )}
                 <Button
                   variant="danger"
                   size="sm"
@@ -557,51 +566,20 @@ export default function CandidateDetailPage() {
         </div>
       </Card>
 
-      {/* Modal: Confirm Send Rishta Request */}
-      <Modal
+      {/* Modal: Send Structured Proposal */}
+      <SendProposalModal
         isOpen={showSendModal}
         onClose={() => setShowSendModal(false)}
-        title="Send Formal Rishta Request"
-      >
-        <div className="space-y-4">
-          <div className="flex items-center gap-3 p-3 bg-navy-850 border border-slate-750 rounded-xl">
-            <Heart className="w-6 h-6 text-magenta-400 shrink-0" />
-            <div className="text-xs text-slate-300">
-              <span className="font-bold block text-sm text-white mb-0.5">Candidate #{profile.profile_code}</span>
-              You are initiating a formal Rishta expression of interest. The candidate will be notified of your interest.
-            </div>
-          </div>
-
-          <div className="text-xs text-slate-300 space-y-1.5 bg-navy-900/60 p-3 rounded-lg border border-slate-750">
-            <p className="font-semibold text-white">Important Terms:</p>
-            <ul className="list-disc pl-4 space-y-1 text-slate-300">
-              <li>Your public biodata will be shared with this candidate.</li>
-              <li>This request will remain active for <strong>14 days</strong>.</li>
-              <li>If the candidate declines, re-requesting is permanently disabled in this direction.</li>
-            </ul>
-          </div>
-
-          <div className="flex justify-end gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowSendModal(false)}
-              disabled={actionLoading}
-            >
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              icon={Send}
-              loading={actionLoading}
-              onClick={handleSendRequest}
-            >
-              Confirm & Send Request
-            </Button>
-          </div>
-        </div>
-      </Modal>
+        candidate={profile}
+        onSuccess={(newReq) => {
+          setActionFeedback({
+            type: 'success',
+            message: 'Your proposal was submitted! It will be delivered to the candidate once approved by our moderation team.',
+          });
+          setActiveRequest(newReq);
+          fetchProfile(true);
+        }}
+      />
 
       {/* Confirm Dialog: Cancel Request */}
       <ConfirmDialog
@@ -629,17 +607,15 @@ export default function CandidateDetailPage() {
         loading={actionLoading}
       />
 
-      {/* Confirm Dialog: Accept Request */}
-      <ConfirmDialog
+      {/* Modal: Accept Proposal with Q&A Response */}
+      <AcceptProposalModal
         isOpen={confirmAcceptOpen}
         onClose={() => setConfirmAcceptOpen(false)}
-        onConfirm={handleAcceptRequest}
-        title="Accept Rishta Request"
-        message="Are you sure you want to accept this Rishta request? Both profiles will move to the mutual interest stage."
-        confirmText="Accept Request"
-        cancelText="Cancel"
-        variant="primary"
-        loading={actionLoading}
+        request={activeRequest ? { ...activeRequest, candidate_profile: profile } : null}
+        onSuccess={() => {
+          setActionFeedback({ type: 'success', message: 'Proposal accepted successfully!' });
+          fetchProfile(true);
+        }}
       />
 
       {/* Phase 5 Contact Unlock & Payment Modal */}

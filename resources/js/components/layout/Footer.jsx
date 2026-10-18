@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Lock, PhoneCall, HeartHandshake, Smartphone } from 'lucide-react';
+import { WhatsAppIcon } from '../ui/WhatsAppFloatingButton';
 
 export default function Footer() {
   return (
@@ -71,7 +72,17 @@ export default function Footer() {
               <p><strong className="text-white">Helpline / Support:</strong> +92 323 9225450</p>
               <p><strong className="text-white">Email:</strong> support@raabtanow.com</p>
             </div>
-            <div className="flex items-center gap-2.5 mt-3">
+            <div className="flex flex-wrap items-center gap-2.5 mt-3">
+              <a 
+                href="https://wa.me/923239225450?text=Assalam-o-Alaikum%20RaabtaNow%20Team%2C%20I%20need%20assistance%20regarding%20matrimonial%20services." 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366]/10 border border-[#25D366]/30 text-xs text-[#25D366] hover:text-white hover:border-[#25D366]/60 hover:bg-[#25D366]/20 transition-colors font-medium shadow-xs"
+                title="Chat with RaabtaNow on WhatsApp"
+              >
+                <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
+                <span>WhatsApp</span>
+              </a>
               <a 
                 href="https://www.facebook.com/p/Raabta-Now-61594211561148/" 
                 target="_blank" 
@@ -111,8 +122,10 @@ export default function Footer() {
           <div>
             <h5 className="text-xs font-semibold uppercase tracking-wider text-white mb-3">Platform</h5>
             <ul className="space-y-2 text-xs text-slate-400">
+              <li><Link to="/search" className="hover:text-magenta-400 transition-colors">Find Matches & Search</Link></li>
               <li><Link to="/how-it-works" className="hover:text-magenta-400 transition-colors">How It Works</Link></li>
-              <li><Link to="/pricing" className="hover:text-magenta-400 transition-colors">Pricing & Unlocking (Rs. 300)</Link></li>
+              <li><Link to="/pricing" className="hover:text-magenta-400 transition-colors">Pricing & Unlocking (Rs. 2500)</Link></li>
+              <li><Link to="/assisted-profile" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors flex items-center gap-1"><span>Assisted Matchmaker (اسسٹڈ رشتے)</span></Link></li>
               <li><Link to="/about" className="hover:text-magenta-400 transition-colors">About Our Mission</Link></li>
               <li><Link to="/contact" className="hover:text-magenta-400 transition-colors">Contact Us & Services</Link></li>
               <li><Link to="/register" className="hover:text-magenta-400 transition-colors">Register Profile</Link></li>

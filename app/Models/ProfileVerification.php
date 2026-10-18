@@ -24,6 +24,7 @@ class ProfileVerification extends Model
         'status',
         'document_front_path',
         'document_back_path',
+        'live_selfie_path',
         'document_name',
         'rejection_reason',
         'submitted_at',
@@ -79,6 +80,10 @@ class ProfileVerification extends Model
 
         if ($this->document_back_path && $disk->exists($this->document_back_path)) {
             $disk->delete($this->document_back_path);
+        }
+
+        if ($this->live_selfie_path && $disk->exists($this->live_selfie_path)) {
+            $disk->delete($this->live_selfie_path);
         }
     }
 }

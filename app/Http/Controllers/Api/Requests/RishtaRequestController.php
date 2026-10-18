@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
 class RishtaRequestController extends Controller
@@ -37,6 +38,21 @@ class RishtaRequestController extends Controller
                 ['profile' => ['Only active profile holders can initiate connection requests.']],
                 Response::HTTP_FORBIDDEN,
                 'ACTIVE_PROFILE_REQUIRED'
+            );
+        }
+
+        // 1b. Identity Verification Gate: Sender must be verified (CNIC + Live Selfie)
+        if (!$sender->isIdentityVerified()) {
+            $verification = $sender->latestIdentityVerification();
+            return $this->errorResponse(
+                'Identity verification (CNIC + Live Selfie) is required before sending a Rishta request.',
+                [
+                    'identity_verified' => false,
+                    'verification_status' => $verification ? $verification->status : 'none',
+                    'rejection_reason' => $verification ? $verification->rejection_reason : null,
+                ],
+                Response::HTTP_FORBIDDEN,
+                'IDENTITY_VERIFICATION_REQUIRED'
             );
         }
 
@@ -105,7 +121,7 @@ class RishtaRequestController extends Controller
 
         // 6. Database transaction with concurrency lock and lazy expiration cleanup
         try {
-            $rishtaRequest = DB::transaction(function () use ($sender, $receiver, $activePairHash) {
+            $rishtaRequest = DB::transaction(function () use ($request, $sender, $receiver, $activePairHash) {
                 // Check if an active request exists with this hash
                 $existing = RishtaRequest::where('active_pair_hash', $activePairHash)
                     ->lockForUpdate()
@@ -128,12 +144,15 @@ class RishtaRequestController extends Controller
                     }
                 }
 
-                // Create new request
+                // Create new request with proposal questions and pending admin review
                 $created = RishtaRequest::create([
                     'request_code' => RishtaRequest::generateUniqueRequestCode(),
                     'sender_id' => $sender->id,
                     'receiver_id' => $receiver->id,
                     'status' => RishtaRequest::STATUS_PENDING,
+                    'sender_intro' => $request->input('sender_intro'),
+                    'sender_questions' => $request->input('sender_questions'),
+                    'admin_status' => RishtaRequest::ADMIN_STATUS_PENDING,
                     'active_pair_hash' => $activePairHash,
                     'expires_at' => Carbon::now()->addDays(RishtaRequest::EXPIRATION_DAYS),
                 ]);
@@ -157,16 +176,11 @@ class RishtaRequestController extends Controller
         $rishtaRequest->load(['sender.profile', 'receiver.profile']);
         event(new RishtaRequestSent($rishtaRequest));
 
-        // Intimate recipient via email notification
-        try {
-            $receiver->notify(new \App\Notifications\NewRishtaRequestNotification($rishtaRequest));
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("Failed to send new rishta request notification: {$e->getMessage()}");
-        }
+        // Note: Recipient will receive formal notification once admin reviews and approves the proposal.
 
         return $this->successResponse(
             new RishtaRequestResource($rishtaRequest),
-            'Rishta request sent successfully.',
+            'Rishta proposal submitted successfully. It will be delivered to the candidate once reviewed by our moderation team.',
             Response::HTTP_CREATED
         );
     }
@@ -185,6 +199,15 @@ class RishtaRequestController extends Controller
 
         $query = RishtaRequest::query()
             ->where('receiver_id', $user->id)
+            ->where(function ($q) {
+                // Initial proposals must be approved before candidate sees them
+                $q->where(function ($sub) {
+                    $sub->where('status', RishtaRequest::STATUS_PENDING)
+                        ->where('admin_status', RishtaRequest::ADMIN_STATUS_APPROVED);
+                })
+                // Once accepted or interacted with, keep visible even if pending_review or needs_revision
+                ->orWhere('status', '!=', RishtaRequest::STATUS_PENDING);
+            })
             ->with(['sender.profile', 'receiver.profile']);
 
         if ($request->filled('status')) {
@@ -324,38 +347,447 @@ class RishtaRequestController extends Controller
             );
         }
 
-        // Lazy expiration check
-        $rishtaRequest->checkAndApplyLazyExpiration();
-
-        // State validation: only pending can be accepted
-        if ($rishtaRequest->status !== RishtaRequest::STATUS_PENDING) {
+        // Identity Verification Gate: Recipient must be verified (CNIC + Live Selfie) before accepting
+        if (!$user->isIdentityVerified()) {
+            $verification = $user->latestIdentityVerification();
             return $this->errorResponse(
-                "Cannot accept request with status '{$rishtaRequest->status}'.",
-                [],
-                Response::HTTP_UNPROCESSABLE_ENTITY,
-                'INVALID_TRANSITION'
+                'Identity verification (CNIC + Live Selfie) is required before accepting a Rishta request.',
+                [
+                    'identity_verified' => false,
+                    'verification_status' => $verification ? $verification->status : 'none',
+                    'rejection_reason' => $verification ? $verification->rejection_reason : null,
+                ],
+                Response::HTTP_FORBIDDEN,
+                'IDENTITY_VERIFICATION_REQUIRED'
             );
         }
 
+        // Lazy expiration check
+        $rishtaRequest->checkAndApplyLazyExpiration();
+
+        // Moderation check: proposal must be approved by admin before initial acceptance
+        if ($rishtaRequest->status === RishtaRequest::STATUS_PENDING && $rishtaRequest->admin_status === RishtaRequest::ADMIN_STATUS_PENDING) {
+            return $this->errorResponse(
+                'This proposal is currently awaiting administrative approval before it can be accepted.',
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'PROPOSAL_PENDING_APPROVAL'
+            );
+        }
+
+        $request->validate([
+            'receiver_intro' => ['nullable', 'string', 'max:2500'],
+            'receiver_answers' => ['nullable', 'string', 'max:2500'],
+            'receiver_questions' => ['nullable', 'string', 'max:2500'],
+        ]);
+
         $rishtaRequest->update([
             'status' => RishtaRequest::STATUS_ACCEPTED,
-            'accepted_at' => Carbon::now(),
+            'admin_status' => RishtaRequest::ADMIN_STATUS_PENDING,
+            'admin_notes' => null,
+            'receiver_intro' => $request->input('receiver_intro'),
+            'receiver_answers' => $request->input('receiver_answers'),
+            'receiver_questions' => $request->input('receiver_questions'),
+            'accepted_at' => $rishtaRequest->accepted_at ?? Carbon::now(),
             // active_pair_hash remains intact to prevent concurrent requests while accepted
         ]);
 
         $rishtaRequest->load(['sender.profile', 'receiver.profile']);
         event(new RishtaRequestAccepted($rishtaRequest));
 
-        // Intimate sender that their request was accepted
-        try {
-            $rishtaRequest->sender->notify(new \App\Notifications\RishtaRequestAcceptedNotification($rishtaRequest));
-        } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::warning("Failed to send rishta request accepted notification: {$e->getMessage()}");
+        return $this->successResponse(
+            new RishtaRequestResource($rishtaRequest),
+            'Proposal accepted and your response has been submitted for moderation review. It will be delivered to the candidate upon approval.'
+        );
+    }
+
+    /**
+     * Sender replies to receiver's counter-questions.
+     */
+    public function reply(Request $request, string $request_code): JsonResponse
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse(
+                'The requested Rishta request was not found.',
+                [],
+                Response::HTTP_NOT_FOUND,
+                'REQUEST_NOT_FOUND'
+            );
         }
+
+        // Only original sender can answer candidate's counter-questions
+        if ($user->id !== $rishtaRequest->sender_id) {
+            return $this->errorResponse(
+                'Only the sender can answer candidate counter-questions.',
+                [],
+                Response::HTTP_FORBIDDEN,
+                'UNAUTHORIZED_ACTION'
+            );
+        }
+
+        if ($rishtaRequest->status !== RishtaRequest::STATUS_ACCEPTED) {
+            return $this->errorResponse(
+                'You can only answer counter-questions for accepted proposals.',
+                [],
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                'INVALID_REQUEST_STATUS'
+            );
+        }
+
+        $request->validate([
+            'sender_answers' => ['required', 'string', 'min:3', 'max:2500'],
+        ], [
+            'sender_answers.required' => 'Please write your answers to the candidate\'s questions.',
+            'sender_answers.min' => 'Answers must be at least 3 characters.',
+        ]);
+
+        $rishtaRequest->update([
+            'sender_answers' => $request->input('sender_answers'),
+            'admin_status' => RishtaRequest::ADMIN_STATUS_PENDING,
+            'admin_notes' => null,
+        ]);
+
+        $rishtaRequest->load(['sender.profile', 'receiver.profile']);
 
         return $this->successResponse(
             new RishtaRequestResource($rishtaRequest),
-            'Rishta request accepted successfully.'
+            'Your answers have been submitted for moderation review. They will be delivered to the candidate once approved by admin.'
+        );
+    }
+
+    /**
+     * Edit initial proposal intro and questions if admin requested revision.
+     */
+    public function editProposal(Request $request, string $request_code): JsonResponse
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse(
+                'The requested Rishta request was not found.',
+                [],
+                Response::HTTP_NOT_FOUND,
+                'REQUEST_NOT_FOUND'
+            );
+        }
+
+        if ($user->id !== $rishtaRequest->sender_id) {
+            return $this->errorResponse(
+                'Only the sender can edit this proposal.',
+                [],
+                Response::HTTP_FORBIDDEN,
+                'UNAUTHORIZED_ACTION'
+            );
+        }
+
+        $request->validate([
+            'sender_intro' => ['nullable', 'string', 'max:2500'],
+            'sender_questions' => ['nullable', 'string', 'max:2500'],
+        ]);
+
+        $rishtaRequest->update([
+            'sender_intro' => $request->input('sender_intro'),
+            'sender_questions' => $request->input('sender_questions'),
+            'admin_status' => RishtaRequest::ADMIN_STATUS_PENDING,
+            'admin_notes' => null,
+        ]);
+
+        $rishtaRequest->load(['sender.profile', 'receiver.profile']);
+
+        return $this->successResponse(
+            new RishtaRequestResource($rishtaRequest),
+            'Your proposal has been updated and resubmitted for admin review.'
+        );
+    }
+
+    /**
+     * Mutual trust gate: Request photo or CNIC verification before paying contact unlock fee.
+     */
+    public function requestVerification(Request $request, string $request_code): JsonResponse
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse(
+                'The requested Rishta request was not found.',
+                [],
+                Response::HTTP_NOT_FOUND,
+                'REQUEST_NOT_FOUND'
+            );
+        }
+
+        if ($user->id !== $rishtaRequest->sender_id && $user->id !== $rishtaRequest->receiver_id) {
+            return $this->errorResponse(
+                'Unauthorized to request verification for this proposal.',
+                [],
+                Response::HTTP_FORBIDDEN,
+                'UNAUTHORIZED_ACTION'
+            );
+        }
+
+        $request->validate([
+            'type' => ['required', 'string', 'in:photo,nic'],
+        ]);
+
+        $type = $request->input('type');
+        if ($type === 'photo') {
+            $isSender = ($user->id === $rishtaRequest->sender_id);
+            if ($isSender) {
+                $rishtaRequest->update([
+                    'sender_requested_photo' => true,
+                    'photo_request_status' => 'requested',
+                    'photo_requested_by' => $user->id,
+                ]);
+            } else {
+                $rishtaRequest->update([
+                    'receiver_requested_photo' => true,
+                    'photo_request_status' => 'requested',
+                    'photo_requested_by' => $user->id,
+                ]);
+            }
+            $msg = 'Photo exchange requested. The candidate will be notified to review and exchange photos.';
+        } else {
+            $rishtaRequest->update([
+                'nic_request_status' => 'requested',
+                'nic_requested_by' => $user->id,
+            ]);
+            $msg = 'CNIC verification requested. The candidate has been requested to share their verification status.';
+        }
+
+        $rishtaRequest->load(['sender.profile', 'receiver.profile']);
+
+        return $this->successResponse(
+            new RishtaRequestResource($rishtaRequest),
+            $msg
+        );
+    }
+
+    /**
+     * Upload and share private photo for a proposal.
+     */
+    public function uploadPhoto(Request $request, string $request_code): JsonResponse
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse('The requested Rishta request was not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
+        }
+
+        if ($user->id !== $rishtaRequest->sender_id && $user->id !== $rishtaRequest->receiver_id) {
+            return $this->errorResponse('Unauthorized to share photo for this proposal.', [], Response::HTTP_FORBIDDEN, 'UNAUTHORIZED_ACTION');
+        }
+
+        $request->validate([
+            'photo' => ['required', 'image', 'mimes:jpeg,jpg,png,webp', 'max:5120'],
+        ], [
+            'photo.required' => 'Please select a photo to upload.',
+            'photo.image' => 'The file must be an image (JPEG, PNG, WEBP).',
+            'photo.max' => 'Photo size must not exceed 5MB.',
+        ]);
+
+        $file = $request->file('photo');
+        $filename = 'proposal_photo_' . $rishtaRequest->request_code . '_' . ($user->id === $rishtaRequest->sender_id ? 'sender' : 'receiver') . '_' . time() . '.' . $file->getClientOriginalExtension();
+        $storedPath = $file->storeAs('private/proposal_photos', $filename, 'local');
+
+        if ($user->id === $rishtaRequest->sender_id) {
+            $rishtaRequest->update([
+                'sender_photo_path' => $storedPath,
+                'sender_photo_moderation_status' => 'pending_review',
+                'sender_photo_rejection_notes' => null,
+                'photo_request_status' => !empty($rishtaRequest->receiver_photo_path) ? 'both_shared' : 'sender_shared',
+                'photo_moderation_status' => 'pending_review',
+            ]);
+        } else {
+            $rishtaRequest->update([
+                'receiver_photo_path' => $storedPath,
+                'receiver_photo_moderation_status' => 'pending_review',
+                'receiver_photo_rejection_notes' => null,
+                'photo_request_status' => !empty($rishtaRequest->sender_photo_path) ? 'both_shared' : 'receiver_shared',
+                'photo_moderation_status' => 'pending_review',
+            ]);
+        }
+
+        $rishtaRequest->load(['sender.profile', 'receiver.profile']);
+
+        return $this->successResponse(
+            new RishtaRequestResource($rishtaRequest),
+            'Your photo has been securely uploaded and submitted for administrator quality review. Once approved, the candidate can view it.'
+        );
+    }
+
+    /**
+     * View candidate's shared private photo securely (Moderated & Paid).
+     */
+    public function viewPhoto(Request $request, string $request_code)
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+
+        if (!$rishtaRequest) {
+            abort(404, 'Proposal not found.');
+        }
+
+        if ($user->id !== $rishtaRequest->sender_id && $user->id !== $rishtaRequest->receiver_id && !$user->isAdmin()) {
+            abort(403, 'Unauthorized to view photo for this proposal.');
+        }
+
+        // If current user is sender, they view receiver's photo; if receiver, they view sender's photo
+        $isSender = ($user->id === $rishtaRequest->sender_id);
+        $photoPath = $isSender
+            ? $rishtaRequest->receiver_photo_path
+            : $rishtaRequest->sender_photo_path;
+
+        if (empty($photoPath)) {
+            abort(404, 'Candidate has not shared a photo yet.');
+        }
+
+        // Access enforcement: Non-admins must wait for admin approval and pay photo fee
+        if (!$user->isAdmin()) {
+            $candModStatus = $isSender 
+                ? ($rishtaRequest->receiver_photo_moderation_status !== 'none' ? $rishtaRequest->receiver_photo_moderation_status : $rishtaRequest->photo_moderation_status)
+                : ($rishtaRequest->sender_photo_moderation_status !== 'none' ? $rishtaRequest->sender_photo_moderation_status : $rishtaRequest->photo_moderation_status);
+
+            if ($candModStatus !== 'approved') {
+                abort(403, 'Candidate photo is currently undergoing administrator quality review.');
+            }
+
+            $userPaid = $isSender
+                ? ($rishtaRequest->sender_photo_paid || ($rishtaRequest->photo_paid && $rishtaRequest->photo_paid_by === $user->id))
+                : ($rishtaRequest->receiver_photo_paid || ($rishtaRequest->photo_paid && $rishtaRequest->photo_paid_by === $user->id));
+
+            if (!$userPaid) {
+                abort(403, 'Photo viewing fee has not been paid yet.');
+            }
+        }
+
+        if (Storage::disk('local')->exists($photoPath)) {
+            $mimeType = Storage::disk('local')->mimeType($photoPath) ?: 'image/jpeg';
+            return Storage::disk('local')->response($photoPath, null, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
+            ]);
+        }
+
+        $fallbacks = [
+            storage_path('app/private/' . $photoPath),
+            storage_path('app/' . $photoPath),
+        ];
+
+        foreach ($fallbacks as $fallback) {
+            if (file_exists($fallback)) {
+                return response()->file($fallback, [
+                    'Content-Type' => mime_content_type($fallback) ?: 'image/jpeg',
+                    'Content-Disposition' => 'inline',
+                    'X-Content-Type-Options' => 'nosniff',
+                    'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
+                ]);
+            }
+        }
+
+        abort(404, 'Candidate photo file not found.');
+    }
+
+    /**
+     * View user's own uploaded photo.
+     */
+    public function viewMyPhoto(Request $request, string $request_code)
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+
+        if (!$rishtaRequest) {
+            abort(404, 'Proposal not found.');
+        }
+
+        if ($user->id !== $rishtaRequest->sender_id && $user->id !== $rishtaRequest->receiver_id) {
+            abort(403, 'Unauthorized.');
+        }
+
+        $photoPath = ($user->id === $rishtaRequest->sender_id)
+            ? $rishtaRequest->sender_photo_path
+            : $rishtaRequest->receiver_photo_path;
+
+        if (empty($photoPath)) {
+            abort(404, 'You have not uploaded a photo yet.');
+        }
+
+        if (Storage::disk('local')->exists($photoPath)) {
+            $mimeType = Storage::disk('local')->mimeType($photoPath) ?: 'image/jpeg';
+            return Storage::disk('local')->response($photoPath, null, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
+            ]);
+        }
+
+        $fallbacks = [
+            storage_path('app/private/' . $photoPath),
+            storage_path('app/' . $photoPath),
+        ];
+
+        foreach ($fallbacks as $fallback) {
+            if (file_exists($fallback)) {
+                return response()->file($fallback, [
+                    'Content-Type' => mime_content_type($fallback) ?: 'image/jpeg',
+                    'Content-Disposition' => 'inline',
+                    'X-Content-Type-Options' => 'nosniff',
+                    'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
+                ]);
+            }
+        }
+
+        abort(404, 'Your photo file could not be found.');
+    }
+
+    /**
+     * Share verified CNIC badge & verification status with candidate.
+     */
+    public function shareNic(Request $request, string $request_code): JsonResponse
+    {
+        $user = $request->user();
+
+        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse('The requested Rishta request was not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
+        }
+
+        if ($user->id !== $rishtaRequest->sender_id && $user->id !== $rishtaRequest->receiver_id) {
+            return $this->errorResponse('Unauthorized.', [], Response::HTTP_FORBIDDEN, 'UNAUTHORIZED_ACTION');
+        }
+
+        if ($user->id === $rishtaRequest->sender_id) {
+            $rishtaRequest->update([
+                'nic_shared_by_sender' => true,
+                'nic_request_status' => 'shared',
+            ]);
+        } else {
+            $rishtaRequest->update([
+                'nic_shared_by_receiver' => true,
+                'nic_request_status' => 'shared',
+            ]);
+        }
+
+        $rishtaRequest->load(['sender.profile', 'receiver.profile']);
+
+        return $this->successResponse(
+            new RishtaRequestResource($rishtaRequest),
+            'Your verified CNIC status has been shared with the candidate.'
         );
     }
 

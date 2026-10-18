@@ -1,17 +1,28 @@
 import React, { useEffect, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   Users, UserCheck, UserX, ShieldCheck, 
   HeartHandshake, CheckCircle2, Clock, 
   CreditCard, KeyRound, MapPin, TrendingUp,
-  AlertCircle, RefreshCw
+  AlertCircle, RefreshCw, MessageSquare, FileText,
+  ClipboardList, ArrowRight, AlertTriangle, Layers, Sparkles
 } from 'lucide-react';
 import { adminApi } from '../../api/admin';
 import Button from '../../components/ui/Button';
 
-export default function AdminOverviewTab() {
+export default function AdminOverviewTab({ onNavigateTab }) {
+  const [, setSearchParams] = useSearchParams();
   const [metrics, setMetrics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const handleNavigate = (tabId) => {
+    if (onNavigateTab) {
+      onNavigateTab(tabId);
+    } else {
+      setSearchParams({ tab: tabId });
+    }
+  };
 
   const fetchMetrics = async () => {
     setLoading(true);
@@ -51,7 +62,90 @@ export default function AdminOverviewTab() {
     );
   }
 
-  const { users, profiles, requests, financials, recent } = metrics;
+  const { users, profiles, requests, financials, recent, pending_actions } = metrics;
+
+  const pendingActions = pending_actions || {
+    total: 0,
+    bio_approvals: 0,
+    direct_inquiries: 0,
+    verifications: { total: 0, registered: 0, magic_links: 0 },
+    requests: { total: 0, proposals: 0, photos: 0 },
+    financial_unlocks: 0,
+    assisted_submissions: 0,
+    assisted_interests: 0,
+  };
+
+  const actionCards = [
+    {
+      id: 'bio_approvals',
+      title: 'Bio Approval',
+      description: 'Candidate "About" bios',
+      count: pendingActions.bio_approvals || 0,
+      tab: 'profiles',
+      icon: FileText,
+      accent: 'amber',
+    },
+    {
+      id: 'direct_inquiries',
+      title: 'Direct Inquiries',
+      description: 'Matchmaker leads',
+      count: pendingActions.direct_inquiries || 0,
+      tab: 'inquiries',
+      icon: MessageSquare,
+      accent: 'cyan',
+    },
+    {
+      id: 'verifications',
+      title: 'Verifications',
+      description: 'CNIC & live selfies',
+      count: pendingActions.verifications?.total ?? 0,
+      subDetail: pendingActions.verifications?.total > 0
+        ? `${pendingActions.verifications?.registered || 0} app • ${pendingActions.verifications?.magic_links || 0} magic`
+        : null,
+      tab: 'verifications',
+      icon: ShieldCheck,
+      accent: 'blue',
+    },
+    {
+      id: 'requests',
+      title: 'Rishta Requests',
+      description: 'Proposals & photos',
+      count: pendingActions.requests?.total ?? 0,
+      subDetail: pendingActions.requests?.total > 0
+        ? `${pendingActions.requests?.proposals || 0} prop • ${pendingActions.requests?.photos || 0} photo`
+        : null,
+      tab: 'requests',
+      icon: Layers,
+      accent: 'purple',
+    },
+    {
+      id: 'financial_unlocks',
+      title: 'Financial Unlocks',
+      description: 'TID payment proofs',
+      count: pendingActions.financial_unlocks || 0,
+      tab: 'financials',
+      icon: CreditCard,
+      accent: 'emerald',
+    },
+    {
+      id: 'assisted_submissions',
+      title: 'Assisted Intake',
+      description: 'Public profile forms',
+      count: pendingActions.assisted_submissions || 0,
+      tab: 'submissions',
+      icon: ClipboardList,
+      accent: 'magenta',
+    },
+    {
+      id: 'assisted_interests',
+      title: 'Listing Interests',
+      description: 'New assisted leads',
+      count: pendingActions.assisted_interests || 0,
+      tab: 'listings',
+      icon: HeartHandshake,
+      accent: 'pink',
+    },
+  ];
 
   return (
     <div className="space-y-8">
@@ -64,6 +158,114 @@ export default function AdminOverviewTab() {
         <Button size="sm" variant="secondary" icon={RefreshCw} onClick={fetchMetrics} isLoading={loading}>
           Refresh
         </Button>
+      </div>
+
+      {/* ======================================================== */}
+      {/* ⚡ ADMIN ACTION CENTER: PENDING TASKS AWAITING ACTION     */}
+      {/* ======================================================== */}
+      <div className="p-5 sm:p-6 rounded-3xl bg-gradient-to-br from-navy-900 via-navy-850 to-navy-900 border border-white/10 shadow-xl space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/5 pb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center font-bold shadow-md border ${
+              pendingActions.total > 0
+                ? 'bg-amber-500/20 text-amber-400 border-amber-500/40 shadow-amber-500/10 animate-pulse'
+                : 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30 shadow-emerald-500/10'
+            }`}>
+              {pendingActions.total > 0 ? (
+                <AlertTriangle className="w-5 h-5" />
+              ) : (
+                <CheckCircle2 className="w-5 h-5" />
+              )}
+            </div>
+            <div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <h3 className="text-lg font-black text-white tracking-tight">Admin Action Center</h3>
+                {pendingActions.total > 0 ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-slate-950 shadow-sm animate-pulse">
+                    {pendingActions.total} Pending Action{pendingActions.total > 1 ? 's' : ''}
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                    All Clear (0 Actions Required)
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">
+                Real-time pending counters across all admin tabs. Click any card below to jump directly to that tab.
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] text-slate-400 font-medium">
+              {pendingActions.total === 0 
+                ? '✅ All platform items are currently resolved' 
+                : `⚡ ${pendingActions.total} item(s) awaiting your review`}
+            </span>
+          </div>
+        </div>
+
+        {/* 7 Counter Action Cards Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3">
+          {actionCards.map((card) => {
+            const Icon = card.icon;
+            const hasPending = card.count > 0;
+            return (
+              <button
+                key={card.id}
+                type="button"
+                onClick={() => handleNavigate(card.tab)}
+                className={`group relative p-3.5 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between hover:scale-[1.02] cursor-pointer ${
+                  hasPending
+                    ? 'bg-gradient-to-b from-amber-500/15 via-navy-900 to-navy-950 border-amber-500/50 hover:border-amber-400 shadow-md shadow-amber-500/10'
+                    : 'bg-navy-950/60 border-white/5 hover:border-white/20 hover:bg-navy-900/60'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${
+                      hasPending
+                        ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-xs'
+                        : 'bg-slate-800/80 text-slate-400 border-slate-700/60'
+                    }`}>
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider border ${
+                      hasPending
+                        ? 'bg-amber-500/25 text-amber-300 border-amber-500/40 font-black'
+                        : 'bg-emerald-500/10 text-emerald-400/90 border-emerald-500/20'
+                    }`}>
+                      {hasPending ? 'Pending' : 'Clear'}
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white group-hover:text-amber-300 transition-colors truncate">
+                    {card.title}
+                  </h4>
+                  <p className="text-[10px] text-slate-400 mt-0.5 truncate leading-tight">
+                    {card.description}
+                  </p>
+                  {card.subDetail && (
+                    <span className="text-[9px] font-mono font-medium text-amber-300/80 block mt-1 truncate">
+                      {card.subDetail}
+                    </span>
+                  )}
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-white/5 flex items-baseline justify-between">
+                  <span className={`text-2xl font-black ${
+                    hasPending ? 'text-amber-400 font-mono' : 'text-slate-400 font-mono'
+                  }`}>
+                    {card.count}
+                  </span>
+                  <span className="text-[10px] text-slate-400 group-hover:text-white flex items-center gap-0.5 font-semibold transition-colors">
+                    <span>{hasPending ? 'Review' : 'Open'}</span>
+                    <ArrowRight className="w-2.5 h-2.5 group-hover:translate-x-0.5 transition-transform" />
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* KPI Cards Grid */}

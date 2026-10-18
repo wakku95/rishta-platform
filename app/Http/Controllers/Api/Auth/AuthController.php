@@ -120,4 +120,27 @@ class AuthController extends Controller
             'User profile retrieved.'
         );
     }
+
+    /**
+     * Update user contact phone/WhatsApp number.
+     */
+    public function updatePhone(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'phone' => ['required', 'string', 'max:25', 'regex:/^[0-9+\-\s()]{7,25}$/'],
+        ], [
+            'phone.required' => 'Please provide a valid phone or WhatsApp number.',
+            'phone.regex' => 'Please enter a valid mobile or WhatsApp number (7 to 25 digits).',
+        ]);
+
+        $user = $request->user();
+        $user->update([
+            'phone' => trim($validated['phone']),
+        ]);
+
+        return $this->successResponse(
+            new UserResource($user->fresh()),
+            'Contact phone number updated successfully.'
+        );
+    }
 }

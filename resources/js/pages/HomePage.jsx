@@ -52,8 +52,12 @@ export default function HomePage() {
       a: 'Privacy is our founding pillar. No public profile photos are ever shown, preventing photo misuse or scraping. Phone numbers, home addresses, and email addresses remain strictly confidential. Other users only see relevant compatibility details such as age, religion, sect, education, profession, city, and personal values.',
     },
     {
+      q: 'How does private photo viewing work and what is the fee?',
+      a: 'Photographs are completely hidden from the public to protect family privacy and modesty. When both candidates mutually agree to exchange photos, the viewing party pays a nominal fee of Rs. 300 PKR only after admin quality review and approval. All approved photos are protected by an irreversible dynamic watermark with the viewer\'s identity and hold-to-view screenshot prevention.',
+    },
+    {
       q: 'When and how are contact details shared between families?',
-      a: 'Contact information is never shared automatically. First, candidate A sends a formal proposal request. If candidate B reviews the biodata and explicitly accepts, candidate A pays a one-time micro-fee of Rs. 300 PKR. Both parties then complete SMS OTP verification on their active mobile numbers. Once verified, mutual phone numbers, names, and emails are unlocked on screen.',
+      a: 'Contact information is never shared automatically. First, candidate A sends a formal proposal request. If candidate B reviews the biodata and explicitly accepts, candidate A pays a one-time fee of Rs. 2,500 PKR. Both parties then complete SMS OTP verification on their active mobile numbers. Once verified, mutual phone numbers, names, and emails are unlocked on screen.',
     },
     {
       q: 'Is RaabtaNow suitable for families and parents searching for their children?',
@@ -102,8 +106,8 @@ export default function HomePage() {
     {
       num: '4',
       title: 'Verified SMS Unlock',
-      desc: 'Once mutually accepted, initiator pays Rs. 300 to unlock verified mobile contacts via SMS OTP.',
-      badge: 'Rs. 300 Fee',
+      desc: 'Once mutually accepted, initiator pays Rs. 2,500 to unlock verified mobile contacts via SMS OTP.',
+      badge: 'Rs. 2,500 Fee',
       image: '/images/raabtanow/step-contact-unlock.jpg',
       alt: 'Smartphone showing verified SMS code and unlocked direct WhatsApp connection',
     },

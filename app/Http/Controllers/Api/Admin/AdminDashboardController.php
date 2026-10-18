@@ -4,9 +4,14 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\AssistedListing;
+use App\Models\AssistedListingInterest;
+use App\Models\AssistedProfileSubmission;
+use App\Models\CandidateVerificationRequest;
 use App\Models\ContactUnlock;
 use App\Models\Payment;
 use App\Models\Profile;
+use App\Models\ProfileInquiry;
+use App\Models\ProfileVerification;
 use App\Models\RishtaRequest;
 use App\Models\User;
 use App\Traits\ApiResponse;
@@ -102,7 +107,57 @@ class AdminDashboardController extends Controller
             ->limit(5)
             ->get(['id', 'payment_uuid', 'user_id', 'amount', 'currency', 'status', 'gateway', 'transaction_reference', 'paid_at', 'created_at']);
 
+        // Action Center: Pending items requiring Admin intervention
+        $pendingBioApprovals = Profile::whereNotNull('about')->where('about', '!=', '')->whereNull('about_approved_at')->count();
+        $pendingDirectInquiries = ProfileInquiry::where('status', ProfileInquiry::STATUS_NEW)->count();
+        $pendingProfileVerifications = ProfileVerification::where('status', 'pending')->count();
+        $pendingMagicLinkVerifications = CandidateVerificationRequest::where('status', 'submitted')->count();
+        $totalPendingVerifications = $pendingProfileVerifications + $pendingMagicLinkVerifications;
+
+        $pendingProposals = RishtaRequest::whereIn('admin_status', [RishtaRequest::ADMIN_STATUS_PENDING, RishtaRequest::ADMIN_STATUS_NEEDS_REVISION])->count();
+        $pendingPhotos = RishtaRequest::where(function ($q) {
+            $q->where('photo_moderation_status', 'pending_review')
+              ->orWhere('sender_photo_moderation_status', 'pending_review')
+              ->orWhere('receiver_photo_moderation_status', 'pending_review');
+        })->count();
+        $totalPendingRequests = RishtaRequest::where(function ($q) {
+            $q->whereIn('admin_status', [RishtaRequest::ADMIN_STATUS_PENDING, RishtaRequest::ADMIN_STATUS_NEEDS_REVISION])
+              ->orWhere('photo_moderation_status', 'pending_review')
+              ->orWhere('sender_photo_moderation_status', 'pending_review')
+              ->orWhere('receiver_photo_moderation_status', 'pending_review');
+        })->count();
+
+        $pendingFinancialUnlocks = Payment::where('status', Payment::STATUS_PENDING)->count();
+        $pendingAssistedSubmissions = AssistedProfileSubmission::where('status', 'pending')->count();
+        $newAssistedInterests = AssistedListingInterest::where('status', AssistedListingInterest::STATUS_NEW)->count();
+
+        $totalPendingActions = $pendingBioApprovals 
+            + $pendingDirectInquiries 
+            + $totalPendingVerifications 
+            + $totalPendingRequests 
+            + $pendingFinancialUnlocks 
+            + $pendingAssistedSubmissions 
+            + $newAssistedInterests;
+
         return $this->successResponse([
+            'pending_actions' => [
+                'total' => $totalPendingActions,
+                'bio_approvals' => $pendingBioApprovals,
+                'direct_inquiries' => $pendingDirectInquiries,
+                'verifications' => [
+                    'total' => $totalPendingVerifications,
+                    'registered' => $pendingProfileVerifications,
+                    'magic_links' => $pendingMagicLinkVerifications,
+                ],
+                'requests' => [
+                    'total' => $totalPendingRequests,
+                    'proposals' => $pendingProposals,
+                    'photos' => $pendingPhotos,
+                ],
+                'financial_unlocks' => $pendingFinancialUnlocks,
+                'assisted_submissions' => $pendingAssistedSubmissions,
+                'assisted_interests' => $newAssistedInterests,
+            ],
             'users' => [
                 'total' => $totalUsers,
                 'active' => $activeUsers,

@@ -120,6 +120,18 @@ class ProfileController extends Controller
                 }
             }
 
+            // Marital Status is locked once CNIC Identity Verification is approved
+            if ($user->isIdentityVerified() && isset($data['marital_status']) && $profile->marital_status) {
+                if ($data['marital_status'] !== $profile->marital_status) {
+                    return $this->errorResponse(
+                        'Marital Status cannot be modified after CNIC Identity Verification has been approved. Please contact RaabtaNow Support if an administrative correction is required.',
+                        ['marital_status' => ['Marital Status is locked following approved CNIC Identity Verification.']],
+                        Response::HTTP_UNPROCESSABLE_ENTITY,
+                        'MARITAL_STATUS_LOCKED_AFTER_VERIFICATION'
+                    );
+                }
+            }
+
             // Education level is locked once Education Verification is approved
             if ($user->isEducationVerified() && isset($data['education']) && $profile->education) {
                 if ($data['education'] !== $profile->education) {

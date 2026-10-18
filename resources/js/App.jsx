@@ -83,6 +83,7 @@ export default function App() {
             <Route path="verify-email" element={<VerifyEmailPage />} />
             <Route path="confirm-profile/:token" element={<ConfirmAssistedProfilePage />} />
             <Route path="assisted-profile" element={<AssistedProfileSubmissionPage />} />
+            <Route path="assisted-profiles" element={<SearchProfilesPage />} />
             <Route path="verify-doc/:token" element={<PublicDocumentVerificationPage />} />
 
             {/* Protected authenticated routes */}

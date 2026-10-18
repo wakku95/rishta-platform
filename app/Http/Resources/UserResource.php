@@ -35,6 +35,8 @@ class UserResource extends JsonResource
             'has_preferences' => $hasPreferences,
             'profile_status' => $hasProfile ? $profile->profile_status : null,
             'completion_score' => $hasProfile ? $profile->calculateCompletionPercentage() : 0,
+            'is_identity_verified' => $this->isIdentityVerified(),
+            'identity_verification_status' => $this->latestIdentityVerification()?->status ?? 'none',
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }

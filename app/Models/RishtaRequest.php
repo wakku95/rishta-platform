@@ -18,6 +18,11 @@ class RishtaRequest extends Model
     public const STATUS_CANCELLED = 'cancelled';
     public const STATUS_EXPIRED = 'expired';
 
+    public const ADMIN_STATUS_PENDING = 'pending_review';
+    public const ADMIN_STATUS_APPROVED = 'approved';
+    public const ADMIN_STATUS_REJECTED = 'rejected';
+    public const ADMIN_STATUS_NEEDS_REVISION = 'needs_revision';
+
     public const EXPIRATION_DAYS = 14;
 
     protected $fillable = [
@@ -25,6 +30,46 @@ class RishtaRequest extends Model
         'sender_id',
         'receiver_id',
         'status',
+        'sender_intro',
+        'sender_questions',
+        'receiver_intro',
+        'receiver_answers',
+        'receiver_questions',
+        'sender_answers',
+        'photo_request_status',
+        'photo_requested_by',
+        'sender_requested_photo',
+        'receiver_requested_photo',
+        'sender_photo_path',
+        'receiver_photo_path',
+        'photo_moderation_status',
+        'photo_watermark_level',
+        'photo_watermark_text',
+        'photo_rejection_notes',
+        'sender_photo_moderation_status',
+        'sender_photo_watermark_level',
+        'sender_photo_watermark_text',
+        'sender_photo_rejection_notes',
+        'receiver_photo_moderation_status',
+        'receiver_photo_watermark_level',
+        'receiver_photo_watermark_text',
+        'receiver_photo_rejection_notes',
+        'photo_fee',
+        'photo_paid',
+        'photo_paid_at',
+        'photo_paid_by',
+        'sender_photo_paid',
+        'sender_photo_paid_at',
+        'receiver_photo_paid',
+        'receiver_photo_paid_at',
+        'nic_request_status',
+        'nic_requested_by',
+        'nic_shared_by_sender',
+        'nic_shared_by_receiver',
+        'admin_status',
+        'admin_notes',
+        'reviewed_by',
+        'reviewed_at',
         'active_pair_hash',
         'accepted_at',
         'declined_at',
@@ -34,10 +79,22 @@ class RishtaRequest extends Model
     ];
 
     protected $casts = [
+        'sender_requested_photo' => 'boolean',
+        'receiver_requested_photo' => 'boolean',
+        'sender_photo_paid' => 'boolean',
+        'receiver_photo_paid' => 'boolean',
+        'sender_photo_paid_at' => 'datetime',
+        'receiver_photo_paid_at' => 'datetime',
+        'nic_shared_by_sender' => 'boolean',
+        'nic_shared_by_receiver' => 'boolean',
+        'photo_paid' => 'boolean',
+        'photo_fee' => 'decimal:2',
+        'photo_paid_at' => 'datetime',
         'accepted_at' => 'datetime',
         'declined_at' => 'datetime',
         'cancelled_at' => 'datetime',
         'expires_at' => 'datetime',
+        'reviewed_at' => 'datetime',
     ];
 
     /**
@@ -77,7 +134,11 @@ class RishtaRequest extends Model
 
     public function successfulPayment(): \Illuminate\Database\Eloquent\Relations\HasOne
     {
-        return $this->hasOne(Payment::class)->where('status', Payment::STATUS_PAID);
+        return $this->hasOne(Payment::class)
+            ->where('status', Payment::STATUS_PAID)
+            ->where(function ($q) {
+                $q->whereNull('purpose')->orWhere('purpose', 'contact_unlock');
+            });
     }
 
     public function contactUnlock(): \Illuminate\Database\Eloquent\Relations\HasOne
@@ -115,5 +176,13 @@ class RishtaRequest extends Model
     public function isAdminInitiated(): bool
     {
         return !empty($this->initiated_by_admin_id);
+    }
+
+    /**
+     * Get the admin who reviewed/moderated this proposal.
+     */
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }

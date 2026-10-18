@@ -24,6 +24,7 @@ class Payment extends Model
         'amount',
         'currency',
         'status',
+        'purpose',
         'gateway',
         'transaction_reference',
         'receipt_path',

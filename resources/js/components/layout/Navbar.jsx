@@ -1,18 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut, Smartphone } from 'lucide-react';
+import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut, Smartphone, ChevronDown, Sun, Moon, Sparkles } from 'lucide-react';
 import Button from '../ui/Button';
+import ThemeToggle from '../ui/ThemeToggle';
+import { WhatsAppIcon } from '../ui/WhatsAppFloatingButton';
 import useAuth from '../../hooks/useAuth';
+import { useTheme } from '../../contexts/ThemeContext';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
+  const toolsDropdownRef = useRef(null);
   const location = useLocation();
   const { user, authenticated, logout } = useAuth();
+  const { toggleTheme, isDark } = useTheme();
 
-  // Close mobile menu on route change
+  // Close menus on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+    setToolsDropdownOpen(false);
   }, [location.pathname]);
+
+  // Close tools dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (toolsDropdownRef.current && !toolsDropdownRef.current.contains(e.target)) {
+        setToolsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Lock background scroll when mobile menu is open
   useEffect(() => {
@@ -26,16 +44,17 @@ export default function Navbar() {
     };
   }, [mobileMenuOpen]);
 
-  // Close mobile menu on Escape key
+  // Close mobile menu / dropdown on Escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && mobileMenuOpen) {
-        setMobileMenuOpen(false);
+      if (e.key === 'Escape') {
+        if (mobileMenuOpen) setMobileMenuOpen(false);
+        if (toolsDropdownOpen) setToolsDropdownOpen(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [mobileMenuOpen]);
+  }, [mobileMenuOpen, toolsDropdownOpen]);
 
   const desktopNavLinks = authenticated
     ? [
@@ -151,19 +170,111 @@ export default function Navbar() {
               </>
             )}
 
-            <a
-              href="/downloads/raabtanow.apk"
-              download="raabtanow.apk"
-              title="Download RaabtaNow Android App (.APK)"
-              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold rounded-xl bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20 hover:text-white border border-emerald-500/25 transition-all shrink-0 ml-1"
-            >
-              <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-              <span>App</span>
-            </a>
+            {/* Desktop Unified Dropdown: App, WhatsApp, Theme */}
+            <div className="relative shrink-0" ref={toolsDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setToolsDropdownOpen(!toolsDropdownOpen)}
+                aria-expanded={toolsDropdownOpen}
+                aria-haspopup="true"
+                title="Quick Options: App, WhatsApp & Theme"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-xl bg-navy-800 text-slate-200 hover:text-white hover:bg-navy-750 border border-slate-700/80 transition-all shrink-0 cursor-pointer shadow-xs focus:outline-none focus:ring-2 focus:ring-magenta-500/40"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-magenta-400" />
+                <span>More</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${toolsDropdownOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {toolsDropdownOpen && (
+                <div className="absolute right-0 top-full mt-2 w-64 rounded-2xl bg-navy-850/98 backdrop-blur-xl border border-slate-750 shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-750/70 mb-1">
+                    Quick Options
+                  </div>
+
+                  {/* 1. App Theme Toggle */}
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-navy-750 transition-colors text-left group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-navy-900 border border-slate-700 flex items-center justify-center shrink-0">
+                        {isDark ? (
+                          <Sun className="w-4 h-4 text-amber-400 group-hover:rotate-45 transition-transform duration-300" />
+                        ) : (
+                          <Moon className="w-4 h-4 text-purple-400 group-hover:-rotate-12 transition-transform duration-300" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white">App Theme</div>
+                        <div className="text-[11px] text-slate-400">
+                          {isDark ? 'Dark Mode (Active)' : 'Light Mode (Active)'}
+                        </div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-navy-900 border border-slate-700 text-slate-300 group-hover:border-slate-600">
+                      Switch
+                    </span>
+                  </button>
+
+                  <div className="h-px bg-slate-750/60 my-1" />
+
+                  {/* 2. WhatsApp Support */}
+                  <a
+                    href="https://wa.me/923239225450?text=Assalam-o-Alaikum%20RaabtaNow%20Team%2C%20I%20need%20assistance%20regarding%20matrimonial%20services."
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => setToolsDropdownOpen(false)}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-navy-750 transition-colors group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center shrink-0">
+                        <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
+                          WhatsApp Help
+                        </div>
+                        <div className="text-[11px] text-slate-400">+92 323 9225450</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#25D366]/10 border border-[#25D366]/25 text-[#25D366]">
+                      Chat
+                    </span>
+                  </a>
+
+                  <div className="h-px bg-slate-750/60 my-1" />
+
+                  {/* 3. Android App Download */}
+                  <a
+                    href="/downloads/raabtanow.apk"
+                    download="raabtanow.apk"
+                    onClick={() => setToolsDropdownOpen(false)}
+                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-navy-750 transition-colors group cursor-pointer"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                        <Smartphone className="w-4 h-4 text-emerald-400" />
+                      </div>
+                      <div>
+                        <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
+                          Download App
+                        </div>
+                        <div className="text-[11px] text-slate-400">Android APK File</div>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-emerald-500/10 border border-emerald-500/25 text-emerald-300">
+                      .APK
+                    </span>
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile Right Bar: Theme Toggle + Hamburger */}
+          <div className="flex md:hidden items-center gap-2">
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -257,7 +368,18 @@ export default function Navbar() {
             )}
           </div>
 
-          <div className="pt-1">
+          <div className="pt-1 flex flex-col gap-2">
+            <a
+              href="https://wa.me/923239225450?text=Assalam-o-Alaikum%20RaabtaNow%20Team%2C%20I%20need%20assistance%20regarding%20matrimonial%20services."
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366]/15 border border-[#25D366]/35 text-[#25D366] hover:bg-[#25D366]/25 font-bold text-xs transition-all shadow-xs"
+            >
+              <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
+              <span>Chat on WhatsApp (+92-323-9225450)</span>
+            </a>
+
             <a
               href="/downloads/raabtanow.apk"
               download="raabtanow.apk"

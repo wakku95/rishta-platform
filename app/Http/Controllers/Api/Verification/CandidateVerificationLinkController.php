@@ -96,6 +96,8 @@ class CandidateVerificationLinkController extends Controller
 
         if ($docType === 'photo') {
             $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow matrimonial matchmaking ke liye baraye meherbani is secure link par candidate ki ek halia tasveer (photograph) upload karein: {$verifyUrl}\n\nNote: Yeh tasveer 100% confidential rahegi aur sirf verified proposals ke liye watermark ke sath use hogi.";
+        } elseif ($docType === 'cnic') {
+            $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow matrimonial profile verification ke liye baraye meherbani is secure link par apna CNIC (Front & Back) aur camera se Live Selfie photo capture karein: {$verifyUrl}\n\nNote: Aapka CNIC aur selfie 100% confidential rahegi aur kisi public user ko show nahi ki jayegi.";
         } else {
             $whatsappMsg = "Assalam-o-Alaikum, RaabtaNow Matrimonial profile verification ke liye baraye meherbani is secure link par apna {$docLabel} upload karein: {$verifyUrl}\n\nNote: Aapka document 100% confidential rahega aur kisi public user ko show nahi kiya jayega.";
         }
@@ -149,7 +151,11 @@ class CandidateVerificationLinkController extends Controller
             return response()->json(['message' => 'Record not found.'], Response::HTTP_NOT_FOUND);
         }
 
-        $path = $side === 'back' ? $record->document_back_path : $record->document_front_path;
+        $path = match ($side) {
+            'back' => $record->document_back_path,
+            'selfie' => $record->live_selfie_path,
+            default => $record->document_front_path,
+        };
         if (!$path || !Storage::disk($this->storageDisk)->exists($path)) {
             return response()->json(['message' => 'Document file not found.'], Response::HTTP_NOT_FOUND);
         }
@@ -180,6 +186,17 @@ class CandidateVerificationLinkController extends Controller
             'reviewed_by_user_id' => $request->user()?->id,
             'notes' => $request->input('notes'),
         ]);
+
+        if ($record->candidate_type === 'assisted') {
+            $listing = AssistedListing::find($record->candidate_id);
+            if ($listing) {
+                if (in_array($record->document_type, ['cnic', 'identity', 'photo', null])) {
+                    $listing->update(['identity_verified_at' => now()]);
+                } elseif ($record->document_type === 'degree') {
+                    $listing->update(['education_verified_at' => now()]);
+                }
+            }
+        }
 
         return $this->successResponse($record, 'Candidate verification approved successfully.');
     }
@@ -232,6 +249,9 @@ class CandidateVerificationLinkController extends Controller
         }
         if ($record->document_back_path && Storage::disk($this->storageDisk)->exists($record->document_back_path)) {
             Storage::disk($this->storageDisk)->delete($record->document_back_path);
+        }
+        if ($record->live_selfie_path && Storage::disk($this->storageDisk)->exists($record->live_selfie_path)) {
+            Storage::disk($this->storageDisk)->delete($record->live_selfie_path);
         }
 
         $record->delete();
@@ -302,6 +322,17 @@ class CandidateVerificationLinkController extends Controller
             'reviewed_by_user_id' => $request->user()?->id,
         ]);
 
+        if ($type === 'assisted') {
+            $listing = AssistedListing::find($id);
+            if ($listing) {
+                if (in_array($docType, ['cnic', 'identity', 'photo', null])) {
+                    $listing->update(['identity_verified_at' => now()]);
+                } elseif ($docType === 'degree') {
+                    $listing->update(['education_verified_at' => now()]);
+                }
+            }
+        }
+
         return $this->successResponse($record, 'Candidate document/photo uploaded and approved successfully.');
     }
 
@@ -350,6 +381,7 @@ class CandidateVerificationLinkController extends Controller
         $validated = $request->validate([
             'front_image' => 'required|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
             'back_image'  => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
+            'live_selfie' => 'nullable|file|mimes:jpeg,jpg,png,webp|max:10240',
             'notes'       => 'nullable|string|max:500',
         ]);
 
@@ -368,9 +400,18 @@ class CandidateVerificationLinkController extends Controller
             $backPath = $backFile->storeAs($folder, "back_{$record->token}.{$backExt}", $this->storageDisk);
         }
 
+        // Store live selfie if provided
+        $selfiePath = null;
+        if ($request->hasFile('live_selfie')) {
+            $selfieFile = $request->file('live_selfie');
+            $selfieExt = $selfieFile->getClientOriginalExtension();
+            $selfiePath = $selfieFile->storeAs($folder, "selfie_{$record->token}.{$selfieExt}", $this->storageDisk);
+        }
+
         $record->update([
             'document_front_path' => $frontPath,
             'document_back_path'  => $backPath,
+            'live_selfie_path'    => $selfiePath,
             'notes'               => $validated['notes'] ?? null,
             'status'              => 'submitted',
             'submitted_at'        => now(),

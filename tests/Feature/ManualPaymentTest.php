@@ -407,4 +407,53 @@ class ManualPaymentTest extends TestCase
         // Physical file must be removed from storage
         Storage::disk('local')->assertMissing($filePath);
     }
+
+    public function test_photo_unlock_payment_does_not_block_contact_unlock(): void
+    {
+        // Simulate an existing paid photo unlock payment
+        Payment::create([
+            'rishta_request_id' => $this->rishtaRequest->id,
+            'user_id' => $this->sender->id,
+            'amount' => 300.00,
+            'currency' => 'PKR',
+            'purpose' => 'photo_unlock',
+            'status' => Payment::STATUS_PAID,
+            'gateway' => 'jazzcash_qr',
+            'transaction_reference' => 'PHOTO123456',
+        ]);
+
+        // Sender should still be able to submit manual proof for contact unlock
+        $file = UploadedFile::fake()->create('receipt.jpg', 1500, 'image/jpeg');
+
+        $response = $this->actingAs($this->sender)
+            ->postJson("/api/requests/{$this->rishtaRequest->request_code}/payment/submit-proof", [
+                'transaction_reference' => 'CONTACT987654',
+                'receipt' => $file,
+            ]);
+
+        $response->assertStatus(Response::HTTP_CREATED)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'amount' => 2500,
+                    'status' => 'pending',
+                ],
+            ]);
+
+        // Verify status endpoint does not treat photo payment as contact payment
+        $statusRes = $this->actingAs($this->sender)
+            ->getJson("/api/requests/{$this->rishtaRequest->request_code}/unlock/status");
+
+        $statusRes->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'success' => true,
+                'data' => [
+                    'is_paid' => false,
+                    'pending_payment' => [
+                        'transaction_reference' => 'CONTACT987654',
+                        'amount' => 2500,
+                    ],
+                ],
+            ]);
+    }
 }

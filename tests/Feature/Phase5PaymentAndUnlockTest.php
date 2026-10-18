@@ -91,7 +91,7 @@ class Phase5PaymentAndUnlockTest extends TestCase
                 'success' => true,
                 'data' => [
                     'request_code' => $request->request_code,
-                    'amount' => 300,
+                    'amount' => 2500,
                     'currency' => 'PKR',
                     'status' => 'pending',
                     'gateway' => 'fake',
@@ -101,7 +101,7 @@ class Phase5PaymentAndUnlockTest extends TestCase
         $this->assertDatabaseHas('payments', [
             'rishta_request_id' => $request->id,
             'user_id' => $sender->id,
-            'amount' => 300.00,
+            'amount' => 2500.00,
             'currency' => 'PKR',
             'status' => 'pending',
         ]);

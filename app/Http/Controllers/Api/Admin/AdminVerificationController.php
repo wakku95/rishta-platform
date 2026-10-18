@@ -93,7 +93,11 @@ class AdminVerificationController extends Controller
             ], Response::HTTP_NOT_FOUND);
         }
 
-        $path = ($side === 'back') ? $verification->document_back_path : $verification->document_front_path;
+        $path = match ($side) {
+            'back' => $verification->document_back_path,
+            'selfie' => $verification->live_selfie_path,
+            default => $verification->document_front_path,
+        };
 
         if (!$path || !Storage::disk('local')->exists($path)) {
             return response()->json([

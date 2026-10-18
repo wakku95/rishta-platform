@@ -470,6 +470,32 @@ export default function AdminProfilesTab() {
                 <span className="text-slate-400 block mb-1">Profession</span>
                 <span className="font-semibold text-white">{selectedProfile.profession || 'N/A'}</span>
               </div>
+              <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5 space-y-1">
+                <span className="text-slate-400 block">Marital Status</span>
+                <select
+                  value={selectedProfile.marital_status || 'never_married'}
+                  onChange={async (e) => {
+                    const newStatus = e.target.value;
+                    if (window.confirm(`Are you sure you want to administratively change Marital Status to "${newStatus.replace('_', ' ')}"?`)) {
+                      try {
+                        await adminApi.updateProfileField(selectedProfile.id, 'marital_status', newStatus);
+                        setSelectedProfile(prev => ({ ...prev, marital_status: newStatus }));
+                        setMessage({ type: 'success', text: `Marital status updated to ${newStatus.replace('_', ' ')}.` });
+                        fetchProfiles(pagination.current_page);
+                      } catch (err) {
+                        alert(err.response?.data?.message || 'Failed to update marital status.');
+                      }
+                    }
+                  }}
+                  className="bg-navy-900 border border-slate-700 text-white rounded px-2 py-1 text-xs font-semibold capitalize focus:outline-none focus:ring-1 focus:ring-magenta-500 w-full"
+                >
+                  <option value="never_married">Never Married</option>
+                  <option value="divorced">Divorced</option>
+                  <option value="widowed">Widowed</option>
+                  <option value="separated">Separated</option>
+                  <option value="married">Married</option>
+                </select>
+              </div>
               <div className="p-3 bg-navy-800/80 rounded-xl border border-white/5">
                 <span className="text-slate-400 block mb-1">Status</span>
                 <span className="font-semibold text-emerald-400 capitalize">{selectedProfile.profile_status}</span>

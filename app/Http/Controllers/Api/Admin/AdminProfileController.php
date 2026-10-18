@@ -172,7 +172,7 @@ class AdminProfileController extends Controller
         $field = $request->input('field');
 
         $rules = [
-            'field' => 'required|in:date_of_birth,education,gender',
+            'field' => 'required|in:date_of_birth,education,gender,marital_status',
         ];
 
         if ($field === 'date_of_birth') {
@@ -181,6 +181,8 @@ class AdminProfileController extends Controller
             $rules['value'] = ['required', 'date', 'before_or_equal:' . $maxDate, 'after_or_equal:' . $minDate];
         } elseif ($field === 'gender') {
             $rules['value'] = ['required', 'in:male,female'];
+        } elseif ($field === 'marital_status') {
+            $rules['value'] = ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MARITAL_STATUSES))];
         } else {
             $rules['value'] = ['required', 'string'];
         }

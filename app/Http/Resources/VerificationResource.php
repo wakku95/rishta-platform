@@ -20,6 +20,7 @@ class VerificationResource extends JsonResource
             'document_name' => $this->document_name,
             'has_front_document' => !empty($this->document_front_path),
             'has_back_document' => !empty($this->document_back_path),
+            'has_live_selfie' => !empty($this->live_selfie_path),
             'rejection_reason' => $this->rejection_reason,
             'submitted_at' => $this->submitted_at?->toIso8601String(),
             'reviewed_at' => $this->reviewed_at?->toIso8601String(),

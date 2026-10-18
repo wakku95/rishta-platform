@@ -20,29 +20,62 @@ class AdminActivityController extends Controller
     /**
      * List all rishta requests with filters.
      */
+    /**
+     * List all rishta requests with filters.
+     */
     public function requests(Request $request): JsonResponse
     {
         $query = RishtaRequest::query()
             ->with([
-                'sender:id,name,email',
-                'receiver:id,name,email',
-                'sender.profile:id,user_id,profile_code,gender,city',
-                'receiver.profile:id,user_id,profile_code,gender,city',
+                'sender:id,name,email,phone',
+                'receiver:id,name,email,phone',
+                'sender.profile',
+                'receiver.profile',
+                'reviewer:id,name,email',
                 'successfulPayment:id,rishta_request_id,payment_uuid,amount,status,paid_at',
             ]);
 
         if ($search = $request->input('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('request_code', 'like', "%{$search}%")
+                  ->orWhere('sender_intro', 'like', "%{$search}%")
+                  ->orWhere('sender_questions', 'like', "%{$search}%")
+                  ->orWhere('receiver_intro', 'like', "%{$search}%")
+                  ->orWhere('receiver_answers', 'like', "%{$search}%")
+                  ->orWhere('receiver_questions', 'like', "%{$search}%")
+                  ->orWhere('sender_answers', 'like', "%{$search}%")
                   ->orWhereHas('sender', function ($sq) use ($search) {
                       $sq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
+                         ->orWhere('email', 'like', "%{$search}%")
+                         ->orWhere('phone', 'like', "%{$search}%");
                   })
                   ->orWhereHas('receiver', function ($rq) use ($search) {
                       $rq->where('name', 'like', "%{$search}%")
-                         ->orWhere('email', 'like', "%{$search}%");
+                         ->orWhere('email', 'like', "%{$search}%")
+                         ->orWhere('phone', 'like', "%{$search}%");
                   });
             });
+        }
+
+        // Quick Pending Filter tabs
+        if ($quickFilter = $request->input('quick_filter')) {
+            switch ($quickFilter) {
+                case 'pending_proposals':
+                    $query->where('admin_status', RishtaRequest::ADMIN_STATUS_PENDING);
+                    break;
+                case 'pending_photos':
+                    $query->where('photo_moderation_status', 'pending_review');
+                    break;
+                case 'needs_revision':
+                    $query->where('admin_status', RishtaRequest::ADMIN_STATUS_NEEDS_REVISION);
+                    break;
+                case 'all_pending':
+                    $query->where(function ($q) {
+                        $q->where('admin_status', RishtaRequest::ADMIN_STATUS_PENDING)
+                          ->orWhere('photo_moderation_status', 'pending_review');
+                    });
+                    break;
+            }
         }
 
         if ($status = $request->input('status')) {
@@ -57,10 +90,171 @@ class AdminActivityController extends Controller
             }
         }
 
-        $perPage = min((int) $request->input('per_page', 15), 50);
-        $requests = $query->latest()->paginate($perPage);
+        if ($adminStatus = $request->input('admin_status')) {
+            if (in_array($adminStatus, [
+                RishtaRequest::ADMIN_STATUS_PENDING,
+                RishtaRequest::ADMIN_STATUS_APPROVED,
+                RishtaRequest::ADMIN_STATUS_REJECTED,
+                RishtaRequest::ADMIN_STATUS_NEEDS_REVISION,
+            ])) {
+                $query->where('admin_status', $adminStatus);
+            }
+        }
 
-        return $this->successResponse($requests, 'Rishta requests retrieved.');
+        if ($photoStatus = $request->input('photo_status')) {
+            if ($photoStatus === 'none') {
+                $query->whereNull('photo_moderation_status')
+                      ->whereNull('sender_photo_moderation_status')
+                      ->whereNull('receiver_photo_moderation_status');
+            } elseif (in_array($photoStatus, ['pending_review', 'approved', 'rejected'])) {
+                $query->where(function ($q) use ($photoStatus) {
+                    $q->where('photo_moderation_status', $photoStatus)
+                      ->orWhere('sender_photo_moderation_status', $photoStatus)
+                      ->orWhere('receiver_photo_moderation_status', $photoStatus);
+                });
+            }
+        }
+
+        $perPage = min((int) $request->input('per_page', 15), 50);
+        $paginated = $query->latest()->paginate($perPage);
+        $paginated->appends($request->query());
+
+        $result = $paginated->toArray();
+        $result['counts'] = [
+            'all' => RishtaRequest::count(),
+            'pending_proposals' => RishtaRequest::where('admin_status', RishtaRequest::ADMIN_STATUS_PENDING)->count(),
+            'pending_photos' => RishtaRequest::where(function ($q) {
+                $q->where('photo_moderation_status', 'pending_review')
+                  ->orWhere('sender_photo_moderation_status', 'pending_review')
+                  ->orWhere('receiver_photo_moderation_status', 'pending_review');
+            })->count(),
+            'needs_revision' => RishtaRequest::where('admin_status', RishtaRequest::ADMIN_STATUS_NEEDS_REVISION)->count(),
+            'all_pending' => RishtaRequest::where(function ($q) {
+                $q->where('admin_status', RishtaRequest::ADMIN_STATUS_PENDING)
+                  ->orWhere('photo_moderation_status', 'pending_review')
+                  ->orWhere('sender_photo_moderation_status', 'pending_review')
+                  ->orWhere('receiver_photo_moderation_status', 'pending_review');
+            })->count(),
+        ];
+
+        return $this->successResponse($result, 'Rishta requests retrieved.');
+    }
+
+    /**
+     * Approve a proposal for candidate delivery (1-Click Admin Moderation).
+     */
+    public function approveProposal(Request $request, int $id): JsonResponse
+    {
+        $rishtaRequest = RishtaRequest::with(['sender.profile', 'receiver.profile'])->find($id);
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse('Request not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
+        }
+
+        $isResponseApproval = ($rishtaRequest->status === RishtaRequest::STATUS_ACCEPTED && empty($rishtaRequest->sender_answers));
+        $isSenderAnswerApproval = ($rishtaRequest->status === RishtaRequest::STATUS_ACCEPTED && !empty($rishtaRequest->sender_answers));
+
+        $rishtaRequest->update([
+            'admin_status' => RishtaRequest::ADMIN_STATUS_APPROVED,
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        if ($isSenderAnswerApproval) {
+            try {
+                $rishtaRequest->receiver->notify(new \App\Notifications\NewRishtaRequestNotification($rishtaRequest));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Failed to notify receiver of sender answers: {$e->getMessage()}");
+            }
+            $message = "Sender's answers [{$rishtaRequest->request_code}] approved and delivered to candidate.";
+        } elseif ($isResponseApproval) {
+            try {
+                $rishtaRequest->sender->notify(new \App\Notifications\RishtaRequestAcceptedNotification($rishtaRequest));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Failed to notify sender of accepted proposal: {$e->getMessage()}");
+            }
+            $message = "Proposal response [{$rishtaRequest->request_code}] approved and delivered to sender.";
+        } else {
+            try {
+                $rishtaRequest->receiver->notify(new \App\Notifications\NewRishtaRequestNotification($rishtaRequest));
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning("Failed to notify receiver of approved proposal: {$e->getMessage()}");
+            }
+            $message = "Proposal [{$rishtaRequest->request_code}] approved and delivered to candidate.";
+        }
+
+        return $this->successResponse([
+            'id' => $rishtaRequest->id,
+            'request_code' => $rishtaRequest->request_code,
+            'admin_status' => $rishtaRequest->admin_status,
+            'status' => $rishtaRequest->status,
+        ], $message);
+    }
+
+    /**
+     * Reject a proposal during admin moderation.
+     */
+    public function rejectProposal(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'admin_notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $rishtaRequest = RishtaRequest::find($id);
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse('Request not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
+        }
+
+        $rishtaRequest->update([
+            'admin_status' => RishtaRequest::ADMIN_STATUS_REJECTED,
+            'admin_notes' => $request->input('admin_notes'),
+            'status' => RishtaRequest::STATUS_DECLINED,
+            'declined_at' => now(),
+            'active_pair_hash' => null,
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        return $this->successResponse([
+            'id' => $rishtaRequest->id,
+            'request_code' => $rishtaRequest->request_code,
+            'admin_status' => $rishtaRequest->admin_status,
+            'status' => $rishtaRequest->status,
+        ], "Proposal [{$rishtaRequest->request_code}] has been rejected.");
+    }
+
+    /**
+     * Request correction / revision from user without rejecting or killing the proposal.
+     */
+    public function requestRevisionProposal(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'admin_notes' => ['required', 'string', 'min:3', 'max:1000'],
+        ], [
+            'admin_notes.required' => 'Please provide instructions or reason for the requested revision.',
+        ]);
+
+        $rishtaRequest = RishtaRequest::find($id);
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse('Request not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
+        }
+
+        $rishtaRequest->update([
+            'admin_status' => RishtaRequest::ADMIN_STATUS_NEEDS_REVISION,
+            'admin_notes' => $request->input('admin_notes'),
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+        ]);
+
+        return $this->successResponse([
+            'id' => $rishtaRequest->id,
+            'request_code' => $rishtaRequest->request_code,
+            'admin_status' => $rishtaRequest->admin_status,
+            'status' => $rishtaRequest->status,
+            'admin_notes' => $rishtaRequest->admin_notes,
+        ], "Revision requested for proposal [{$rishtaRequest->request_code}]. The candidate can now edit their answers without permanent decline.");
     }
 
     /**
@@ -160,10 +354,26 @@ class AdminActivityController extends Controller
                 'reviewed_at' => now(),
             ]);
 
-            ContactUnlock::updateOrCreate(
-                ['rishta_request_id' => $lockedPayment->rishta_request_id],
-                ['payment_id' => $lockedPayment->id]
-            );
+            if ($lockedPayment->purpose === 'photo_unlock') {
+                $req = $lockedPayment->rishtaRequest;
+                if ($req) {
+                    $isSender = ($lockedPayment->user_id === $req->sender_id);
+                    $req->update([
+                        'photo_paid' => true,
+                        'photo_paid_at' => now(),
+                        'photo_paid_by' => $lockedPayment->user_id,
+                        'sender_photo_paid' => $isSender ? true : $req->sender_photo_paid,
+                        'sender_photo_paid_at' => $isSender ? now() : $req->sender_photo_paid_at,
+                        'receiver_photo_paid' => !$isSender ? true : $req->receiver_photo_paid,
+                        'receiver_photo_paid_at' => !$isSender ? now() : $req->receiver_photo_paid_at,
+                    ]);
+                }
+            } else {
+                ContactUnlock::updateOrCreate(
+                    ['rishta_request_id' => $lockedPayment->rishta_request_id],
+                    ['payment_id' => $lockedPayment->id]
+                );
+            }
         });
 
         $payment->refresh();
@@ -331,5 +541,186 @@ class AdminActivityController extends Controller
         });
 
         return $this->successResponse($unlocks, 'Contact unlocks log retrieved.');
+    }
+
+    /**
+     * Approve uploaded candidate photo after quality audit.
+     */
+    public function approvePhoto(Request $request, int $id): JsonResponse
+    {
+        $rishtaRequest = RishtaRequest::find($id);
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse('Request not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
+        }
+
+        if (empty($rishtaRequest->sender_photo_path) && empty($rishtaRequest->receiver_photo_path)) {
+            return $this->errorResponse('No candidate photo has been uploaded for this proposal.', [], Response::HTTP_UNPROCESSABLE_ENTITY, 'NO_PHOTO_UPLOADED');
+        }
+
+        $watermarkLevel = $request->input('watermark_level', 'medium');
+        if (!in_array($watermarkLevel, ['standard', 'medium', 'dark'])) {
+            $watermarkLevel = 'medium';
+        }
+
+        $watermarkText = $request->input('watermark_text');
+        if (is_string($watermarkText)) {
+            $watermarkText = mb_substr(trim($watermarkText), 0, 255);
+            if ($watermarkText === '') {
+                $watermarkText = null;
+            }
+        } else {
+            $watermarkText = null;
+        }
+
+        $side = $request->input('side');
+        if (!$side) {
+            if (!empty($rishtaRequest->receiver_photo_path) && $rishtaRequest->receiver_photo_moderation_status === 'pending_review') {
+                $side = 'receiver';
+            } elseif (!empty($rishtaRequest->sender_photo_path) && $rishtaRequest->sender_photo_moderation_status === 'pending_review') {
+                $side = 'sender';
+            } else {
+                $side = !empty($rishtaRequest->receiver_photo_path) ? 'receiver' : 'sender';
+            }
+        }
+
+        $updates = [
+            'photo_moderation_status' => 'approved',
+            'photo_watermark_level' => $watermarkLevel,
+            'photo_watermark_text' => $watermarkText,
+            'photo_rejection_notes' => null,
+        ];
+
+        if ($side === 'sender') {
+            $updates['sender_photo_moderation_status'] = 'approved';
+            $updates['sender_photo_watermark_level'] = $watermarkLevel;
+            $updates['sender_photo_watermark_text'] = $watermarkText;
+            $updates['sender_photo_rejection_notes'] = null;
+        } else {
+            $updates['receiver_photo_moderation_status'] = 'approved';
+            $updates['receiver_photo_watermark_level'] = $watermarkLevel;
+            $updates['receiver_photo_watermark_text'] = $watermarkText;
+            $updates['receiver_photo_rejection_notes'] = null;
+        }
+
+        $rishtaRequest->update($updates);
+
+        return $this->successResponse([
+            'id' => $rishtaRequest->id,
+            'request_code' => $rishtaRequest->request_code,
+            'side' => $side,
+            'photo_moderation_status' => 'approved',
+            'photo_watermark_level' => $watermarkLevel,
+            'photo_watermark_text' => $watermarkText,
+        ], "Photo ({$side}) for proposal [{$rishtaRequest->request_code}] approved with [{$watermarkLevel}] watermark level.");
+    }
+
+    /**
+     * Reject poor / improper candidate photo with feedback notes.
+     */
+    public function rejectPhoto(Request $request, int $id): JsonResponse
+    {
+        $request->validate([
+            'reason' => ['required', 'string', 'min:3', 'max:1000'],
+        ], [
+            'reason.required' => 'Please provide a reason explaining why the photo was rejected (e.g. face not clear, scenery/object photo, sunglasses).',
+        ]);
+
+        $rishtaRequest = RishtaRequest::find($id);
+
+        if (!$rishtaRequest) {
+            return $this->errorResponse('Request not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
+        }
+
+        $reason = trim($request->input('reason'));
+        $side = $request->input('side');
+        if (!$side) {
+            if (!empty($rishtaRequest->receiver_photo_path) && $rishtaRequest->receiver_photo_moderation_status === 'pending_review') {
+                $side = 'receiver';
+            } elseif (!empty($rishtaRequest->sender_photo_path) && $rishtaRequest->sender_photo_moderation_status === 'pending_review') {
+                $side = 'sender';
+            } else {
+                $side = !empty($rishtaRequest->receiver_photo_path) ? 'receiver' : 'sender';
+            }
+        }
+
+        $updates = [
+            'photo_moderation_status' => 'rejected',
+            'photo_rejection_notes' => $reason,
+            'photo_request_status' => 'requested',
+        ];
+
+        if ($side === 'sender') {
+            $updates['sender_photo_moderation_status'] = 'rejected';
+            $updates['sender_photo_rejection_notes'] = $reason;
+            $updates['sender_photo_path'] = null;
+        } else {
+            $updates['receiver_photo_moderation_status'] = 'rejected';
+            $updates['receiver_photo_rejection_notes'] = $reason;
+            $updates['receiver_photo_path'] = null;
+        }
+
+        $rishtaRequest->update($updates);
+
+        return $this->successResponse([
+            'id' => $rishtaRequest->id,
+            'request_code' => $rishtaRequest->request_code,
+            'side' => $side,
+            'photo_moderation_status' => 'rejected',
+            'photo_rejection_notes' => $reason,
+        ], "Photo ({$side}) rejected with feedback. Candidate has been notified to upload a clearer photo.");
+    }
+
+    /**
+     * Admin direct inspection of candidate photo for quality audit.
+     */
+    public function viewCandidatePhoto(Request $request, int $id)
+    {
+        $rishtaRequest = RishtaRequest::find($id);
+
+        $side = $request->query('side');
+        if ($side === 'sender') {
+            $photoPath = $rishtaRequest->sender_photo_path;
+        } elseif ($side === 'receiver') {
+            $photoPath = $rishtaRequest->receiver_photo_path;
+        } else {
+            if (!empty($rishtaRequest->receiver_photo_path) && $rishtaRequest->receiver_photo_moderation_status === 'pending_review') {
+                $photoPath = $rishtaRequest->receiver_photo_path;
+            } elseif (!empty($rishtaRequest->sender_photo_path) && $rishtaRequest->sender_photo_moderation_status === 'pending_review') {
+                $photoPath = $rishtaRequest->sender_photo_path;
+            } else {
+                $photoPath = $rishtaRequest->receiver_photo_path ?: $rishtaRequest->sender_photo_path;
+            }
+        }
+
+        if (empty($photoPath)) {
+            abort(404, 'No photo uploaded.');
+        }
+
+        if (Storage::disk('local')->exists($photoPath)) {
+            $mimeType = Storage::disk('local')->mimeType($photoPath) ?: 'image/jpeg';
+            return Storage::disk('local')->response($photoPath, null, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline',
+                'Cache-Control' => 'no-store, no-cache, private',
+            ]);
+        }
+
+        $fallbacks = [
+            storage_path('app/private/' . $photoPath),
+            storage_path('app/' . $photoPath),
+        ];
+
+        foreach ($fallbacks as $fallback) {
+            if (file_exists($fallback)) {
+                return response()->file($fallback, [
+                    'Content-Type' => mime_content_type($fallback) ?: 'image/jpeg',
+                    'Content-Disposition' => 'inline',
+                    'Cache-Control' => 'no-store, no-cache, private',
+                ]);
+            }
+        }
+
+        abort(404, 'Photo file not found on server.');
     }
 }

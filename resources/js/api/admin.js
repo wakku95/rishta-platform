@@ -21,8 +21,19 @@ export const adminApi = {
   updateProfileField: (id, field, value) => api.post(`/admin/profiles/${id}/field`, { field, value }).then(r => r.data),
   deleteProfile: (id) => api.delete(`/admin/profiles/${id}`).then(r => r.data),
 
-  // Requests
+  // Requests & Proposals
   getRequests: (params) => api.get('/admin/requests', { params }).then(r => r.data.data),
+  approveProposal: (id) => api.post(`/admin/requests/${id}/approve`).then(r => r.data),
+  rejectProposal: (id, admin_notes) => api.post(`/admin/requests/${id}/reject`, { admin_notes }).then(r => r.data),
+  requestRevision: (id, admin_notes) => api.post(`/admin/requests/${id}/request-revision`, { admin_notes }).then(r => r.data),
+  approvePhoto: (id, watermarkLevel = 'medium', side = null, watermarkText = null) => 
+    api.post(`/admin/requests/${id}/approve-photo`, { watermark_level: watermarkLevel, side, watermark_text: watermarkText }).then(r => r.data),
+  rejectPhoto: (id, reason, side = null) => 
+    api.post(`/admin/requests/${id}/reject-photo`, { reason, side }).then(r => r.data),
+  getCandidatePhotoBlob: (id, side = null) => api.get(`/admin/requests/${id}/view-photo`, {
+    params: side ? { side } : {},
+    responseType: 'blob',
+  }).then(r => r.data),
   cancelRequest: (id) => api.post(`/admin/requests/${id}/cancel`).then(r => r.data),
 
   // Payments & Unlocks

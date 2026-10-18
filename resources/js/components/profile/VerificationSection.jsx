@@ -8,6 +8,7 @@ import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Alert from '../ui/Alert';
 import { verificationApi } from '../../api/verification';
+import LiveSelfieCamera from '../verification/LiveSelfieCamera';
 
 export default function VerificationSection() {
   const [data, setData] = useState(null);
@@ -23,6 +24,7 @@ export default function VerificationSection() {
   // Form states
   const [frontFile, setFrontFile] = useState(null);
   const [backFile, setBackFile] = useState(null);
+  const [selfieFile, setSelfieFile] = useState(null);
   const [eduFile, setEduFile] = useState(null);
   const [eduLabel, setEduLabel] = useState('');
   const [formError, setFormError] = useState('');
@@ -54,6 +56,9 @@ export default function VerificationSection() {
     const formData = new FormData();
     formData.append('front', frontFile);
     formData.append('back', backFile);
+    if (selfieFile) {
+      formData.append('live_selfie', selfieFile, 'live_selfie.jpg');
+    }
 
     setSubmitting(true);
     try {
@@ -62,6 +67,7 @@ export default function VerificationSection() {
       setIdentityModalOpen(false);
       setFrontFile(null);
       setBackFile(null);
+      setSelfieFile(null);
       fetchStatus();
     } catch (err) {
       setFormError(err.response?.data?.message || 'Failed to upload identity documents.');
@@ -302,6 +308,15 @@ export default function VerificationSection() {
             )}
 
             <form onSubmit={handleIdentitySubmit} className="space-y-4">
+              {/* Step 1: Live Selfie Capture */}
+              <div className="p-3 bg-navy-950/70 border border-slate-750 rounded-xl space-y-2">
+                <LiveSelfieCamera
+                  onCapture={(blob) => setSelfieFile(blob)}
+                  onClear={() => setSelfieFile(null)}
+                />
+              </div>
+
+              {/* Step 2: CNIC Front */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   CNIC Front Side (Image or PDF, max 5MB) *

@@ -21,7 +21,7 @@ class VerificationService
      * - If user has a pending identity verification, safely delete its old private files and update it with the new ones.
      * - If previous submission was rejected, create a fresh pending record (old rejected record remains for audit integrity).
      */
-    public function submitIdentity(User $user, UploadedFile $frontFile, UploadedFile $backFile): ProfileVerification
+    public function submitIdentity(User $user, UploadedFile $frontFile, UploadedFile $backFile, ?UploadedFile $liveSelfieFile = null): ProfileVerification
     {
         if ($user->isIdentityVerified()) {
             throw new InvalidArgumentException('Your identity has already been verified and approved.');
@@ -32,6 +32,8 @@ class VerificationService
             ->where('status', ProfileVerification::STATUS_PENDING)
             ->first();
 
+        $selfiePath = $liveSelfieFile ? $this->storePrivateFile($liveSelfieFile, $user->id, 'live_selfie') : null;
+
         // If pending exists, replace its files cleanly
         if ($pending) {
             $pending->deleteStoredDocuments();
@@ -41,7 +43,8 @@ class VerificationService
             $pending->update([
                 'document_front_path' => $frontPath,
                 'document_back_path' => $backPath,
-                'document_name' => 'CNIC Front & Back',
+                'live_selfie_path' => $selfiePath,
+                'document_name' => 'CNIC Front & Back + Live Selfie',
                 'rejection_reason' => null,
                 'submitted_at' => now(),
             ]);
@@ -59,7 +62,8 @@ class VerificationService
             'status' => ProfileVerification::STATUS_PENDING,
             'document_front_path' => $frontPath,
             'document_back_path' => $backPath,
-            'document_name' => 'CNIC Front & Back',
+            'live_selfie_path' => $selfiePath,
+            'document_name' => 'CNIC Front & Back + Live Selfie',
             'submitted_at' => now(),
         ]);
     }
@@ -203,9 +207,15 @@ class VerificationService
                 $freedFiles++;
             }
 
+            if ($verification->live_selfie_path && Storage::disk($this->disk)->exists($verification->live_selfie_path)) {
+                Storage::disk($this->disk)->delete($verification->live_selfie_path);
+                $freedFiles++;
+            }
+
             $verification->update([
                 'document_front_path' => null,
                 'document_back_path' => null,
+                'live_selfie_path' => null,
                 'documents_purged_at' => now(),
             ]);
 

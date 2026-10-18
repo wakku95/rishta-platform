@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Constants\ProfileOptions;
 use App\Models\Profile;
+use App\Models\ProfileVerification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
@@ -1305,6 +1306,179 @@ class ProfileTest extends TestCase
         $this->assertNotContains('RK-PENDING01', $noBioCodes);
         $this->assertNotContains('RK-APPRVD02', $noBioCodes);
         $this->assertContains('RK-NOBIO03', $noBioCodes);
+    }
+
+    public function test_female_profile_marital_status_is_locked_after_cnic_identity_verification_is_approved(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-FEMLOCK01',
+            'gender' => 'female',
+            'date_of_birth' => '1998-04-10',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Karachi',
+            'education' => "Master's",
+            'profession' => 'Education',
+            'marital_status' => 'never_married',
+            'height' => 165,
+            'managed_by' => 'myself',
+            'profile_status' => 'active',
+        ]);
+
+        Sanctum::actingAs($user, ['*']);
+
+        // 1. Without CNIC identity verification, female can freely update marital status to divorced
+        $updateAllowed = $this->postJson('/api/profile', [
+            'gender' => 'female',
+            'date_of_birth' => '1998-04-10',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Karachi',
+            'education' => "Master's",
+            'profession' => 'Education',
+            'marital_status' => 'divorced',
+            'height' => 165,
+            'managed_by' => 'myself',
+        ]);
+        $updateAllowed->assertStatus(200);
+        $this->assertEquals('divorced', $profile->fresh()->marital_status);
+
+        // 2. Approve CNIC Identity Verification
+        ProfileVerification::create([
+            'user_id' => $user->id,
+            'type' => ProfileVerification::TYPE_IDENTITY,
+            'status' => ProfileVerification::STATUS_APPROVED,
+            'submitted_at' => now(),
+        ]);
+        $this->assertTrue($user->fresh()->isIdentityVerified());
+
+        // 3. Attempting to change marital status now fails with 422 MARITAL_STATUS_LOCKED_AFTER_VERIFICATION
+        $updateBlocked = $this->postJson('/api/profile', [
+            'gender' => 'female',
+            'date_of_birth' => '1998-04-10',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Karachi',
+            'education' => "Master's",
+            'profession' => 'Education',
+            'marital_status' => 'never_married',
+            'height' => 165,
+            'managed_by' => 'myself',
+        ]);
+        $updateBlocked->assertStatus(422)
+            ->assertJson([
+                'success' => false,
+                'error_code' => 'MARITAL_STATUS_LOCKED_AFTER_VERIFICATION',
+            ]);
+        $this->assertEquals('divorced', $profile->fresh()->marital_status);
+
+        // 4. Updating other unlocked fields while preserving marital_status succeeds
+        $otherUpdate = $this->postJson('/api/profile', [
+            'gender' => 'female',
+            'date_of_birth' => '1998-04-10',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Islamabad',
+            'education' => "Master's",
+            'profession' => 'Medical / Healthcare',
+            'marital_status' => 'divorced',
+            'height' => 165,
+            'managed_by' => 'myself',
+        ]);
+        $otherUpdate->assertStatus(200);
+        $this->assertEquals('Islamabad', $profile->fresh()->city);
+        $this->assertEquals('divorced', $profile->fresh()->marital_status);
+    }
+
+    public function test_male_profile_marital_status_is_locked_after_cnic_identity_verification_is_approved(): void
+    {
+        $user = User::factory()->create(['role' => 'user']);
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-MALELOCK01',
+            'gender' => 'male',
+            'date_of_birth' => '1995-02-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Software / IT',
+            'marital_status' => 'never_married',
+            'height' => 178,
+            'managed_by' => 'myself',
+            'profile_status' => 'active',
+        ]);
+
+        Sanctum::actingAs($user, ['*']);
+
+        // Approve CNIC Identity Verification
+        ProfileVerification::create([
+            'user_id' => $user->id,
+            'type' => ProfileVerification::TYPE_IDENTITY,
+            'status' => ProfileVerification::STATUS_APPROVED,
+            'submitted_at' => now(),
+        ]);
+
+        // Attempting to change marital status to 'married' fails with 422
+        $updateBlocked = $this->postJson('/api/profile', [
+            'gender' => 'male',
+            'date_of_birth' => '1995-02-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Software / IT',
+            'marital_status' => 'married',
+            'height' => 178,
+            'managed_by' => 'myself',
+        ]);
+        $updateBlocked->assertStatus(422)
+            ->assertJson([
+                'success' => false,
+                'error_code' => 'MARITAL_STATUS_LOCKED_AFTER_VERIFICATION',
+            ]);
+        $this->assertEquals('never_married', $profile->fresh()->marital_status);
+    }
+
+    public function test_admin_can_update_marital_status_for_verified_profile_upon_support_request(): void
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $user = User::factory()->create(['role' => 'user']);
+        $profile = Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-ADMINMLOCK01',
+            'gender' => 'female',
+            'date_of_birth' => '1996-08-20',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Rawalpindi',
+            'education' => "Bachelor's",
+            'profession' => 'Banking / Finance',
+            'marital_status' => 'divorced',
+            'height' => 160,
+            'managed_by' => 'myself',
+            'profile_status' => 'active',
+        ]);
+
+        // Approve CNIC Identity Verification
+        ProfileVerification::create([
+            'user_id' => $user->id,
+            'type' => ProfileVerification::TYPE_IDENTITY,
+            'status' => ProfileVerification::STATUS_APPROVED,
+            'submitted_at' => now(),
+        ]);
+
+        // Admin updates marital_status administratively upon receiving proof
+        Sanctum::actingAs($admin, ['*']);
+        $response = $this->postJson("/api/admin/profiles/{$profile->id}/field", [
+            'field' => 'marital_status',
+            'value' => 'widowed',
+        ]);
+
+        $response->assertStatus(200);
+        $this->assertEquals('widowed', $profile->fresh()->marital_status);
     }
 }
 

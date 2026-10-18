@@ -177,7 +177,7 @@ export default function ContactUnlockModal({
 
       setFeedback({
         type: 'success',
-        message: 'Payment of Rs. 300 PKR verified successfully! You can now verify your mobile phone.',
+        message: 'Payment of Rs. 2500 PKR verified successfully! You can now verify your mobile phone.',
       });
 
       // Reload status
@@ -324,8 +324,8 @@ export default function ContactUnlockModal({
       onClose={onClose}
       title={
         status?.is_unlocked
-          ? 'Mutual Contact Details Unlocked'
-          : 'Unlock Verified Contact Details'
+          ? 'Mutual Contact Details Unlocked / باہمی رابطہ نمبرز'
+          : 'Unlock Verified Contact Details / رابطہ نمبرز انلاک کریں'
       }
       subtitle={`Connection Request #${requestCode}`}
       maxWidth="max-w-lg"
@@ -356,62 +356,73 @@ export default function ContactUnlockModal({
              STAGE 3: MUTUAL UNLOCK COMPLETE (DISPLAY CONTACT DETAILS)
              ========================================================================= */
           <div className="space-y-4">
-            <div className="p-4 bg-emerald-950/40 border border-emerald-800/60 rounded-2xl flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <div className="p-4 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-2xl flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <Unlock className="w-5 h-5" />
               </div>
-              <div>
-                <h4 className="font-bold text-sm text-white">Mutual Verification Complete!</h4>
-                <p className="text-xs text-emerald-300">
+              <div className="space-y-0.5">
+                <h4 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                  <span>Mutual Verification Complete!</span>
+                  <span className="text-xs font-normal text-emerald-700 dark:text-emerald-300">/ باہمی تصدیق مکمل!</span>
+                </h4>
+                <p className="text-xs text-slate-600 dark:text-emerald-300">
                   Both candidate profiles have completed phone verification. Direct contact information is unlocked below.
+                </p>
+                <p className="text-[11px] text-slate-500 dark:text-emerald-400 font-urdu" dir="rtl">
+                  دونوں امیدواروں کی فون تصدیق مکمل ہو گئی ہے۔ براہِ راست رابطہ معلومات نیچے فراہم کر دی گئی ہیں۔
                 </p>
               </div>
             </div>
 
-            <div className="bg-navy-850 border border-slate-750 rounded-2xl p-5 space-y-4 shadow-xl">
-              <div className="flex items-center justify-between pb-3 border-b border-slate-750/80">
+            <div className="bg-white dark:bg-navy-850 border border-slate-200 dark:border-slate-750 rounded-2xl p-5 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-750/80">
                 <div>
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Candidate Contact</span>
-                  <h3 className="font-serif text-lg font-bold text-white">{contactData.name}</h3>
+                  <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider">Candidate Contact / امیدوار کا رابطہ</span>
+                  <h3 className="font-serif text-lg font-bold text-slate-900 dark:text-white">{contactData.name}</h3>
                 </div>
                 <Badge variant="success" size="sm" className="font-bold text-xs">
-                  Verified Contact
+                  Verified Contact / تصدیق شدہ
                 </Badge>
               </div>
 
               <div className="space-y-3 text-sm">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 font-medium flex items-center gap-2">
+                  <span className="text-slate-600 dark:text-slate-400 font-medium flex items-center gap-2">
                     <Phone className="w-4 h-4 text-slate-500" /> Mobile / WhatsApp:
                   </span>
-                  <span className="font-mono font-bold text-white">{contactData.phone}</span>
+                  <span className="font-mono font-bold text-slate-900 dark:text-white">{contactData.phone}</span>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 font-medium flex items-center gap-2">
+                  <span className="text-slate-600 dark:text-slate-400 font-medium flex items-center gap-2">
                     <MessageSquare className="w-4 h-4 text-slate-500" /> Direct WhatsApp:
                   </span>
                   <a
                     href={contactData.whatsapp_url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400 hover:text-emerald-300 bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 rounded-xl hover:bg-emerald-500/25 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 bg-emerald-50 dark:bg-emerald-500/15 border border-emerald-300 dark:border-emerald-500/30 px-3 py-1.5 rounded-xl hover:bg-emerald-100 dark:hover:bg-emerald-500/25 transition-colors shadow-sm"
                   >
-                    <span>Open WhatsApp Chat</span>
+                    <span>Open WhatsApp Chat / واٹس ایپ کھولیں</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-400 font-medium">Registered Email:</span>
-                  <span className="font-mono text-xs font-semibold text-slate-300">{contactData.email}</span>
+                  <span className="text-slate-600 dark:text-slate-400 font-medium">Registered Email:</span>
+                  <span className="font-mono text-xs font-semibold text-slate-700 dark:text-slate-300">{contactData.email}</span>
                 </div>
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400 italic text-center">
-              Please communicate with mutual respect, modesty, and genuine matrimonial intent.
-            </p>
+            <div className="p-3 bg-slate-50 dark:bg-navy-900/60 border border-slate-200 dark:border-slate-800 rounded-xl text-center space-y-1">
+              <p className="text-xs text-slate-700 dark:text-slate-300 font-urdu" dir="rtl">
+                براہِ کرم باہمی عزت، احترام، شائستگی اور سنجیدہ رشتے کی پاکیزہ نیت کے ساتھ بات چیت کریں۔
+              </p>
+              <p className="text-[11px] text-slate-500 dark:text-slate-400 italic">
+                Please communicate with mutual respect, modesty, and genuine matrimonial intent.
+              </p>
+            </div>
           </div>
         ) : (
           /* =========================================================================
@@ -423,55 +434,78 @@ export default function ContactUnlockModal({
               <div
                 className={`p-2.5 sm:p-3 rounded-xl border flex items-center gap-2 min-w-0 ${
                   status?.is_paid
-                    ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                    : 'bg-navy-750 border-magenta-500/40 text-magenta-300'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-slate-100 dark:bg-navy-750 border-magenta-500/40 text-magenta-700 dark:text-magenta-300'
                 }`}
               >
                 {status?.is_paid ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                 ) : (
-                  <CreditCard className="w-4 h-4 text-magenta-400 shrink-0" />
+                  <CreditCard className="w-4 h-4 text-magenta-500 shrink-0" />
                 )}
-                <span className="truncate">
-                  <span className="sm:inline hidden">1. Unlock Fee (Rs. 300)</span>
-                  <span className="sm:hidden inline">1. Fee (Rs. 300)</span>
-                </span>
+                <div className="truncate text-left leading-tight">
+                  <div className="font-bold truncate">1. Unlock Fee (Rs. 2500)</div>
+                  <div className="text-[10px] opacity-75 font-normal font-urdu" dir="rtl">فیس ادائیگی</div>
+                </div>
               </div>
 
               <div
                 className={`p-2.5 sm:p-3 rounded-xl border flex items-center gap-2 min-w-0 ${
                   status?.my_verified
-                    ? 'bg-emerald-950/40 border-emerald-800/60 text-emerald-300'
-                    : 'bg-navy-850 border-slate-750 text-slate-400'
+                    ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-800/60 text-emerald-700 dark:text-emerald-300'
+                    : 'bg-slate-100 dark:bg-navy-850 border-slate-200 dark:border-slate-750 text-slate-600 dark:text-slate-400'
                 }`}
               >
                 {status?.my_verified ? (
-                  <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                 ) : (
                   <Phone className="w-4 h-4 text-slate-500 shrink-0" />
                 )}
-                <span className="truncate">
-                  <span className="sm:inline hidden">2. SMS OTP Verification</span>
-                  <span className="sm:hidden inline">2. Phone OTP</span>
-                </span>
+                <div className="truncate text-left leading-tight">
+                  <div className="font-bold truncate">2. SMS OTP Verification</div>
+                  <div className="text-[10px] opacity-75 font-normal font-urdu" dir="rtl">موبائل تصدیق</div>
+                </div>
               </div>
             </div>
 
             {/* STEP 1: PAYMENT (Sender Pays, Receiver Waits) */}
             {!status?.is_paid && (
-              <div className="p-3.5 sm:p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
+              <div className="p-3.5 sm:p-5 bg-slate-50 dark:bg-navy-850 border border-slate-200 dark:border-slate-750 rounded-2xl space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 rounded-xl bg-magenta-500/15 border border-magenta-500/30 text-magenta-400 flex items-center justify-center shrink-0 mt-0.5">
+                  <div className="w-9 h-9 rounded-xl bg-magenta-500/15 border border-magenta-500/30 text-magenta-500 dark:text-magenta-400 flex items-center justify-center shrink-0 mt-0.5">
                     <Lock className="w-4 h-4" />
                   </div>
-                  <div>
-                    <h4 className="font-serif font-bold text-base text-white">
-                      Contact Unlock Fee Required
-                    </h4>
-                    <p className="text-xs text-slate-300 mt-1 leading-relaxed">
-                      A nominal fee of <strong className="text-white">Rs. 300 PKR</strong> is required to unlock direct contact numbers
-                      and initiate two-way phone SMS verification.
-                    </p>
+                  <div className="space-y-1 flex-1">
+                    {isSender ? (
+                      <>
+                        <h4 className="font-serif font-bold text-base text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                          <span>Contact Unlock Fee Required</span>
+                          <span className="text-xs font-normal text-slate-500 dark:text-slate-400">/ رابطہ انلاک فیس درکار ہے</span>
+                        </h4>
+                        <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                          A fee of <strong className="text-slate-900 dark:text-white">Rs. 2500 PKR</strong> is required to unlock direct contact numbers and initiate two-way phone SMS verification.
+                        </p>
+                        <p className="text-[11px] text-slate-500 dark:text-slate-400 font-urdu leading-relaxed" dir="rtl">
+                          براہِ راست رابطہ نمبرز حاصل کرنے اور باہمی فون SMS تصدیق شروع کرنے کے لیے 2,500 روپے فیس درکار ہے۔
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <h4 className="font-serif font-bold text-base text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                          <span>Waiting for Sender's Payment</span>
+                          <span className="text-xs font-normal text-slate-500 dark:text-slate-400">/ بھیجنے والے کی ادائیگی کا انتظار</span>
+                        </h4>
+                        <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-xs text-emerald-800 dark:text-emerald-300 space-y-1">
+                          <p className="font-semibold flex items-center gap-1.5">
+                            <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                            <span><strong>No Fee For You:</strong> You do not need to pay anything.</span>
+                          </p>
+                          <p className="font-urdu text-[11px] text-emerald-700 dark:text-emerald-400" dir="rtl">
+                            آپ (ریسیور) کو کوئی فیس ادا نہیں کرنی، فیس ادا کرنے کی ذمہ داری پروپوزل بھیجنے والے (Sender) کی ہے۔
+                          </p>
+                        </div>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -498,6 +532,12 @@ export default function ContactUnlockModal({
                           <div className="flex justify-between text-slate-300">
                             <span>JazzCash TID:</span>
                             <span className="font-bold text-white">{status.pending_payment.transaction_reference}</span>
+                          </div>
+                          <div className="flex justify-between text-slate-300">
+                            <span>Unlock Fee Amount:</span>
+                            <span className="font-bold text-amber-300">
+                              Rs. {status.pending_payment.amount ? Number(status.pending_payment.amount).toFixed(0) : '2500'} PKR
+                            </span>
                           </div>
                           {status.pending_payment.created_at && (
                             <div className="flex justify-between text-slate-400 text-[11px]">
@@ -590,12 +630,16 @@ export default function ContactUnlockModal({
                                 >
                                   <div className="w-44 h-44 sm:w-56 sm:h-56 relative flex items-center justify-center overflow-hidden rounded-xl bg-white">
                                     <img
-                                      src="/images/jazzcash-qr.png"
-                                      alt="JazzCash QR Code"
+                                      src="/images/jazzcash-qr-2500.png"
+                                      alt="JazzCash QR Code (Rs. 2500)"
                                       className="w-full h-full object-contain transition-transform duration-200 group-hover:scale-105"
                                       onError={(e) => {
-                                        e.target.style.display = 'none';
-                                        if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                        if (e.target.src.indexOf('jazzcash-qr-2500.png') !== -1) {
+                                          e.target.src = '/images/jazzcash-qr.png';
+                                        } else {
+                                          e.target.style.display = 'none';
+                                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
+                                        }
                                       }}
                                     />
                                     <div className="hidden flex-col items-center justify-center text-slate-800 text-xs text-center font-bold p-4">
@@ -634,8 +678,8 @@ export default function ContactUnlockModal({
                                   </button>
                                   <span className="text-slate-400 dark:text-slate-600">•</span>
                                   <a
-                                    href="/images/jazzcash-qr.png"
-                                    download="jazzcash-raabtanow-qr.png"
+                                    href="/images/jazzcash-qr-2500.png"
+                                    download="jazzcash-raabtanow-2500-qr.png"
                                     className="text-xs text-slate-700 dark:text-slate-300 hover:text-magenta-600 dark:hover:text-white font-semibold flex items-center gap-1 transition"
                                     title="Save QR image to gallery for JazzCash scan"
                                   >
@@ -649,7 +693,7 @@ export default function ContactUnlockModal({
                               <div className="w-full bg-navy-950/80 border border-slate-800 rounded-xl p-3 sm:p-3.5 space-y-2 text-xs">
                                 <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
                                   <span className="text-slate-400 font-medium">Exact Amount:</span>
-                                  <span className="font-extrabold text-amber-600 dark:text-amber-300 text-sm">Rs. 300.00 PKR</span>
+                                  <span className="font-extrabold text-amber-600 dark:text-amber-300 text-sm">Rs. 2500.00 PKR</span>
                                 </div>
 
                                 <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
@@ -724,14 +768,14 @@ export default function ContactUnlockModal({
                                   </div>
                                 </div>
 
-                                <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed space-y-1">
-                                  <p>
-                                    💡 <strong className="text-white">Any Bank / Raast:</strong> Send Rs. 300 from any app (SadaPay, NayaPay, Easypaisa, HBL, Meezan, etc.) to the IBAN above.
-                                  </p>
-                                  <p>
-                                    💡 <strong className="text-white">JazzCash App:</strong> Pay via Till ID <span className="font-mono text-amber-300 font-bold">984453113</span> under <em>"Till Payments"</em>, or scan the QR above.
-                                  </p>
-                                </div>
+                                  <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed space-y-1">
+                                    <p>
+                                      💡 <strong className="text-white">Any Bank / Raast:</strong> Send Rs. 2500 from any app (SadaPay, NayaPay, Easypaisa, HBL, Meezan, etc.) to the IBAN above.
+                                    </p>
+                                    <p>
+                                      💡 <strong className="text-white">JazzCash App:</strong> Pay via Till ID <span className="font-mono text-amber-300 font-bold">984453113</span> under <em>"Till Payments"</em>, or scan the QR above.
+                                    </p>
+                                  </div>
                               </div>
                             </div>
 
@@ -799,11 +843,100 @@ export default function ContactUnlockModal({
                     )}
                   </div>
                 ) : (
-                  <div className="p-3 bg-navy-800 border border-slate-700 rounded-xl flex items-center gap-2.5 text-xs text-slate-300">
-                    <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                    <span>
-                      The request sender is responsible for the unlock fee. Once they complete payment, you will be invited to verify your mobile phone.
-                    </span>
+                  <div className="space-y-3">
+                    {status?.pending_payment ? (
+                      /* Sender has submitted proof and it is pending approval */
+                      <div className="p-3.5 sm:p-4 rounded-xl border border-amber-500/40 bg-amber-500/10 dark:bg-amber-500/15 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <Clock className="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <div className="space-y-1.5 flex-1">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h5 className="font-bold text-sm text-slate-900 dark:text-white">
+                                Payment Proof Submitted by Sender
+                              </h5>
+                              <Badge variant="warning" size="sm">Verification in Progress</Badge>
+                            </div>
+                            <p className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed">
+                              The sender has submitted their JazzCash / Bank payment receipt. Our admin team is currently verifying it. Once verified, Step 2 (Phone SMS Verification) will open automatically.
+                            </p>
+                            <p className="text-xs text-amber-800 dark:text-amber-300 font-urdu leading-relaxed" dir="rtl">
+                              بھیجنے والے نے فیس کی رسید جمع کروا دی ہے اور ایڈمن کی تصدیق جاری ہے۔ تصدیق مکمل ہوتے ہی آپ کو فون ویریفیکیشن کا آپشن مل جائے گا۔
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="pt-1 flex items-center justify-between gap-2 border-t border-amber-500/20">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 italic">
+                            Has admin verified yet?
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={RefreshCw}
+                            onClick={loadStatus}
+                            isLoading={loading}
+                            className="shrink-0 font-semibold text-xs"
+                          >
+                            Check Status / ریفریش کریں
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      /* Sender has not paid yet */
+                      <div className="p-3.5 sm:p-4 rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-100/70 dark:bg-navy-800/80 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <Clock className="w-5 h-5 text-amber-500 dark:text-amber-400 shrink-0 mt-0.5" />
+                          <div className="space-y-1.5 flex-1">
+                            <h5 className="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                              <span>Next Steps / اگلا مرحلہ کیا ہوگا؟</span>
+                            </h5>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+                              The request sender is responsible for the Rs. 2500 unlock fee. Once they complete payment and it is verified, you will be invited to enter your Pakistani mobile number for a quick 6-digit SMS verification.
+                            </p>
+                            <p className="text-xs text-slate-600 dark:text-slate-300 font-urdu leading-relaxed" dir="rtl">
+                              رابطہ انلاک فیس ادا کرنے کی ذمہ داری بھیجنے والے کی ہے۔ جیسے ہی وہ فیس ادا کریں گے، آپ کو اپنا موبائل نمبر درج کرنے کا کہا جائے گا جس پر SMS کے ذریعے 6 ہندسوں کا تصدیقی کوڈ موصول ہو گا۔
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Step by Step Flow for Receiver */}
+                        <div className="bg-white/80 dark:bg-navy-900/80 p-3 rounded-xl border border-slate-200 dark:border-slate-700/60 text-xs space-y-2">
+                          <div className="font-bold text-slate-800 dark:text-slate-200 text-[11px] uppercase tracking-wider">
+                            How contact unlock works / رابطہ کھلنے کا طریقہ کار:
+                          </div>
+                          <div className="space-y-1.5 text-[11px] text-slate-600 dark:text-slate-300">
+                            <div className="flex items-center gap-2">
+                              <span className="w-4 h-4 rounded-full bg-magenta-500/20 text-magenta-500 dark:text-magenta-400 font-bold flex items-center justify-center text-[10px] shrink-0">1</span>
+                              <span><strong>Sender Pays Fee:</strong> پروپوزل بھیجنے والا 2,500 روپے فیس ادا کرے گا۔</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-4 h-4 rounded-full bg-blue-500/20 text-blue-500 dark:text-blue-400 font-bold flex items-center justify-center text-[10px] shrink-0">2</span>
+                              <span><strong>Mutual SMS OTP:</strong> دونوں فریقین اپنے اپنے موبائل پر SMS کوڈ سے تصدیق کریں گے۔</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-500 dark:text-emerald-400 font-bold flex items-center justify-center text-[10px] shrink-0">3</span>
+                              <span><strong>Contact Unlocked:</strong> دونوں کو ایک دوسرے کا موبائل اور واٹس ایپ نمبر مل جائے گا۔</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="pt-1 flex items-center justify-between gap-2">
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 italic">
+                            Has sender completed payment?
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={RefreshCw}
+                            onClick={loadStatus}
+                            isLoading={loading}
+                            className="shrink-0 font-semibold text-xs"
+                          >
+                            Refresh Status / دوبارہ چیک کریں
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -811,38 +944,67 @@ export default function ContactUnlockModal({
 
             {/* STEP 2: SMS OTP VERIFICATION (Only active after payment is paid) */}
             {status?.is_paid && (
-              <div className="p-3.5 sm:p-5 bg-navy-850 border border-slate-750 rounded-2xl space-y-4">
+              <div className="p-3.5 sm:p-5 bg-slate-50 dark:bg-navy-850 border border-slate-200 dark:border-slate-750 rounded-2xl space-y-4">
                 <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h4 className="font-serif font-bold text-base text-white">
-                      Mutual Mobile Phone Verification
+                  <div className="space-y-0.5">
+                    <h4 className="font-serif font-bold text-base text-slate-900 dark:text-white flex items-center gap-2 flex-wrap">
+                      <span>Mutual Mobile Phone Verification</span>
+                      <span className="text-xs font-normal text-slate-500 dark:text-slate-400">/ باہمی موبائل فون تصدیق</span>
                     </h4>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs text-slate-600 dark:text-slate-400">
                       Enter your Pakistani mobile number to receive a 6-digit SMS verification code.
+                    </p>
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400 font-urdu" dir="rtl">
+                      اپنا پاکستانی موبائل نمبر درج کریں تاکہ آپ کو 6 ہندسوں کا SMS تصدیقی کوڈ موصول ہو سکے۔
                     </p>
                   </div>
                   {status?.my_verified && (
                     <Badge variant="success" size="sm" className="font-bold text-xs shrink-0">
-                      Your Phone Verified
+                      Phone Verified / تصدیق شدہ
                     </Badge>
                   )}
                 </div>
 
                 {status?.my_verified ? (
                   <div className="space-y-3">
-                    <div className="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl flex items-center gap-2.5 text-xs text-emerald-300">
-                      <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+                    <div className="p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-xl flex items-center gap-2.5 text-xs text-emerald-900 dark:text-emerald-300">
+                      <CheckCircle className="w-4 h-4 text-emerald-500 shrink-0" />
                       <div>
-                        Your phone number (<strong className="text-white">{status.my_phone}</strong>) is verified!
+                        Your phone number (<strong className="text-slate-900 dark:text-white">{status.my_phone}</strong>) is verified!
+                        <span className="block text-[11px] text-emerald-700 dark:text-emerald-400 font-urdu" dir="rtl">
+                          آپ کا موبائل نمبر تصدیق ہو چکا ہے!
+                        </span>
                       </div>
                     </div>
 
                     {!status.other_verified && (
-                      <div className="p-3 bg-navy-800 border border-slate-750 rounded-xl flex items-center gap-2 text-xs text-slate-400">
-                        <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-                        <span>
-                          Waiting for the other candidate to complete their phone verification. You will receive an email confirmation once both are verified.
-                        </span>
+                      <div className="p-3.5 bg-slate-100 dark:bg-navy-800 border border-slate-200 dark:border-slate-750 rounded-xl space-y-2">
+                        <div className="flex items-start gap-2.5 text-xs text-slate-700 dark:text-slate-300">
+                          <Clock className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                          <div>
+                            <p className="font-semibold text-slate-900 dark:text-white">
+                              Waiting for the other candidate to complete phone verification.
+                            </p>
+                            <p className="text-slate-600 dark:text-slate-400 mt-0.5">
+                              You will receive an email and notification as soon as they verify.
+                            </p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-urdu mt-1" dir="rtl">
+                              دوسرے امیدوار کی فون تصدیق کا انتظار ہے۔ جیسے ہی وہ بھی کوڈ درج کریں گے، رابطہ نمبرز خودکار طریقے سے ظاہر ہو جائیں گے۔
+                            </p>
+                          </div>
+                        </div>
+                        <div className="pt-1 flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            icon={RefreshCw}
+                            onClick={loadStatus}
+                            isLoading={loading}
+                            className="font-semibold text-xs"
+                          >
+                            Check Status / ریفریش کریں
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -851,36 +1013,38 @@ export default function ContactUnlockModal({
                     {otpStep === 'input_phone' ? (
                       <form onSubmit={handleSendOtp} className="space-y-3">
                         <Input
-                          label="Mobile Phone Number"
+                          label="Mobile Phone Number / موبائل فون نمبر"
                           placeholder="03001234567 or +923001234567"
                           value={phoneNumber}
                           onChange={(e) => setPhoneNumber(e.target.value)}
                           disabled={sendingOtp}
-                          helperText="A 6-digit code will be sent to this number via SMS."
+                          helperText="A 6-digit code will be sent to this number via SMS. / اس نمبر پر 6 ہندسوں کا SMS کوڈ آئے گا۔"
                           required
                         />
 
                         <Button
                           type="submit"
                           variant="primary"
-                          className="w-full font-bold"
+                          className="w-full font-bold shadow-md"
                           loading={sendingOtp}
                           icon={Send}
                         >
-                          Send 6-Digit SMS Code
+                          Send 6-Digit SMS Code / تصدیقی کوڈ بھیجیں
                         </Button>
                       </form>
                     ) : (
                       <form onSubmit={handleVerifyOtp} className="space-y-3">
                         <div>
                           <div className="flex items-center justify-between text-xs mb-1">
-                            <span className="font-bold text-slate-300">Enter 6-Digit Code</span>
+                            <span className="font-bold text-slate-800 dark:text-slate-300">
+                              Enter 6-Digit Code / 6 ہندسوں کا کوڈ
+                            </span>
                             <button
                               type="button"
                               onClick={() => setOtpStep('input_phone')}
-                              className="text-magenta-400 hover:underline font-semibold cursor-pointer"
+                              className="text-magenta-600 dark:text-magenta-400 hover:underline font-semibold cursor-pointer text-[11px]"
                             >
-                              Change Number ({phoneNumber})
+                              Change Number ({phoneNumber}) / نمبر بدلیں
                             </button>
                           </div>
                           <Input
@@ -903,19 +1067,19 @@ export default function ContactUnlockModal({
                             onClick={handleSendOtp}
                             className="text-xs font-semibold"
                           >
-                            {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend SMS Code'}
+                            {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend SMS / دوبارہ بھیجیں'}
                           </Button>
 
                           <Button
                             type="submit"
                             variant="primary"
                             size="sm"
-                            className="font-bold"
+                            className="font-bold shadow-md"
                             loading={verifyingOtp}
                             disabled={otpCode.length !== 6}
                             icon={CheckCircle}
                           >
-                            Verify OTP
+                            Verify & Unlock / تصدیق کریں
                           </Button>
                         </div>
                       </form>
@@ -934,15 +1098,20 @@ export default function ContactUnlockModal({
       isOpen={isQrZoomed}
       onClose={() => setIsQrZoomed(false)}
       title="JazzCash Payment QR Code"
-      subtitle="Rs. 300 PKR • muhammad shop"
+      subtitle="Rs. 2500 PKR • muhammad shop"
       maxWidth="max-w-md"
     >
       <div className="flex flex-col items-center py-2 space-y-4 text-center">
         <div className="p-3 sm:p-4 bg-white rounded-2xl shadow-2xl border-2 border-amber-400 inline-block">
           <img
-            src="/images/jazzcash-qr.png"
-            alt="Enlarged JazzCash QR"
+            src="/images/jazzcash-qr-2500.png"
+            alt="Enlarged JazzCash QR (Rs. 2500)"
             className="w-52 h-52 sm:w-80 sm:h-80 object-contain mx-auto"
+            onError={(e) => {
+              if (e.target.src.indexOf('jazzcash-qr-2500.png') !== -1) {
+                e.target.src = '/images/jazzcash-qr.png';
+              }
+            }}
           />
         </div>
 
@@ -951,14 +1120,14 @@ export default function ContactUnlockModal({
             Scan with your JazzCash App
           </p>
           <p className="text-xs text-slate-300">
-            Till ID: <span className="font-mono font-bold text-amber-600 dark:text-amber-300">984453113</span> • Amount: <strong className="text-white">Rs. 300 PKR</strong>
+            Till ID: <span className="font-mono font-bold text-amber-600 dark:text-amber-300">984453113</span> • Amount: <strong className="text-white">Rs. 2500 PKR</strong>
           </p>
         </div>
 
         <div className="flex flex-col sm:flex-row items-center gap-2 pt-2 w-full justify-center">
           <a
-            href="/images/jazzcash-qr.png"
-            download="jazzcash-raabtanow-qr.png"
+            href="/images/jazzcash-qr-2500.png"
+            download="jazzcash-raabtanow-2500-qr.png"
             className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-magenta-500 hover:bg-magenta-600 text-white transition shadow-md"
           >
             <Download className="w-4 h-4" />
