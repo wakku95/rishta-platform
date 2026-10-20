@@ -105,4 +105,9 @@ export const adminApi = {
   updateInquiryStatus: (id, status) => api.post(`/admin/inquiries/${id}/status`, { status }).then(r => r.data),
   updateInquiryNotes: (id, admin_notes) => api.post(`/admin/inquiries/${id}/notes`, { admin_notes }).then(r => r.data),
   deleteInquiry: (id) => api.delete(`/admin/inquiries/${id}`).then(r => r.data),
+
+  // Announcements & In-App Broadcasts
+  getAnnouncements: (params) => api.get('/admin/announcements', { params }).then(r => r.data),
+  broadcastAnnouncement: (data) => api.post('/admin/announcements', data).then(r => r.data),
+  deleteAnnouncement: (id) => api.delete(`/admin/announcements/${id}`).then(r => r.data),
 };

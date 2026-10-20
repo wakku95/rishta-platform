@@ -174,6 +174,17 @@ Route::middleware('auth:sanctum')->prefix('verifications')->group(function () {
 
 /*
 |--------------------------------------------------------------------------
+| In-App User Notifications Routes (/api/notifications)
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth:sanctum')->prefix('notifications')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\Notification\NotificationController::class, 'index']);
+    Route::post('/read-all', [\App\Http\Controllers\Api\Notification\NotificationController::class, 'markAllAsRead']);
+    Route::post('/{announcement}/read', [\App\Http\Controllers\Api\Notification\NotificationController::class, 'markAsRead']);
+});
+
+/*
+|--------------------------------------------------------------------------
 | Admin Portal Routes (/api/admin)
 |--------------------------------------------------------------------------
 */
@@ -324,6 +335,13 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{id}/approve', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'approve']);
         Route::post('/{id}/reject', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'reject']);
         Route::delete('/{id}', [\App\Http\Controllers\Api\Verification\CandidateVerificationLinkController::class, 'destroy']);
+    });
+
+    // Admin In-App Announcements / Broadcasts
+    Route::prefix('announcements')->group(function () {
+        Route::get('/', [\App\Http\Controllers\Api\Admin\AdminAnnouncementController::class, 'index']);
+        Route::post('/', [\App\Http\Controllers\Api\Admin\AdminAnnouncementController::class, 'store']);
+        Route::delete('/{announcement}', [\App\Http\Controllers\Api\Admin\AdminAnnouncementController::class, 'destroy']);
     });
 });
 

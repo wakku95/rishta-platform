@@ -14,11 +14,12 @@ import AdminAssistedTab from './AdminAssistedTab';
 import AdminAssistedListingsTab from './AdminAssistedListingsTab';
 import AdminAssistedSubmissionsTab from './AdminAssistedSubmissionsTab';
 import AdminSocialMediaTab from './AdminSocialMediaTab';
-import { ClipboardList, FileText, Share2, Briefcase, Sparkles, Database, MessageSquare } from 'lucide-react';
+import { ClipboardList, FileText, Share2, Briefcase, Sparkles, Database, MessageSquare, Bell } from 'lucide-react';
 import AdminPortfolioTab from './AdminPortfolioTab';
 import AdminMatchmakerTab from './AdminMatchmakerTab';
 import AdminBackupTab from './AdminBackupTab';
 import AdminInquiriesTab from './AdminInquiriesTab';
+import AdminAnnouncementsTab from './AdminAnnouncementsTab';
 import useAuth from '../../hooks/useAuth';
 
 export default function AdminPage() {
@@ -46,6 +47,7 @@ export default function AdminPage() {
     { id: 'submissions', name: 'Assisted Submissions', icon: FileText },
     { id: 'social-media', name: 'Social Media', icon: Share2 },
     { id: 'portfolio', name: 'My Portfolio', icon: Briefcase },
+    { id: 'announcements', name: 'Announcements', icon: Bell },
     { id: 'backup', name: 'Database Backup', icon: Database },
   ];
 
@@ -118,6 +120,7 @@ export default function AdminPage() {
           {activeTab === 'submissions' && <AdminAssistedSubmissionsTab />}
           {activeTab === 'social-media' && <AdminSocialMediaTab />}
           {activeTab === 'portfolio' && <AdminPortfolioTab />}
+          {activeTab === 'announcements' && <AdminAnnouncementsTab />}
           {activeTab === 'backup' && <AdminBackupTab />}
         </div>
       </div>

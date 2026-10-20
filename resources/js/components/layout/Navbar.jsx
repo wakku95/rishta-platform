@@ -4,6 +4,7 @@ import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut, Smartphone, Chevron
 import Button from '../ui/Button';
 import ThemeToggle from '../ui/ThemeToggle';
 import { WhatsAppIcon } from '../ui/WhatsAppFloatingButton';
+import NotificationBell from '../notifications/NotificationBell';
 import useAuth from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
 
@@ -140,6 +141,7 @@ export default function Navbar() {
                     </Button>
                   </Link>
                 )}
+                <NotificationBell />
                 <Link to="/dashboard" className="shrink-0">
                   <Button variant="secondary" size="sm" icon={User} className="whitespace-nowrap">
                     Dashboard
@@ -272,8 +274,9 @@ export default function Navbar() {
             </div>
           </div>
 
-          {/* Mobile Right Bar: Theme Toggle + Hamburger */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Right Bar: Notification Bell + Theme Toggle + Hamburger */}
+          <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+            {authenticated && <NotificationBell />}
             <ThemeToggle />
             <button
               type="button"
