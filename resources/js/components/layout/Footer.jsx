@@ -1,7 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Shield, Lock, PhoneCall, HeartHandshake, Smartphone } from 'lucide-react';
-import { WhatsAppIcon } from '../ui/WhatsAppFloatingButton';
 
 export default function Footer() {
   return (
@@ -73,16 +72,6 @@ export default function Footer() {
               <p><strong className="text-white">Email:</strong> support@raabtanow.com</p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5 mt-3">
-              <a 
-                href="https://wa.me/923239225450?text=Assalam-o-Alaikum%20RaabtaNow%20Team%2C%20I%20need%20assistance%20regarding%20matrimonial%20services." 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#25D366]/10 border border-[#25D366]/30 text-xs text-[#25D366] hover:text-white hover:border-[#25D366]/60 hover:bg-[#25D366]/20 transition-colors font-medium shadow-xs"
-                title="Chat with RaabtaNow on WhatsApp"
-              >
-                <WhatsAppIcon className="w-3.5 h-3.5 text-[#25D366] shrink-0" />
-                <span>WhatsApp</span>
-              </a>
               <a 
                 href="https://www.facebook.com/p/Raabta-Now-61594211561148/" 
                 target="_blank" 

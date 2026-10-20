@@ -2,7 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
-import WhatsAppFloatingButton from '../ui/WhatsAppFloatingButton';
+import TawkToChat from '../ui/TawkToChat';
 import OnboardingBanner from '../ui/OnboardingBanner';
 import OnboardingModal from '../ui/OnboardingModal';
 
@@ -35,8 +35,8 @@ export default function AppLayout() {
 
       <Footer />
 
-      {/* Floating WhatsApp Action Button at bottom-right */}
-      <WhatsAppFloatingButton />
+      {/* Tawk.to Live Chat Widget */}
+      <TawkToChat />
     </div>
   );
 }

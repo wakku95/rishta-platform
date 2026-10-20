@@ -279,13 +279,11 @@ export function HowItWorksPage() {
                 <span className="font-urdu text-xs font-normal">/ اسسٹڈ رشتہ بنائیں</span>
               </Link>
               <a
-                href="https://wa.me/923239225450?text=Assisted%20Rishta%20Inquiry%20from%20RaabtaNow"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="tel:+923239225450"
                 className="px-4 py-2.5 rounded-xl border border-emerald-500/50 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-xs sm:text-sm font-semibold flex items-center gap-2 transition"
               >
-                <MessageCircle className="w-4 h-4" />
-                <span>Chat on WhatsApp</span>
+                <PhoneCall className="w-4 h-4" />
+                <span>Call Helpline (+92 323 9225450)</span>
               </a>
             </div>
           </div>

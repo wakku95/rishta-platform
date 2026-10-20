@@ -3,7 +3,6 @@ import { Link, useLocation } from 'react-router-dom';
 import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut, Smartphone, ChevronDown, Sun, Moon, Sparkles } from 'lucide-react';
 import Button from '../ui/Button';
 import ThemeToggle from '../ui/ThemeToggle';
-import { WhatsAppIcon } from '../ui/WhatsAppFloatingButton';
 import NotificationBell from '../notifications/NotificationBell';
 import useAuth from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -221,33 +220,7 @@ export default function Navbar() {
 
                   <div className="h-px bg-slate-750/60 my-1" />
 
-                  {/* 2. WhatsApp Support */}
-                  <a
-                    href="https://wa.me/923239225450?text=Assalam-o-Alaikum%20RaabtaNow%20Team%2C%20I%20need%20assistance%20regarding%20matrimonial%20services."
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setToolsDropdownOpen(false)}
-                    className="w-full flex items-center justify-between p-2 rounded-xl hover:bg-navy-750 transition-colors group cursor-pointer"
-                  >
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-[#25D366]/15 border border-[#25D366]/30 flex items-center justify-center shrink-0">
-                        <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white group-hover:text-emerald-400 transition-colors">
-                          WhatsApp Help
-                        </div>
-                        <div className="text-[11px] text-slate-400">+92 323 9225450</div>
-                      </div>
-                    </div>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-[#25D366]/10 border border-[#25D366]/25 text-[#25D366]">
-                      Chat
-                    </span>
-                  </a>
-
-                  <div className="h-px bg-slate-750/60 my-1" />
-
-                  {/* 3. Android App Download */}
+                  {/* 2. Android App Download */}
                   <a
                     href="/downloads/raabtanow.apk"
                     download="raabtanow.apk"
@@ -372,17 +345,6 @@ export default function Navbar() {
           </div>
 
           <div className="pt-1 flex flex-col gap-2">
-            <a
-              href="https://wa.me/923239225450?text=Assalam-o-Alaikum%20RaabtaNow%20Team%2C%20I%20need%20assistance%20regarding%20matrimonial%20services."
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => setMobileMenuOpen(false)}
-              className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#25D366]/15 border border-[#25D366]/35 text-[#25D366] hover:bg-[#25D366]/25 font-bold text-xs transition-all shadow-xs"
-            >
-              <WhatsAppIcon className="w-4 h-4 text-[#25D366]" />
-              <span>Chat on WhatsApp (+92-323-9225450)</span>
-            </a>
-
             <a
               href="/downloads/raabtanow.apk"
               download="raabtanow.apk"
