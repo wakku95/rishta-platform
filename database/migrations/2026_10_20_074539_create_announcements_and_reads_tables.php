@@ -13,16 +13,18 @@ return new class extends Migration
     {
         Schema::create('announcements', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->nullable()->constrained('users')->cascadeOnDelete();
             $table->string('title');
             $table->text('message');
             $table->string('type', 20)->default('info'); // info, warning, success, alert
-            $table->string('target_audience', 50)->default('all'); // all, missing_phone, unverified_cnic, gender_male, gender_female
+            $table->string('target_audience', 50)->default('all'); // all, missing_phone, unverified_cnic, gender_male, gender_female, personal
             $table->string('action_url')->nullable();
             $table->string('action_label')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->foreignId('created_by')->nullable()->constrained('users')->nullOnDelete();
             $table->timestamps();
 
+            $table->index('user_id');
             $table->index('target_audience');
             $table->index('created_at');
         });

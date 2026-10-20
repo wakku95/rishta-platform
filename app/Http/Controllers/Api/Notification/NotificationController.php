@@ -18,14 +18,18 @@ class NotificationController extends Controller
         $user = $request->user();
         $user->loadMissing('profile');
 
-        // Fetch active announcements (latest 30)
+        // Fetch active notifications (personal + matching broadcast)
         $announcements = Announcement::query()
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereNull('user_id');
+            })
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                   ->orWhere('expires_at', '>', now());
             })
             ->latest()
-            ->limit(30)
+            ->limit(35)
             ->get();
 
         // Get read announcement IDs for this user
@@ -55,6 +59,7 @@ class NotificationController extends Controller
                 'action_url' => $announcement->action_url,
                 'action_label' => $announcement->action_label,
                 'is_read' => $isRead,
+                'is_personal' => $announcement->user_id !== null,
                 'created_at' => $announcement->created_at->toISOString(),
                 'created_at_human' => $announcement->created_at->diffForHumans(),
             ];
@@ -68,11 +73,16 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark a specific announcement as read for this user.
+     * Mark a specific announcement/notification as read for this user.
      */
     public function markAsRead(Request $request, Announcement $announcement): JsonResponse
     {
         $user = $request->user();
+
+        // Ensure user is authorized to read this notification
+        if ($announcement->user_id !== null && (int)$announcement->user_id !== (int)$user->id) {
+            abort(403, 'Unauthorized.');
+        }
 
         AnnouncementRead::firstOrCreate([
             'announcement_id' => $announcement->id,
@@ -88,7 +98,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Mark all active announcements as read for this user.
+     * Mark all active announcements/notifications as read for this user.
      */
     public function markAllAsRead(Request $request): JsonResponse
     {
@@ -96,6 +106,10 @@ class NotificationController extends Controller
         $user->loadMissing('profile');
 
         $announcements = Announcement::query()
+            ->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereNull('user_id');
+            })
             ->where(function ($q) {
                 $q->whereNull('expires_at')
                   ->orWhere('expires_at', '>', now());

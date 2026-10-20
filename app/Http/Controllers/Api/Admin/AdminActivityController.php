@@ -163,6 +163,14 @@ class AdminActivityController extends Controller
         if ($isSenderAnswerApproval) {
             try {
                 $rishtaRequest->receiver->notify(new \App\Notifications\NewRishtaRequestNotification($rishtaRequest));
+                \App\Models\Announcement::sendToUser(
+                    $rishtaRequest->receiver_id,
+                    'Counter-Questions Answered',
+                    "Candidate " . ($rishtaRequest->sender?->profile?->profile_code ?? 'Sender') . " has answered your questions on proposal [{$rishtaRequest->request_code}].",
+                    'info',
+                    '/requests',
+                    'View Answers'
+                );
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning("Failed to notify receiver of sender answers: {$e->getMessage()}");
             }
@@ -170,6 +178,14 @@ class AdminActivityController extends Controller
         } elseif ($isResponseApproval) {
             try {
                 $rishtaRequest->sender->notify(new \App\Notifications\RishtaRequestAcceptedNotification($rishtaRequest));
+                \App\Models\Announcement::sendToUser(
+                    $rishtaRequest->sender_id,
+                    'Proposal Accepted 🎉',
+                    "Candidate " . ($rishtaRequest->receiver?->profile?->profile_code ?? 'Candidate') . " has accepted your rishta proposal [{$rishtaRequest->request_code}]!",
+                    'success',
+                    '/requests',
+                    'View Response'
+                );
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning("Failed to notify sender of accepted proposal: {$e->getMessage()}");
             }
@@ -177,6 +193,14 @@ class AdminActivityController extends Controller
         } else {
             try {
                 $rishtaRequest->receiver->notify(new \App\Notifications\NewRishtaRequestNotification($rishtaRequest));
+                \App\Models\Announcement::sendToUser(
+                    $rishtaRequest->receiver_id,
+                    'New Proposal Received 💌',
+                    "You have received a new matrimonial proposal from candidate " . ($rishtaRequest->sender?->profile?->profile_code ?? 'Candidate') . " [{$rishtaRequest->request_code}].",
+                    'info',
+                    '/requests',
+                    'Review Proposal'
+                );
             } catch (\Throwable $e) {
                 \Illuminate\Support\Facades\Log::warning("Failed to notify receiver of approved proposal: {$e->getMessage()}");
             }
@@ -247,6 +271,19 @@ class AdminActivityController extends Controller
             'reviewed_by' => $request->user()->id,
             'reviewed_at' => now(),
         ]);
+
+        try {
+            \App\Models\Announcement::sendToUser(
+                $rishtaRequest->sender_id,
+                'Proposal Needs Revision ⚠️',
+                "Admin requested a revision on proposal [{$rishtaRequest->request_code}]: " . $request->input('admin_notes'),
+                'warning',
+                '/requests',
+                'Edit Proposal'
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed to send revision notification: {$e->getMessage()}");
+        }
 
         return $this->successResponse([
             'id' => $rishtaRequest->id,

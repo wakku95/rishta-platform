@@ -362,6 +362,23 @@ class ContactUnlockController extends Controller
 
                 $rishtaRequest->sender->notify(new ContactDetailsUnlockedNotification($rishtaRequest, $receiverProfileCode));
                 $rishtaRequest->receiver->notify(new ContactDetailsUnlockedNotification($rishtaRequest, $senderProfileCode));
+
+                \App\Models\Announcement::sendToUser(
+                    $rishtaRequest->sender_id,
+                    'Contact Details Unlocked 🔓',
+                    "Mutual OTP verified! Contact details for candidate {$receiverProfileCode} are now unlocked.",
+                    'success',
+                    '/requests',
+                    'View Contact'
+                );
+                \App\Models\Announcement::sendToUser(
+                    $rishtaRequest->receiver_id,
+                    'Contact Details Unlocked 🔓',
+                    "Mutual OTP verified! Contact details for candidate {$senderProfileCode} are now unlocked.",
+                    'success',
+                    '/requests',
+                    'View Contact'
+                );
             } catch (\Throwable $e) {
                 Log::warning("[Notifications] Failed to dispatch contact unlocked notification: {$e->getMessage()}");
             }

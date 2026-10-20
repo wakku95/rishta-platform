@@ -12,6 +12,7 @@ class Announcement extends Model
     use HasFactory;
 
     protected $fillable = [
+        'user_id',
         'title',
         'message',
         'type',
@@ -31,6 +32,7 @@ class Announcement extends Model
     public const AUDIENCE_UNVERIFIED_CNIC = 'unverified_cnic';
     public const AUDIENCE_GENDER_MALE = 'gender_male';
     public const AUDIENCE_GENDER_FEMALE = 'gender_female';
+    public const AUDIENCE_PERSONAL = 'personal';
 
     public static function getAudiences(): array
     {
@@ -40,7 +42,13 @@ class Announcement extends Model
             self::AUDIENCE_UNVERIFIED_CNIC,
             self::AUDIENCE_GENDER_MALE,
             self::AUDIENCE_GENDER_FEMALE,
+            self::AUDIENCE_PERSONAL,
         ];
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     public function creator(): BelongsTo
@@ -58,6 +66,10 @@ class Announcement extends Model
      */
     public function matchesUser(User $user): bool
     {
+        if ($this->user_id !== null) {
+            return (int) $this->user_id === (int) $user->id;
+        }
+
         return match ($this->target_audience) {
             self::AUDIENCE_ALL => true,
             self::AUDIENCE_MISSING_PHONE => empty($user->phone),
@@ -66,5 +78,27 @@ class Announcement extends Model
             self::AUDIENCE_GENDER_FEMALE => $user->profile?->gender === 'female',
             default => true,
         };
+    }
+
+    /**
+     * Helper to send an in-app notification directly to a user.
+     */
+    public static function sendToUser(
+        int $userId,
+        string $title,
+        string $message,
+        string $type = 'info',
+        ?string $actionUrl = null,
+        ?string $actionLabel = null
+    ): self {
+        return self::create([
+            'user_id' => $userId,
+            'title' => $title,
+            'message' => $message,
+            'type' => $type,
+            'target_audience' => self::AUDIENCE_PERSONAL,
+            'action_url' => $actionUrl,
+            'action_label' => $actionLabel,
+        ]);
     }
 }

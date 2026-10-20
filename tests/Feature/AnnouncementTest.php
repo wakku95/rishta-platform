@@ -170,4 +170,107 @@ class AnnouncementTest extends TestCase
 
         $this->assertDatabaseMissing('announcements', ['id' => $announcement->id]);
     }
+
+    public function test_user_receives_personal_activity_notification(): void
+    {
+        $user1 = $this->createUser();
+        $user2 = $this->createUser();
+
+        Announcement::sendToUser(
+            $user1->id,
+            'New Proposal Received 💌',
+            'Candidate RK-123456 sent you a proposal.',
+            'info',
+            '/requests',
+            'View Proposal'
+        );
+
+        // User 1 sees the personal notification
+        $res1 = $this->actingAs($user1)->getJson('/api/notifications');
+        $res1->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'success' => true,
+                'unread_count' => 1,
+                'data' => [
+                    [
+                        'title' => 'New Proposal Received 💌',
+                        'is_personal' => true,
+                        'is_read' => false,
+                    ]
+                ]
+            ]);
+
+        // User 2 does NOT see User 1's personal notification
+        $res2 = $this->actingAs($user2)->getJson('/api/notifications');
+        $res2->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'success' => true,
+                'unread_count' => 0,
+                'data' => []
+            ]);
+    }
+
+    public function test_activity_lifecycle_in_app_notifications(): void
+    {
+        $sender = $this->createUser();
+        $receiver = $this->createUser();
+
+        // 1. New proposal received
+        Announcement::sendToUser(
+            $receiver->id,
+            'New Proposal Received 💌',
+            'You have received a new matrimonial proposal from candidate RK-AAAAAA [REQ-123456].',
+            'info',
+            '/requests',
+            'Review Proposal'
+        );
+
+        $receiverNotes = $this->actingAs($receiver)->getJson('/api/notifications');
+        $receiverNotes->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'unread_count' => 1,
+                'data' => [
+                    [
+                        'title' => 'New Proposal Received 💌',
+                        'action_url' => '/requests',
+                    ]
+                ]
+            ]);
+
+        // 2. Proposal accepted
+        Announcement::sendToUser(
+            $sender->id,
+            'Proposal Accepted 🎉',
+            'Candidate RK-BBBBBB has accepted your rishta proposal [REQ-123456]!',
+            'success',
+            '/requests',
+            'View Response'
+        );
+
+        $senderNotes = $this->actingAs($sender)->getJson('/api/notifications');
+        $senderNotes->assertStatus(Response::HTTP_OK)
+            ->assertJson([
+                'unread_count' => 1,
+                'data' => [
+                    [
+                        'title' => 'Proposal Accepted 🎉',
+                        'type' => 'success',
+                        'action_url' => '/requests',
+                    ]
+                ]
+            ]);
+
+        // 3. Counter-questions answered
+        Announcement::sendToUser(
+            $receiver->id,
+            'Counter-Questions Answered',
+            'Candidate RK-AAAAAA has answered your questions on proposal [REQ-123456].',
+            'info',
+            '/requests',
+            'View Answers'
+        );
+
+        $receiverNotes2 = $this->actingAs($receiver)->getJson('/api/notifications');
+        $receiverNotes2->assertJson(['unread_count' => 2]);
+    }
 }
