@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "RaabtaNow",
+    "slug": "raabtanow",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#111827",
+    "platforms": [
+      "ios",
+      "android"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.raabtanow.app",
+      "infoPlist": {
+        "NSCameraUsageDescription": "RaabtaNow needs camera access to capture your live selfie and CNIC for authentic matrimonial identity verification.",
+        "NSPhotoLibraryUsageDescription": "RaabtaNow needs access to photos to select your CNIC documents."
+      }
+    },
+    "android": {
+      "package": "com.raabtanow.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#111827",
+        "foregroundImage": "./assets/android-icon-foreground.png"
+      },
+      "permissions": [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ]
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}

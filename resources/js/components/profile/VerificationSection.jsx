@@ -7,6 +7,7 @@ import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
 import Alert from '../ui/Alert';
+import Modal from '../ui/Modal';
 import { verificationApi } from '../../api/verification';
 import LiveSelfieCamera from '../verification/LiveSelfieCamera';
 
@@ -48,6 +49,10 @@ export default function VerificationSection() {
   const handleIdentitySubmit = async (e) => {
     e.preventDefault();
     setFormError('');
+    if (!selfieFile) {
+      setFormError('Live selfie or face photo is required. Please take a live photo or upload your photo above.');
+      return;
+    }
     if (!frontFile || !backFile) {
       setFormError('Please select both front and back CNIC document files.');
       return;
@@ -56,9 +61,7 @@ export default function VerificationSection() {
     const formData = new FormData();
     formData.append('front', frontFile);
     formData.append('back', backFile);
-    if (selfieFile) {
-      formData.append('live_selfie', selfieFile, 'live_selfie.jpg');
-    }
+    formData.append('live_selfie', selfieFile, selfieFile.name || 'live_selfie.jpg');
 
     setSubmitting(true);
     try {
@@ -291,132 +294,184 @@ export default function VerificationSection() {
       </div>
 
       {/* Identity Submission Modal */}
-      {identityModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-start justify-center p-4 sm:p-6 pt-20 sm:pt-24 pb-8 overflow-y-auto">
-          <div className="bg-navy-900 border border-white/15 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl my-auto">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-lg font-bold text-white">Upload CNIC Documents</h3>
-              <button onClick={() => setIdentityModalOpen(false)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
+      <Modal
+        isOpen={identityModalOpen}
+        onClose={() => setIdentityModalOpen(false)}
+        maxWidth="max-w-2xl"
+        title={
+          <div className="flex items-center gap-2 text-white font-bold">
+            <ShieldCheck className="w-5 h-5 text-magenta-400 shrink-0" />
+            <span>Identity Verification: CNIC & Face Photo</span>
+          </div>
+        }
+      >
+        <form onSubmit={handleIdentitySubmit} className="space-y-4">
+          {formError && (
+            <Alert variant="danger" title="Notice" className="text-xs">
+              {formError}
+            </Alert>
+          )}
+
+          {/* Step 1: Live Selfie / Face Photo */}
+          <div className="p-3 bg-navy-950/70 border border-slate-750 rounded-xl space-y-2">
+            <LiveSelfieCamera
+              onCapture={(blob) => setSelfieFile(blob)}
+              onClear={() => setSelfieFile(null)}
+            />
+          </div>
+
+          {/* Step 2: CNIC Front & Back */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Front */}
+            <div className="p-3 bg-navy-950/70 border border-slate-750 rounded-xl space-y-2">
+              <label className="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>CNIC Front Side *</span>
+                </span>
+                {frontFile && (
+                  <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-0.5">
+                    <CheckCircle2 className="w-3 h-3" /> Attached
+                  </span>
+                )}
+              </label>
+
+              {frontFile ? (
+                <div className="flex items-center justify-between p-2.5 bg-navy-900 border border-slate-700 rounded-lg text-xs text-cyan-300">
+                  <span className="truncate max-w-[170px] text-xs">{frontFile.name}</span>
+                  <button type="button" onClick={() => setFrontFile(null)} className="text-rose-400 hover:text-rose-300 p-1">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-3 border border-dashed border-slate-700 hover:border-cyan-500/50 rounded-lg cursor-pointer bg-navy-900/40 hover:bg-navy-900/80 transition text-center">
+                  <Upload className="w-4 h-4 text-slate-400 mb-1" />
+                  <span className="text-[11px] font-medium text-slate-300">Select Front File</span>
+                  <span className="text-[9px] text-slate-500">JPG, PNG, PDF (Max 5MB)</span>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    onChange={(e) => setFrontFile(e.target.files[0] || null)}
+                    className="hidden"
+                  />
+                </label>
+              )}
             </div>
 
-            {formError && (
-              <Alert variant="danger" title="Notice" className="text-xs">
-                {formError}
-              </Alert>
-            )}
+            {/* Back */}
+            <div className="p-3 bg-navy-950/70 border border-slate-750 rounded-xl space-y-2">
+              <label className="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                <span className="flex items-center gap-1.5">
+                  <FileText className="w-3.5 h-3.5 text-cyan-400" />
+                  <span>CNIC Back Side *</span>
+                </span>
+                {backFile && (
+                  <span className="text-[10px] text-emerald-400 font-bold flex items-center gap-0.5">
+                    <CheckCircle2 className="w-3 h-3" /> Attached
+                  </span>
+                )}
+              </label>
 
-            <form onSubmit={handleIdentitySubmit} className="space-y-4">
-              {/* Step 1: Live Selfie Capture */}
-              <div className="p-3 bg-navy-950/70 border border-slate-750 rounded-xl space-y-2">
-                <LiveSelfieCamera
-                  onCapture={(blob) => setSelfieFile(blob)}
-                  onClear={() => setSelfieFile(null)}
-                />
-              </div>
-
-              {/* Step 2: CNIC Front */}
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  CNIC Front Side (Image or PDF, max 5MB) *
+              {backFile ? (
+                <div className="flex items-center justify-between p-2.5 bg-navy-900 border border-slate-700 rounded-lg text-xs text-cyan-300">
+                  <span className="truncate max-w-[170px] text-xs">{backFile.name}</span>
+                  <button type="button" onClick={() => setBackFile(null)} className="text-rose-400 hover:text-rose-300 p-1">
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center p-3 border border-dashed border-slate-700 hover:border-cyan-500/50 rounded-lg cursor-pointer bg-navy-900/40 hover:bg-navy-900/80 transition text-center">
+                  <Upload className="w-4 h-4 text-slate-400 mb-1" />
+                  <span className="text-[11px] font-medium text-slate-300">Select Back File</span>
+                  <span className="text-[9px] text-slate-500">JPG, PNG, PDF (Max 5MB)</span>
+                  <input
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.webp,.pdf"
+                    onChange={(e) => setBackFile(e.target.files[0] || null)}
+                    className="hidden"
+                  />
                 </label>
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp,.pdf"
-                  onChange={(e) => setFrontFile(e.target.files[0] || null)}
-                  className="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-navy-800 file:text-magenta-400 hover:file:bg-navy-750 border border-slate-700 rounded-xl p-2 bg-navy-850"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  CNIC Back Side (Image or PDF, max 5MB) *
-                </label>
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp,.pdf"
-                  onChange={(e) => setBackFile(e.target.files[0] || null)}
-                  className="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-navy-800 file:text-magenta-400 hover:file:bg-navy-750 border border-slate-700 rounded-xl p-2 bg-navy-850"
-                />
-              </div>
-
-              <p className="text-[11px] text-slate-400 leading-normal">
-                🔒 Stored in private encrypted storage. Never exposed on public profile or discovery results.
-              </p>
-
-              <div className="flex items-center justify-end gap-2 pt-3">
-                <Button size="sm" variant="ghost" onClick={() => setIdentityModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button size="sm" variant="primary" type="submit" isLoading={submitting}>
-                  Upload & Submit
-                </Button>
-              </div>
-            </form>
+              )}
+            </div>
           </div>
-        </div>
-      )}
+
+          <p className="text-[11px] text-slate-400 leading-normal">
+            🔒 Stored in private encrypted storage. Never exposed on public profile or discovery results.
+          </p>
+
+          {/* Modal Actions */}
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" type="button" onClick={() => setIdentityModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              type="submit"
+              icon={ShieldCheck}
+              loading={submitting}
+              disabled={!frontFile || !backFile || !selfieFile}
+              className="font-bold bg-gradient-to-r from-magenta-600 to-pink-600 hover:from-magenta-500 hover:to-pink-500 shadow-md shadow-magenta-500/20"
+            >
+              Upload & Submit
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
       {/* Education Submission Modal */}
-      {educationModalOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-start justify-center p-4 sm:p-6 pt-20 sm:pt-24 pb-8 overflow-y-auto">
-          <div className="bg-navy-900 border border-white/15 rounded-2xl max-w-lg w-full p-6 space-y-5 shadow-2xl my-auto">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3">
-              <h3 className="text-lg font-bold text-white">Upload Education Document</h3>
-              <button onClick={() => setEducationModalOpen(false)} className="text-slate-400 hover:text-white">
-                <X className="w-5 h-5" />
-              </button>
-            </div>
+      <Modal
+        isOpen={educationModalOpen}
+        onClose={() => setEducationModalOpen(false)}
+        maxWidth="max-w-lg"
+        title="Upload Education Document"
+      >
+        <form onSubmit={handleEducationSubmit} className="space-y-4">
+          {formError && (
+            <Alert variant="danger" title="Notice" className="text-xs">
+              {formError}
+            </Alert>
+          )}
 
-            {formError && (
-              <Alert variant="danger" title="Notice" className="text-xs">
-                {formError}
-              </Alert>
-            )}
-
-            <form onSubmit={handleEducationSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Document Description / Degree Title (Optional)
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. BS Computer Science Degree / Transcript"
-                  value={eduLabel}
-                  onChange={(e) => setEduLabel(e.target.value)}
-                  className="w-full px-3 py-2 bg-navy-850 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-magenta-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Degree / Certificate Document (Image or PDF, max 5MB) *
-                </label>
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.webp,.pdf"
-                  onChange={(e) => setEduFile(e.target.files[0] || null)}
-                  className="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-navy-800 file:text-magenta-400 hover:file:bg-navy-750 border border-slate-700 rounded-xl p-2 bg-navy-850"
-                />
-              </div>
-
-              <p className="text-[11px] text-slate-400 leading-normal">
-                🔒 Stored securely in private directory. Only verified badges appear on public profile.
-              </p>
-
-              <div className="flex items-center justify-end gap-2 pt-3">
-                <Button size="sm" variant="ghost" onClick={() => setEducationModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button size="sm" variant="primary" type="submit" isLoading={submitting}>
-                  Upload & Submit
-                </Button>
-              </div>
-            </form>
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">
+              Document Description / Degree Title (Optional)
+            </label>
+            <input
+              type="text"
+              placeholder="e.g. BS Computer Science Degree / Transcript"
+              value={eduLabel}
+              onChange={(e) => setEduLabel(e.target.value)}
+              className="w-full px-3 py-2 bg-navy-850 border border-slate-700 rounded-xl text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-magenta-500"
+            />
           </div>
-        </div>
-      )}
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-300 mb-1">
+              Degree / Certificate Document (Image or PDF, max 5MB) *
+            </label>
+            <input
+              type="file"
+              accept=".jpg,.jpeg,.png,.webp,.pdf"
+              onChange={(e) => setEduFile(e.target.files[0] || null)}
+              className="w-full text-xs text-slate-300 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-navy-800 file:text-magenta-400 hover:file:bg-navy-750 border border-slate-700 rounded-xl p-2 bg-navy-850"
+            />
+          </div>
+
+          <p className="text-[11px] text-slate-400 leading-normal">
+            🔒 Stored securely in private directory. Only verified badges appear on public profile.
+          </p>
+
+          <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
+            <Button size="sm" variant="outline" type="button" onClick={() => setEducationModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" variant="primary" type="submit" loading={submitting}>
+              Upload & Submit
+            </Button>
+          </div>
+        </form>
+      </Modal>
     </Card>
   );
 }

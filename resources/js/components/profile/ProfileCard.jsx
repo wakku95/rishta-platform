@@ -4,6 +4,7 @@ import { MapPin, GraduationCap, Briefcase, Ruler, ShieldCheck, HeartHandshake, E
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
 import Button from '../ui/Button';
+import CopyButton from '../ui/CopyButton';
 import GenderAvatar from '../ui/GenderAvatar';
 import { addToShortlist, removeFromShortlist } from '../../api/shortlist';
 import useAuth from '../../hooks/useAuth';
@@ -99,9 +100,12 @@ export default function ProfileCard({ profile, isInitiallyShortlisted = false, o
             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
               Candidate Profile
             </span>
-            <span className="font-mono text-sm font-extrabold text-white">
-              #{profile.profile_code}
-            </span>
+            <div className="flex items-center gap-1">
+              <span className="font-mono text-sm font-extrabold text-white">
+                #{profile.profile_code}
+              </span>
+              <CopyButton text={profile.profile_code} label="profile number" />
+            </div>
           </div>
 
           <div className="flex items-center gap-1.5 flex-wrap justify-end">

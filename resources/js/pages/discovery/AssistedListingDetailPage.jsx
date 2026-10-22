@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { getPublicAssistedListing } from '../../api/listings';
 import { ArrowLeft, User, MapPin, Briefcase, GraduationCap, Ruler, HeartHandshake, AlertCircle, ShieldCheck } from 'lucide-react';
 import Badge from '../../components/ui/Badge';
+import CopyButton from '../../components/ui/CopyButton';
 import ExpressInterestModal from './ExpressInterestModal';
 
 export default function AssistedListingDetailPage() {
@@ -90,7 +91,10 @@ export default function AssistedListingDetailPage() {
                 {listing.gender === 'male' ? 'Male' : 'Female'} ({listing.age} yrs)
               </h1>
               <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 text-sm font-semibold text-slate-300">
-                <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/10">Ref: {listing.listing_code}</span>
+                <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/10 inline-flex items-center gap-1.5 font-mono">
+                  Ref: #{listing.listing_code}
+                  <CopyButton text={listing.listing_code} label="listing reference" />
+                </span>
                 <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/10 capitalize">{listing.marital_status?.replace('_', ' ')}</span>
                 <span className="bg-white/5 px-3 py-1 rounded-lg border border-white/10">{listing.religion} {listing.sect ? `(${listing.sect})` : ''}</span>
               </div>

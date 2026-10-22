@@ -52,7 +52,7 @@ class VerificationController extends Controller
         $request->validate([
             'front' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
             'back' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
-            'live_selfie' => 'nullable|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'live_selfie' => 'required|file|mimes:jpg,jpeg,png,webp|max:5120',
         ], [
             'front.required' => 'CNIC front document image or PDF is required.',
             'front.mimes' => 'CNIC front must be a valid image (JPG, PNG, WebP) or PDF document.',
@@ -60,6 +60,7 @@ class VerificationController extends Controller
             'back.required' => 'CNIC back document image or PDF is required.',
             'back.mimes' => 'CNIC back must be a valid image (JPG, PNG, WebP) or PDF document.',
             'back.max' => 'CNIC back file size may not exceed 5 MB.',
+            'live_selfie.required' => 'Live selfie or recent face photo is required for identity verification.',
             'live_selfie.mimes' => 'Live selfie must be an image (JPG, PNG, WebP).',
             'live_selfie.max' => 'Live selfie file size may not exceed 5 MB.',
         ]);

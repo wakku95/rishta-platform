@@ -40,11 +40,16 @@ class AuthController extends Controller
             $request->session()->regenerate();
         }
 
-        return $this->successResponse(
-            new UserResource($user),
-            'Registration successful. Please verify your email address.',
-            Response::HTTP_CREATED
-        );
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Registration successful. Please verify your email address.',
+            'data' => (new UserResource($user))->additional(['token' => $token]),
+            'token' => $token,
+            'access_token' => $token,
+            'user' => new UserResource($user),
+        ], Response::HTTP_CREATED);
     }
 
     /**
@@ -85,10 +90,16 @@ class AuthController extends Controller
             $request->session()->regenerate();
         }
 
-        return $this->successResponse(
-            new UserResource($user),
-            'Logged in successfully.'
-        );
+        $token = $user->createToken('auth_token')->plainTextToken;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Logged in successfully.',
+            'data' => (new UserResource($user))->additional(['token' => $token]),
+            'token' => $token,
+            'access_token' => $token,
+            'user' => new UserResource($user),
+        ]);
     }
 
     /**

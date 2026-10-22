@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Camera, RefreshCw, CheckCircle2, AlertCircle, ShieldCheck } from 'lucide-react';
+import { Camera, RefreshCw, CheckCircle2, AlertCircle, ShieldCheck, Upload } from 'lucide-react';
 import Button from '../ui/Button';
 
 export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = null }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const [streamActive, setStreamActive] = useState(false);
   const [videoReady, setVideoReady] = useState(false);
@@ -177,8 +178,43 @@ export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = 
     }
     setCapturedBlob(null);
     setCapturedPreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     if (onClear) onClear();
     startCamera();
+  };
+
+  // Upload photo from device/gallery fallback
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.match(/^image\/(jpeg|jpg|png|webp)$/i)) {
+      setCameraError('Please select a valid image file (JPG, PNG, WebP).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setCameraError('Selected photo exceeds 5 MB limit. Please select a smaller photo.');
+      return;
+    }
+
+    stopCamera();
+    setCameraError(null);
+    setCapturedBlob(file);
+    const previewUrl = URL.createObjectURL(file);
+    setCapturedPreview(previewUrl);
+
+    if (onCapture) {
+      onCapture(file, previewUrl);
+    }
+  };
+
+  const triggerFileSelect = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
   };
 
   return (
@@ -187,25 +223,35 @@ export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = 
       <div className="flex items-center justify-between text-xs">
         <span className="font-bold text-white flex items-center gap-1.5">
           <Camera className="w-4 h-4 text-emerald-400" />
-          <span>Live Webcam / Camera Selfie (لائیو کیمرہ)</span>
+          <span>Live Selfie / Face Photo (تصویر لازمی ہے)</span>
         </span>
         <span className="text-[11px] text-emerald-300 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-          Direct Camera Capture Only
+          Required / لازمی
         </span>
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl bg-slate-950 border border-slate-750 flex items-center justify-center min-h-[280px] sm:min-h-[340px]">
+      {/* Hidden File Input for Device / Gallery Fallback */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        capture="user"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+
+      <div className="relative overflow-hidden rounded-2xl bg-slate-950 border border-slate-750 flex items-center justify-center h-52 sm:h-60 w-full">
         {/* State 1: Captured photo preview */}
         {capturedPreview ? (
-          <div className="relative w-full h-full flex flex-col items-center justify-center p-3">
+          <div className="relative w-full h-full flex flex-col items-center justify-center p-2">
             <img
               src={capturedPreview}
-              alt="Live Selfie Capture"
-              className="max-h-[300px] w-auto object-contain rounded-xl shadow-lg border border-emerald-500/50"
+              alt="Face Photo Preview"
+              className="max-h-[190px] sm:max-h-[220px] w-auto object-contain rounded-xl shadow-lg border border-emerald-500/50"
             />
-            <div className="absolute top-5 right-5 bg-emerald-500 text-slate-950 text-xs font-black px-2.5 py-1 rounded-full flex items-center gap-1 shadow-md">
+            <div className="absolute top-3 right-3 bg-emerald-500 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>Selfie Captured</span>
+              <span>Photo Attached</span>
             </div>
           </div>
         ) : (
@@ -220,7 +266,7 @@ export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = 
               onLoadedMetadata={(e) => {
                 e.target.play().then(() => setVideoReady(true)).catch(console.warn);
               }}
-              className={`w-full h-full min-h-[280px] sm:min-h-[340px] max-h-[360px] object-cover scale-x-[-1] transition-opacity duration-300 ${
+              className={`w-full h-full object-cover scale-x-[-1] transition-opacity duration-300 ${
                 streamActive && videoReady ? 'opacity-100' : 'opacity-0 absolute inset-0 pointer-events-none'
               }`}
             />
@@ -228,36 +274,33 @@ export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = 
             {/* Face Guide Oval Overlay */}
             {streamActive && videoReady && (
               <div className="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
-                <div className="w-44 h-56 sm:w-52 sm:h-64 rounded-[50%] border-2 border-dashed border-emerald-400 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] flex items-center justify-center">
-                  <div className="text-[10px] text-emerald-300 font-bold bg-navy-950/80 px-2.5 py-0.5 rounded-full border border-emerald-400/40">
-                    Align Face Inside Oval
+                <div className="w-36 h-44 sm:w-40 sm:h-48 rounded-[50%] border-2 border-dashed border-emerald-400 shadow-[0_0_0_9999px_rgba(0,0,0,0.45)] flex items-center justify-center">
+                  <div className="text-[10px] text-emerald-300 font-bold bg-navy-950/80 px-2 py-0.5 rounded-full border border-emerald-400/40">
+                    Align Face
                   </div>
                 </div>
-                <p className="text-[11px] font-bold text-white mt-3 bg-black/60 px-3 py-1 rounded-lg backdrop-blur-sm">
-                  اپنا چہرہ دائرے کے اندر رکھیں اور سیدھا دیکھیں
-                </p>
               </div>
             )}
 
             {/* Loading Spinner while camera initializes */}
             {(!streamActive || !videoReady) && !cameraError && (
-              <div className="flex flex-col items-center justify-center p-6 space-y-3 text-slate-400">
-                <RefreshCw className="w-8 h-8 animate-spin text-cyan-400" />
-                <p className="text-xs font-medium">Connecting to live camera...</p>
-                <p className="text-[11px] text-slate-500">Please make sure camera is allowed in your browser.</p>
+              <div className="flex flex-col items-center justify-center p-4 space-y-2 text-slate-400">
+                <RefreshCw className="w-6 h-6 animate-spin text-cyan-400" />
+                <p className="text-xs font-medium">Connecting to camera...</p>
+                <p className="text-[11px] text-slate-500">Or use Upload Photo below</p>
               </div>
             )}
 
             {/* Camera Error Message */}
             {cameraError && (
-              <div className="p-6 text-center space-y-3.5">
-                <div className="w-12 h-12 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
-                  <AlertCircle className="w-6 h-6" />
+              <div className="p-4 text-center space-y-2.5 max-w-sm mx-auto">
+                <div className="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center mx-auto">
+                  <AlertCircle className="w-5 h-5" />
                 </div>
-                <p className="text-xs text-rose-300 font-medium max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs text-rose-300 font-medium leading-relaxed">
                   {cameraError}
                 </p>
-                <div className="flex items-center justify-center gap-2 pt-1">
+                <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
                   <Button
                     type="button"
                     size="sm"
@@ -266,7 +309,16 @@ export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = 
                     onClick={startCamera}
                     loading={isStarting}
                   >
-                    Retry Camera / دوبارہ کوشش کریں
+                    Retry
+                  </Button>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    icon={Upload}
+                    onClick={triggerFileSelect}
+                  >
+                    Upload Photo from Device
                   </Button>
                 </div>
               </div>
@@ -276,18 +328,18 @@ export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = 
       </div>
 
       {/* Action Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-navy-850 p-3 rounded-xl border border-slate-750">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 bg-navy-850 p-3 rounded-xl border border-slate-750">
         <div className="text-[11px] text-slate-300 space-y-0.5">
           <p className="font-semibold text-white flex items-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-cyan-400" />
-            <span>Live Camera Verification:</span>
+            <span>Face Photo Verification:</span>
           </p>
-          <p className="text-slate-400">
-            For security, this must be a live photo taken directly through the camera.
+          <p className="text-slate-400 text-[10.5px]">
+            Take live camera selfie or upload clear face photo.
           </p>
         </div>
 
-        <div className="shrink-0 flex items-center gap-2 justify-end">
+        <div className="w-full sm:w-auto flex items-center gap-2 justify-end shrink-0">
           {capturedPreview ? (
             <Button
               type="button"
@@ -295,23 +347,35 @@ export default function LiveSelfieCamera({ onCapture, onClear, initialPreview = 
               variant="outline"
               icon={RefreshCw}
               onClick={handleRetake}
-              className="font-bold text-xs"
+              className="text-xs font-semibold"
             >
-              Retake / دوبارہ کھینچیں
+              Change Photo / دوبارہ لیں
             </Button>
           ) : (
-            streamActive && videoReady && (
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
               <Button
                 type="button"
                 size="sm"
-                variant="primary"
-                icon={Camera}
-                onClick={takeSnapshot}
-                className="font-bold text-xs bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-500/20"
+                variant="outline"
+                icon={Upload}
+                onClick={triggerFileSelect}
+                className="text-xs text-slate-300 hover:text-white"
               >
-                Take Live Photo / تصویر کھینچیں
+                Upload Photo
               </Button>
-            )
+              {streamActive && videoReady && (
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="primary"
+                  icon={Camera}
+                  onClick={takeSnapshot}
+                  className="text-xs font-bold bg-emerald-600 hover:bg-emerald-500 shadow-md shadow-emerald-500/20"
+                >
+                  Take Photo
+                </Button>
+              )}
+            </div>
           )}
         </div>
       </div>

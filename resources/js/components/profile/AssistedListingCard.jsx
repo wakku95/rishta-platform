@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { MapPin, Briefcase, GraduationCap, Ruler, AlertCircle, EyeOff, ShieldCheck } from 'lucide-react';
 import Card from '../ui/Card';
 import Badge from '../ui/Badge';
+import CopyButton from '../ui/CopyButton';
 import GenderAvatar from '../ui/GenderAvatar';
 import useAuth from '../../hooks/useAuth';
 
@@ -32,7 +33,10 @@ export default function AssistedListingCard({ listing, onHide }) {
             <h3 className="text-lg font-bold text-white font-serif tracking-tight">
               {listing.gender === 'male' ? 'Male' : 'Female'} ({listing.age} yrs)
             </h3>
-            <p className="text-xs text-slate-400 font-mono mt-0.5">Ref: {listing.listing_code}</p>
+            <div className="flex items-center gap-1 mt-0.5">
+              <p className="text-xs text-slate-400 font-mono">Ref: #{listing.listing_code}</p>
+              <CopyButton text={listing.listing_code} label="listing code" />
+            </div>
           </div>
         </div>
 

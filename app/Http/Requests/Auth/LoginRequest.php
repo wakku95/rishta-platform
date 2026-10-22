@@ -22,7 +22,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'email' => ['required', 'string'],
             'password' => ['required', 'string'],
             'remember' => ['sometimes', 'boolean'],
         ];
@@ -33,8 +33,11 @@ class LoginRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        $this->merge([
-            'email' => strtolower(trim((string) $this->input('email'))),
-        ]);
+        $input = $this->input('email') ?? $this->input('login');
+        if ($input !== null) {
+            $this->merge([
+                'email' => strtolower(trim((string) $input)),
+            ]);
+        }
     }
 }

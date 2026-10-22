@@ -104,11 +104,11 @@ export default function IdentityVerificationGateModal({
       onClose={onClose}
       title={
         <div className="flex items-center gap-2 text-cyan-400 font-bold">
-          <ShieldCheck className="w-5 h-5" />
+          <ShieldCheck className="w-5 h-5 shrink-0" />
           <span>Identity Verification Required / شناختی کارڈ تصدیق</span>
         </div>
       }
-      size="lg"
+      maxWidth="max-w-2xl"
     >
       <div className="space-y-5">
         {/* Purpose Banner */}
@@ -270,7 +270,7 @@ export default function IdentityVerificationGateModal({
             </div>
 
             {/* Modal Actions */}
-            <div className="flex items-center justify-end gap-3 pt-3 border-t border-slate-800">
+            <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-2.5 pt-3 border-t border-slate-800">
               <Button type="button" variant="outline" size="sm" onClick={onClose} disabled={submitting}>
                 Cancel
               </Button>
@@ -281,9 +281,9 @@ export default function IdentityVerificationGateModal({
                 icon={ShieldCheck}
                 loading={submitting}
                 disabled={!frontFile || !backFile || !selfieBlob}
-                className="font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500"
+                className="font-bold bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 shadow-md shadow-cyan-500/20"
               >
-                Submit for Verification / تصدیق کے لیے جمع کروائیں
+                Submit Verification / تصدیق کروائیں
               </Button>
             </div>
           </form>

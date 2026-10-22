@@ -80,6 +80,10 @@ export default function PublicDocumentVerificationPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (record?.document_type === 'cnic' && !selfieFile) {
+      setUploadError('Live selfie or recent face photo is required for CNIC identity verification.');
+      return;
+    }
     if (!frontFile) {
       setUploadError('Please select the front side of your document.');
       return;

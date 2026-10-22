@@ -34,10 +34,12 @@ class UserVerificationTest extends TestCase
 
         $front = UploadedFile::fake()->create('cnic_front.pdf', 500, 'application/pdf');
         $back = UploadedFile::fake()->create('cnic_back.pdf', 500, 'application/pdf');
+        $selfie = UploadedFile::fake()->create('selfie.jpg', 500, 'image/jpeg');
 
         $response = $this->postJson('/api/verifications/identity', [
             'front' => $front,
             'back' => $back,
+            'live_selfie' => $selfie,
         ]);
 
         $response->assertStatus(201);
@@ -56,6 +58,24 @@ class UserVerificationTest extends TestCase
             'type' => 'identity',
             'status' => 'pending',
         ]);
+    }
+
+    public function test_identity_verification_strictly_requires_live_selfie(): void
+    {
+        $user = User::factory()->create(['status' => 'active']);
+        Sanctum::actingAs($user, ['*']);
+
+        $front = UploadedFile::fake()->create('cnic_front.jpg', 500, 'image/jpeg');
+        $back = UploadedFile::fake()->create('cnic_back.jpg', 500, 'image/jpeg');
+
+        // Missing live_selfie
+        $response = $this->postJson('/api/verifications/identity', [
+            'front' => $front,
+            'back' => $back,
+        ]);
+
+        $response->assertStatus(422);
+        $response->assertJsonValidationErrors(['live_selfie']);
     }
 
     public function test_authenticated_user_can_submit_education_verification(): void
@@ -126,10 +146,12 @@ class UserVerificationTest extends TestCase
 
         $front1 = UploadedFile::fake()->create('front1.pdf', 500, 'application/pdf');
         $back1 = UploadedFile::fake()->create('back1.pdf', 500, 'application/pdf');
+        $selfie1 = UploadedFile::fake()->create('selfie1.jpg', 500, 'image/jpeg');
 
         $this->postJson('/api/verifications/identity', [
             'front' => $front1,
             'back' => $back1,
+            'live_selfie' => $selfie1,
         ])->assertStatus(201);
 
         $this->assertEquals(1, ProfileVerification::where('user_id', $user->id)->count());
@@ -137,10 +159,12 @@ class UserVerificationTest extends TestCase
         // Re-submit while still pending
         $front2 = UploadedFile::fake()->create('front2.pdf', 500, 'application/pdf');
         $back2 = UploadedFile::fake()->create('back2.pdf', 500, 'application/pdf');
+        $selfie2 = UploadedFile::fake()->create('selfie2.jpg', 500, 'image/jpeg');
 
         $this->postJson('/api/verifications/identity', [
             'front' => $front2,
             'back' => $back2,
+            'live_selfie' => $selfie2,
         ])->assertStatus(201);
 
         // Count must still be 1 (replaced, no duplicate active pending)
@@ -154,10 +178,12 @@ class UserVerificationTest extends TestCase
 
         $front = UploadedFile::fake()->create('front.pdf', 500, 'application/pdf');
         $back = UploadedFile::fake()->create('back.pdf', 500, 'application/pdf');
+        $selfie = UploadedFile::fake()->create('selfie.jpg', 500, 'image/jpeg');
 
         $res = $this->postJson('/api/verifications/identity', [
             'front' => $front,
             'back' => $back,
+            'live_selfie' => $selfie,
         ]);
 
         $id = $res->json('data.id');

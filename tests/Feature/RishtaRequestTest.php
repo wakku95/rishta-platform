@@ -24,10 +24,24 @@ class RishtaRequestTest extends TestCase
 
     protected function createVerifiedUser(array $attributes = []): User
     {
-        return User::factory()->create(array_merge([
+        $user = User::factory()->create(array_merge([
             'email_verified_at' => now(),
             'status' => 'active',
         ], $attributes));
+
+        \App\Models\ProfileVerification::create([
+            'user_id' => $user->id,
+            'type' => \App\Models\ProfileVerification::TYPE_IDENTITY,
+            'status' => \App\Models\ProfileVerification::STATUS_APPROVED,
+            'document_front_path' => 'verifications/test_front.jpg',
+            'document_back_path' => 'verifications/test_back.jpg',
+            'live_selfie_path' => 'verifications/test_selfie.jpg',
+            'document_name' => 'CNIC Front & Back + Live Selfie',
+            'submitted_at' => now(),
+            'reviewed_at' => now(),
+        ]);
+
+        return $user;
     }
 
     protected function createActiveProfile(User $user, array $attributes = []): Profile

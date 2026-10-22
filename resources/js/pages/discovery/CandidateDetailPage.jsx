@@ -26,6 +26,7 @@ import { sendRishtaRequest, acceptRequest, declineRequest, cancelRequest } from 
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import CopyButton from '../../components/ui/CopyButton';
 import LoadingState from '../../components/ui/LoadingState';
 import Alert from '../../components/ui/Alert';
 import Modal from '../../components/ui/Modal';
@@ -319,9 +320,12 @@ export default function CandidateDetailPage() {
                 </Badge>
               )}
             </div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
-              Candidate #{profile.profile_code}
-            </h1>
+            <div className="flex items-center gap-2">
+              <h1 className="font-serif text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                Candidate #{profile.profile_code}
+              </h1>
+              <CopyButton text={profile.profile_code} iconSize="w-5 h-5" label="candidate profile number" />
+            </div>
             <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1">
               Profile managed by <strong className="text-white">{formatManagedBy(profile.managed_by)}</strong>
             </p>
