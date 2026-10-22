@@ -120,6 +120,17 @@ class AssistedListingController extends Controller
             ], 422);
         }
 
+        // Enforce that authenticated user has completed identity verification (CNIC + Live Selfie)
+        if (!$user->isIdentityVerified()) {
+            $verification = $user->latestIdentityVerification();
+            return response()->json([
+                'message' => 'Identity verification (CNIC + Live Selfie) is required before expressing interest in assisted listings.',
+                'error_code' => 'IDENTITY_VERIFICATION_REQUIRED',
+                'verification_status' => $verification ? $verification->status : 'none',
+                'rejection_reason' => $verification ? $verification->rejection_reason : null,
+            ], 403);
+        }
+
         $validated = $request->validated();
         
         // Anti-abuse: Check if this user or contact has submitted interest for this exact listing in the last 24 hours.

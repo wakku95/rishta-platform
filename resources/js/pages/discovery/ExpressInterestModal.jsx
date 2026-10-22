@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { X, HeartHandshake, AlertCircle, CheckCircle, Lock, UserPlus, LogIn, FileText, ShieldCheck } from 'lucide-react';
+import { X, HeartHandshake, AlertCircle, CheckCircle, Lock, UserPlus, LogIn, FileText, ShieldCheck, Clock } from 'lucide-react';
 import { submitListingInterest } from '../../api/listings';
 import useAuth from '../../hooks/useAuth';
 
@@ -109,10 +109,10 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
               </div>
               <h3 className="text-xl font-bold text-white mb-2">Interest Submitted / درخواست موصول ہوگئی</h3>
               <p className="text-slate-300 text-sm leading-relaxed max-w-md mx-auto">
-                Thank you! Our matchmaker agent will review your details and contact you on WhatsApp at <strong>{formData.submitter_contact}</strong> to facilitate the match.
+                Thank you! Our personal matchmaker will review your profile and contact you directly at <strong>{formData.submitter_contact}</strong> to facilitate the match.
               </p>
               <p className="text-xs text-amber-300 mt-2 font-urdu" dir="rtl">
-                شکریہ! ہمارا رشتہ ایجنٹ آپ کی تفصیلات دیکھ کر آپ سے واٹس ایپ پر رابطہ کرے گا۔
+                شکریہ! ہمارا رشتہ ایجنٹ آپ کی تفصیلات دیکھ کر آپ کے فراہم کردہ نمبر پر براہِ راست رابطہ کرے گا۔
               </p>
               <button 
                 onClick={onClose}
@@ -198,15 +198,74 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                 </button>
               </div>
             </div>
+          ) : !user?.is_identity_verified ? (
+            <div className="text-center py-6 px-2 space-y-4">
+              <div className="w-14 h-14 bg-amber-500/15 border border-amber-500/30 rounded-2xl flex items-center justify-center mx-auto text-amber-400">
+                <ShieldCheck className="w-7 h-7" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-bold text-white">
+                  CNIC & Live Selfie Verification Required
+                </h3>
+                <h4 className="text-sm font-urdu text-amber-300 font-bold" dir="rtl">
+                  شناختی کارڈ اور لائیو تصویر کی تصدیق ضروری ہے
+                </h4>
+                <p className="text-xs text-slate-300 leading-relaxed max-w-sm mx-auto">
+                  To safeguard candidate family dignity and prevent non-serious inquiries, our personal matchmakers only introduce candidates whose government CNIC and live selfie are manually verified.
+                </p>
+                <p className="text-xs text-amber-300/90 leading-relaxed font-urdu" dir="rtl">
+                  خاندانی وقار اور غیر سنجیدہ افراد کے سدِباب کے لیے اسسٹڈ رشتوں میں صرف تصدیق شدہ (Verified) اُمیدواروں کی درخواستیں ہی آگے بڑھائی جاتی ہیں۔
+                </p>
+              </div>
+
+              {user?.identity_verification_status === 'pending' ? (
+                <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 rounded-xl text-left text-xs text-amber-200 space-y-1">
+                  <div className="font-semibold flex items-center gap-1.5 text-amber-300">
+                    <Clock className="w-4 h-4" />
+                    <span>Audit Pending / تصدیق زیرِ غور ہے</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Your CNIC and Live Selfie have been submitted and are currently in the admin audit queue. Once approved, you can express interest immediately.
+                  </p>
+                </div>
+              ) : user?.identity_verification_status === 'rejected' ? (
+                <div className="p-3.5 bg-rose-500/10 border border-rose-500/30 rounded-xl text-left text-xs text-rose-200 space-y-1">
+                  <div className="font-semibold flex items-center gap-1.5 text-rose-300">
+                    <AlertCircle className="w-4 h-4" />
+                    <span>Verification Rejected / دوبارہ جمع کروائیں</span>
+                  </div>
+                  <p className="text-[11px] text-slate-300 leading-relaxed">
+                    Your previous identity submission was not approved. Please re-submit a clear live photo and CNIC.
+                  </p>
+                </div>
+              ) : null}
+
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => navigate('/verification')}
+                  className="w-full inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-black transition shadow-md shadow-amber-500/20 cursor-pointer"
+                >
+                  <ShieldCheck className="w-4 h-4" />
+                  <span>
+                    {user?.identity_verification_status === 'pending'
+                      ? 'Check Verification Status'
+                      : user?.identity_verification_status === 'rejected'
+                      ? 'Re-submit Identity Verification'
+                      : 'Verify My Identity Now (شناختی تصدیق کروائیں)'}
+                  </span>
+                </button>
+              </div>
+            </div>
           ) : (
             <>
               {/* Notice Banner & Fee Policy */}
               <div className="mb-5 p-4 bg-amber-500/10 border border-amber-500/25 rounded-xl space-y-2.5 text-xs">
                 <div className="text-slate-200 leading-relaxed">
-                  You are inquiring about listing <strong className="text-amber-400">{listing.listing_code}</strong>. Our personal matchmaker will review your profile and contact both families directly on WhatsApp.
+                  You are inquiring about listing <strong className="text-amber-400">{listing.listing_code}</strong>. Our personal matchmaker will review your verified profile and contact both families directly.
                 </div>
                 <div className="text-amber-300/90 leading-relaxed font-urdu text-right" dir="rtl">
-                  آپ لسٹنگ <strong className="text-amber-300">{listing.listing_code}</strong> کے لیے رابطہ کر رہے ہیں۔ ہمارا رشتہ ایجنٹ دونوں فریقین سے واٹس ایپ پر رابطہ کر کے بات آگے بڑھائے گا۔
+                  آپ لسٹنگ <strong className="text-amber-300">{listing.listing_code}</strong> کے لیے رابطہ کر رہے ہیں۔ ہمارا رشتہ ایجنٹ دونوں فریقین سے باضابطہ رابطہ کر کے بات آگے بڑھائے گا۔
                 </div>
                 <div className="pt-2 border-t border-amber-500/20 text-[11px] text-amber-200/90 space-y-1">
                   <div className="flex items-start gap-1.5 font-semibold text-amber-300">
@@ -214,10 +273,10 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                     <span>Service Fee Notice / فیس کا نوٹ:</span>
                   </div>
                   <p className="text-slate-300 leading-normal pl-4">
-                    Personal matchmaking facilitation fee applies for this service and will be coordinated directly by our agent on WhatsApp after discussing mutual compatibility.
+                    Personal matchmaking facilitation fee applies for this service and will be coordinated directly by our agent after discussing mutual compatibility.
                   </p>
                   <p className="text-amber-200/80 leading-normal pl-4 font-urdu text-right" dir="rtl">
-                    اس پرسنل میچ میکنگ سروس کی فیس رشتہ ایجنٹ واٹس ایپ پر براہ راست طے اور وصول کرے گا۔
+                    اس پرسنل میچ میکنگ سروس کی فیس رشتہ ایجنٹ دونوں خاندانوں سے براہ راست طے اور وصول کرے گا۔
                   </p>
                 </div>
               </div>
@@ -260,19 +319,19 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                 
                 <div>
                   <label className="block text-xs font-semibold text-slate-300 mb-1">
-                    WhatsApp Contact Number / واٹس ایپ نمبر <span className="text-rose-500">*</span>
+                    Contact Phone Number / رابطہ نمبر <span className="text-rose-500">*</span>
                   </label>
                   <input 
                     type="text" 
                     name="submitter_contact"
-                    required
+                    required 
                     placeholder="+923XXXXXXXXX"
                     value={formData.submitter_contact} 
                     onChange={handleChange} 
                     className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white text-sm focus:border-amber-500 focus:outline-none font-mono" 
                   />
                   <span className="text-[11px] text-slate-400 mt-0.5 block">
-                    Our agent will contact you on this number via WhatsApp.
+                    Our agent will contact you directly on this phone number.
                   </span>
                 </div>
 

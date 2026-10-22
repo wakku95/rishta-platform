@@ -29,6 +29,7 @@ import DashboardPage from './pages/dashboard/DashboardPage';
 import ProfilePage from './pages/profile/ProfilePage';
 import EditProfilePage from './pages/profile/EditProfilePage';
 import EditPreferencesPage from './pages/profile/EditPreferencesPage';
+import VerificationPage from './pages/profile/VerificationPage';
 
 // Discovery Pages
 import SearchProfilesPage from './pages/discovery/SearchProfilesPage';
@@ -92,6 +93,7 @@ export default function App() {
               <Route path="profile" element={<ProfilePage />} />
               <Route path="profile/edit" element={<EditProfilePage />} />
               <Route path="profile/preferences" element={<EditPreferencesPage />} />
+              <Route path="verification" element={<VerificationPage />} />
             </Route>
 
             {/* Public Discovery & Candidate Teaser */}

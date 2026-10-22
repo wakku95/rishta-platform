@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\AssistedListing;
 use App\Models\AssistedListingInterest;
 use App\Models\Profile;
+use App\Models\ProfileVerification;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -45,6 +46,38 @@ class AssistedListingInterestTest extends TestCase
             ->assertJsonPath('error_code', 'PROFILE_REQUIRED');
     }
 
+    public function test_user_without_identity_verification_cannot_submit_interest()
+    {
+        $listing = AssistedListing::factory()->create([
+            'listing_status' => 'published',
+        ]);
+
+        $user = User::factory()->create();
+        Profile::create([
+            'user_id' => $user->id,
+            'profile_code' => 'RK-UNVERIFIED01',
+            'gender' => 'male',
+            'date_of_birth' => '1995-05-15',
+            'religion' => 'Islam',
+            'sect' => 'Sunni',
+            'city' => 'Lahore',
+            'education' => "Bachelor's",
+            'profession' => 'Software / IT',
+            'marital_status' => 'never_married',
+            'height' => 175,
+            'managed_by' => 'myself',
+            'profile_status' => 'active',
+        ]);
+
+        $response = $this->actingAs($user)->postJson("/api/listings/{$listing->listing_code}/interest", [
+            'submitter_name' => 'Unverified User',
+            'submitter_contact' => '+923111234567',
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('error_code', 'IDENTITY_VERIFICATION_REQUIRED');
+    }
+
     public function test_logged_in_user_with_profile_attaches_user_id()
     {
         $listing = AssistedListing::factory()->create([
@@ -66,6 +99,16 @@ class AssistedListingInterestTest extends TestCase
             'height' => 175,
             'managed_by' => 'myself',
             'profile_status' => 'active',
+        ]);
+
+        ProfileVerification::create([
+            'user_id' => $user->id,
+            'type' => ProfileVerification::TYPE_IDENTITY,
+            'status' => ProfileVerification::STATUS_APPROVED,
+            'document_front_path' => 'verifications/front.jpg',
+            'document_back_path' => 'verifications/back.jpg',
+            'submitted_at' => now(),
+            'reviewed_at' => now(),
         ]);
 
         $response = $this->actingAs($user)->postJson("/api/listings/{$listing->listing_code}/interest", [
@@ -104,6 +147,16 @@ class AssistedListingInterestTest extends TestCase
             'height' => 175,
             'managed_by' => 'myself',
             'profile_status' => 'active',
+        ]);
+
+        ProfileVerification::create([
+            'user_id' => $user->id,
+            'type' => ProfileVerification::TYPE_IDENTITY,
+            'status' => ProfileVerification::STATUS_APPROVED,
+            'document_front_path' => 'verifications/front.jpg',
+            'document_back_path' => 'verifications/back.jpg',
+            'submitted_at' => now(),
+            'reviewed_at' => now(),
         ]);
 
         AssistedListingInterest::factory()->create([
