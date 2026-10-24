@@ -52,6 +52,16 @@ class Profile extends Model
     ];
 
     /**
+     * The attributes that should be hidden for serialization.
+     * Hiding 'user' prevents circular recursion when a User loads a Profile and Profile accesses User.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'user',
+    ];
+
+    /**
      * Get the attributes that should be cast.
      *
      * @return array<string, string>
@@ -167,9 +177,13 @@ class Profile extends Model
      */
     public function getVerificationsAttribute(): array
     {
+        $user = $this->relationLoaded('user')
+            ? $this->getRelation('user')
+            : ($this->user_id ? \App\Models\User::find($this->user_id) : null);
+
         return [
-            'identity_verified' => $this->user ? $this->user->isIdentityVerified() : false,
-            'education_verified' => $this->user ? $this->user->isEducationVerified() : false,
+            'identity_verified' => $user ? $user->isIdentityVerified() : false,
+            'education_verified' => $user ? $user->isEducationVerified() : false,
         ];
     }
 
