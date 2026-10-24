@@ -108,6 +108,11 @@ export const requestsApi = {
     return res.data;
   },
 
+  getProposalPhotoBase64: async (requestCode) => {
+    const res = await apiClient.get(`/requests/${requestCode}/view-photo?format=base64`);
+    return res.data;
+  },
+
   // Phase 5: Mutual OTP verification & Contact details unlock
   getUnlockStatus: async (requestCode) => {
     const res = await apiClient.get(`/requests/${requestCode}/unlock/status`);

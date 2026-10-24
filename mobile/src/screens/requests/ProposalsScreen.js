@@ -82,6 +82,9 @@ export default function ProposalsScreen({ navigation }) {
   const [photoModalOpen, setPhotoModalOpen] = useState(false);
   const [photoModalMode, setPhotoModalMode] = useState('upload'); // 'upload' | 'fee'
   const [viewerModalOpen, setViewerModalOpen] = useState(false);
+  const [viewerLoading, setViewerLoading] = useState(false);
+  const [viewerError, setViewerError] = useState(null);
+  const [viewerPhotoBase64, setViewerPhotoBase64] = useState(null);
   const [isHoldingPhoto, setIsHoldingPhoto] = useState(false);
   const [uploadPhotoAsset, setUploadPhotoAsset] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -355,10 +358,27 @@ export default function ProposalsScreen({ navigation }) {
     );
   };
 
-  const handleOpenPhotoViewer = (proposal) => {
+  const handleOpenPhotoViewer = async (proposal) => {
     setPhotoTarget(proposal);
     setIsHoldingPhoto(false);
+    setViewerPhotoBase64(null);
+    setViewerError(null);
+    setViewerLoading(true);
     setViewerModalOpen(true);
+
+    try {
+      const res = await requestsApi.getProposalPhotoBase64(proposal.request_code || proposal.id);
+      if (res?.base64) {
+        setViewerPhotoBase64(res.base64);
+      } else {
+        setViewerError('Could not load candidate photo data.');
+      }
+    } catch (err) {
+      const errMsg = err.response?.data?.message || 'Unable to load photo. Please ensure it has been approved and paid.';
+      setViewerError(errMsg);
+    } finally {
+      setViewerLoading(false);
+    }
   };
 
   const handleOpenPhotoUpload = (proposal) => {
@@ -1206,8 +1226,32 @@ export default function ProposalsScreen({ navigation }) {
                           Carefully evaluate candidate answers. You can request candidate photo and unlock verified contact details.
                         </Text>
 
+                        {/* Photo Rejection Feedback from Admin */}
+                        {item.my_photo_moderation_status === 'rejected' && item.my_photo_rejection_notes && (
+                          <View style={styles.photoRejectionAlertBox}>
+                            <Ionicons name="alert-circle" size={16} color={Colors.rose[400]} />
+                            <View style={{ flex: 1 }}>
+                              <Text style={styles.photoRejectionTitle}>
+                                Photo Revision Requested / تصویر میں درکار ترمیم:
+                              </Text>
+                              <Text style={styles.photoRejectionText}>
+                                "{item.my_photo_rejection_notes}"
+                              </Text>
+                              <TouchableOpacity
+                                style={styles.photoReuploadBtn}
+                                onPress={() => handleOpenPhotoUpload(item)}
+                              >
+                                <Ionicons name="cloud-upload" size={14} color={Colors.white} />
+                                <Text style={styles.photoReuploadBtnText}>
+                                  Re-upload Clear Photo / دوبارہ تصویر جمع کروائیں
+                                </Text>
+                              </TouchableOpacity>
+                            </View>
+                          </View>
+                        )}
+
                         <View style={styles.mutualActionsRow}>
-                          {/* Photo Exchange Action */}
+                          {/* A. Candidate Photo Action */}
                           {item.candidate_photo_shared ? (
                             item.can_view_candidate_photo || (item.photo_moderation_status === 'approved' && item.photo_paid) ? (
                               <TouchableOpacity
@@ -1236,14 +1280,6 @@ export default function ProposalsScreen({ navigation }) {
                                 <Text style={styles.photoPendingBadgeText}>Candidate Photo In Review</Text>
                               </View>
                             )
-                          ) : item.photo_requested_by_candidate && !item.my_photo_shared ? (
-                            <TouchableOpacity
-                              style={styles.photoUploadReqBtn}
-                              onPress={() => handleOpenPhotoUpload(item)}
-                            >
-                              <Ionicons name="camera" size={14} color={Colors.white} />
-                              <Text style={styles.photoUploadReqBtnText}>Candidate Asked for Photo (Upload)</Text>
-                            </TouchableOpacity>
                           ) : item.photo_requested_by_me ? (
                             <View style={styles.photoPendingBadge}>
                               <Ionicons name="time-outline" size={14} color={Colors.gold[400]} />
@@ -1259,8 +1295,23 @@ export default function ProposalsScreen({ navigation }) {
                             </TouchableOpacity>
                           )}
 
-                          {/* My Photo Upload / Status */}
-                          {!item.my_photo_shared && !item.photo_requested_by_candidate ? (
+                          {/* B. My Photo Actions (ALWAYS independent of Candidate Photo) */}
+                          {item.my_photo_shared ? (
+                            <View style={styles.photoMySharedBadge}>
+                              <Ionicons name="checkmark-circle" size={13} color={Colors.emerald[400]} />
+                              <Text style={styles.photoMySharedBadgeText}>
+                                {item.my_photo_moderation_status === 'approved' ? 'My Photo Approved ✅' : 'My Photo In Review'}
+                              </Text>
+                            </View>
+                          ) : item.photo_requested_by_candidate ? (
+                            <TouchableOpacity
+                              style={styles.photoUploadReqBtn}
+                              onPress={() => handleOpenPhotoUpload(item)}
+                            >
+                              <Ionicons name="camera" size={14} color={Colors.white} />
+                              <Text style={styles.photoUploadReqBtnText}>Candidate Asked for Photo (Upload)</Text>
+                            </TouchableOpacity>
+                          ) : (
                             <TouchableOpacity
                               style={styles.photoShareBtn}
                               onPress={() => handleOpenPhotoUpload(item)}
@@ -1268,14 +1319,7 @@ export default function ProposalsScreen({ navigation }) {
                               <Ionicons name="cloud-upload-outline" size={13} color={Colors.magenta[300]} />
                               <Text style={styles.photoShareBtnText}>Share My Photo</Text>
                             </TouchableOpacity>
-                          ) : item.my_photo_shared ? (
-                            <View style={styles.photoMySharedBadge}>
-                              <Ionicons name="checkmark-circle" size={13} color={Colors.emerald[400]} />
-                              <Text style={styles.photoMySharedBadgeText}>
-                                {item.my_photo_moderation_status === 'approved' ? 'My Photo Approved ✅' : 'My Photo In Review'}
-                              </Text>
-                            </View>
-                          ) : null}
+                          )}
 
                           {/* CNIC Verified Status Badge */}
                           {item.candidate_nic_shared || item.candidate_is_identity_verified ? (
@@ -2021,60 +2065,80 @@ export default function ProposalsScreen({ navigation }) {
             </View>
 
             {/* Hold to View Canvas Container */}
-            <TouchableOpacity
-              activeOpacity={1}
-              onPressIn={() => setIsHoldingPhoto(true)}
-              onPressOut={() => setIsHoldingPhoto(false)}
-              style={styles.photoViewerContainer}
-            >
-              {photoTarget && (
-                <Image
-                  source={{
-                    uri: `${Config.API_BASE_URL}/requests/${photoTarget.request_code || photoTarget.id}/view-photo`,
-                    headers: {
-                      Authorization: `Bearer ${token}`,
-                      Accept: 'image/*',
-                    },
-                  }}
-                  style={[
-                    styles.viewerImage,
-                    isHoldingPhoto ? styles.viewerImageSharp : styles.viewerImageBlur,
-                  ]}
-                  blurRadius={isHoldingPhoto ? 0 : 30}
-                  resizeMode="contain"
-                />
-              )}
-
-              {/* Watermark Diagonal Overlay (Always visible across the image for protection) */}
-              <View style={styles.watermarkOverlay} pointerEvents="none">
-                {[-20, 5, 30, 55, 80].map((topPct, idx) => (
-                  <Text key={idx} style={[styles.watermarkLine, { top: `${topPct}%` }]}>
-                    {user?.profile?.profile_code || 'MEMBER'} • {user?.phone || 'CONFIDENTIAL'} • RISHTA PROTECTED
-                  </Text>
-                ))}
+            {viewerLoading ? (
+              <View style={[styles.photoViewerContainer, { padding: 30 }]}>
+                <ActivityIndicator size="large" color={Colors.cyan[400]} />
+                <Text style={{ color: Colors.slate[300], marginTop: 14, fontSize: 13, textAlign: 'center' }}>
+                  Decrypting & preparing watermarked photo...
+                </Text>
               </View>
+            ) : viewerError ? (
+              <View style={[styles.photoViewerContainer, { padding: 24, gap: 10 }]}>
+                <Ionicons name="alert-circle" size={40} color={Colors.rose[400]} />
+                <Text style={{ color: Colors.white, fontSize: 14, fontWeight: '700', textAlign: 'center' }}>
+                  Unable to View Photo
+                </Text>
+                <Text style={{ color: Colors.slate[300], fontSize: 12, textAlign: 'center', lineHeight: 18 }}>
+                  {viewerError}
+                </Text>
+                <Button
+                  title="Retry / دوبارہ کوشش کریں"
+                  variant="primary"
+                  size="sm"
+                  onPress={() => photoTarget && handleOpenPhotoViewer(photoTarget)}
+                  style={{ marginTop: 10, backgroundColor: Colors.cyan[600] }}
+                />
+              </View>
+            ) : (
+              <TouchableOpacity
+                activeOpacity={1}
+                onPressIn={() => setIsHoldingPhoto(true)}
+                onPressOut={() => setIsHoldingPhoto(false)}
+                style={styles.photoViewerContainer}
+              >
+                {viewerPhotoBase64 ? (
+                  <Image
+                    source={{ uri: viewerPhotoBase64 }}
+                    style={[
+                      styles.viewerImage,
+                      isHoldingPhoto ? styles.viewerImageSharp : styles.viewerImageBlur,
+                    ]}
+                    blurRadius={isHoldingPhoto ? 0 : 30}
+                    resizeMode="contain"
+                  />
+                ) : null}
 
-              {/* Blur / Cover Overlay when NOT holding */}
-              {!isHoldingPhoto && (
-                <View style={styles.coverOverlay} pointerEvents="none">
-                  <View style={styles.coverIconWrap}>
-                    <Ionicons name="eye-outline" size={40} color={Colors.cyan[400]} />
+                {/* Watermark Diagonal Overlay (Always visible across the image for protection) */}
+                <View style={styles.watermarkOverlay} pointerEvents="none">
+                  {[-20, 5, 30, 55, 80].map((topPct, idx) => (
+                    <Text key={idx} style={[styles.watermarkLine, { top: `${topPct}%` }]}>
+                      {user?.profile?.profile_code || 'MEMBER'} • {user?.phone || 'CONFIDENTIAL'} • RISHTA PROTECTED
+                    </Text>
+                  ))}
+                </View>
+
+                {/* Blur / Cover Overlay when NOT holding */}
+                {!isHoldingPhoto && (
+                  <View style={styles.coverOverlay} pointerEvents="none">
+                    <View style={styles.coverIconWrap}>
+                      <Ionicons name="eye-outline" size={40} color={Colors.cyan[400]} />
+                    </View>
+                    <Text style={styles.coverTitle}>Hold to View / دیکھنے کے لیے دبا کر رکھیں</Text>
+                    <Text style={styles.coverSubtitle}>
+                      تصویر دیکھنے کے لیے نیچے دیئے گئے بٹن یا تصویر پر انگلی دبا کر رکھیں۔ انگلی اٹھانے پر تصویر فوری طور پر دھندلی ہو جائے گی۔
+                    </Text>
                   </View>
-                  <Text style={styles.coverTitle}>Hold to View / دیکھنے کے لیے دبا کر رکھیں</Text>
-                  <Text style={styles.coverSubtitle}>
-                    تصویر دیکھنے کے لیے نیچے دیئے گئے بٹن یا تصویر پر انگلی دبا کر رکھیں۔ انگلی اٹھانے پر تصویر فوری طور پر دھندلی ہو جائے گی۔
-                  </Text>
-                </View>
-              )}
+                )}
 
-              {/* Active Viewing Top Badge */}
-              {isHoldingPhoto && (
-                <View style={styles.activeViewingPill} pointerEvents="none">
-                  <Ionicons name="eye" size={13} color={Colors.cyan[300]} />
-                  <Text style={styles.activeViewingPillText}>Viewing Active • Release to Blur</Text>
-                </View>
-              )}
-            </TouchableOpacity>
+                {/* Active Viewing Top Badge */}
+                {isHoldingPhoto && (
+                  <View style={styles.activeViewingPill} pointerEvents="none">
+                    <Ionicons name="eye" size={13} color={Colors.cyan[300]} />
+                    <Text style={styles.activeViewingPillText}>Viewing Active • Release to Blur</Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            )}
 
             {/* Big Touch & Hold Action Button */}
             <TouchableOpacity
@@ -3289,5 +3353,45 @@ const styles = StyleSheet.create({
     fontSize: 11,
     color: Colors.slate[200],
     marginTop: 2,
+  },
+  photoRejectionAlertBox: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(244, 63, 94, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(244, 63, 94, 0.35)',
+    marginBottom: 8,
+  },
+  photoRejectionTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.rose[400],
+    textTransform: 'uppercase',
+    marginBottom: 2,
+  },
+  photoRejectionText: {
+    fontSize: 12,
+    color: Colors.slate[200],
+    fontStyle: 'italic',
+    lineHeight: 16,
+    marginBottom: 8,
+  },
+  photoReuploadBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: Colors.rose[600],
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+  },
+  photoReuploadBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.white,
   },
 });

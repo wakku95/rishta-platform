@@ -780,6 +780,37 @@ class RishtaRequestController extends Controller
             }
         }
 
+        $fallbacks = [
+            storage_path('app/private/' . $photoPath),
+            storage_path('app/' . $photoPath),
+        ];
+
+        // Format base64 support for mobile React Native clients
+        if ($request->query('format') === 'base64') {
+            $bytes = null;
+            $mime = 'image/jpeg';
+            if (Storage::disk('local')->exists($photoPath)) {
+                $bytes = Storage::disk('local')->get($photoPath);
+                $mime = Storage::disk('local')->mimeType($photoPath) ?: 'image/jpeg';
+            } else {
+                foreach ($fallbacks as $fallback) {
+                    if (file_exists($fallback)) {
+                        $bytes = file_get_contents($fallback);
+                        $mime = mime_content_type($fallback) ?: 'image/jpeg';
+                        break;
+                    }
+                }
+            }
+            if ($bytes) {
+                return response()->json([
+                    'success' => true,
+                    'mime_type' => $mime,
+                    'base64' => 'data:' . $mime . ';base64,' . base64_encode($bytes),
+                ]);
+            }
+            abort(404, 'Candidate photo file not found.');
+        }
+
         if (Storage::disk('local')->exists($photoPath)) {
             $mimeType = Storage::disk('local')->mimeType($photoPath) ?: 'image/jpeg';
             return Storage::disk('local')->response($photoPath, null, [
@@ -789,11 +820,6 @@ class RishtaRequestController extends Controller
                 'Cache-Control' => 'no-store, no-cache, must-revalidate, private',
             ]);
         }
-
-        $fallbacks = [
-            storage_path('app/private/' . $photoPath),
-            storage_path('app/' . $photoPath),
-        ];
 
         foreach ($fallbacks as $fallback) {
             if (file_exists($fallback)) {
