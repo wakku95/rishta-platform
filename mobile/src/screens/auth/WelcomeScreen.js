@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, SafeAreaView, StatusBar, Image } from 'react-native';
+import { View, Text, StyleSheet, SafeAreaView, StatusBar, Image, TouchableOpacity } from 'react-native';
 import { Colors } from '../../constants/colors';
 import Button from '../../components/common/Button';
 import { Ionicons } from '@expo/vector-icons';
