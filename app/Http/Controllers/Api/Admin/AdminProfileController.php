@@ -66,6 +66,10 @@ class AdminProfileController extends Controller
         $perPage = min((int) $request->input('per_page', 15), 50);
         $profiles = $query->latest()->paginate($perPage);
 
+        $profiles->getCollection()->transform(function ($profile) {
+            return $profile->makeVisible('user');
+        });
+
         return $this->successResponse($profiles, 'Candidate profiles retrieved.');
     }
 
@@ -79,6 +83,8 @@ class AdminProfileController extends Controller
         if (!$profile) {
             return $this->errorResponse('Profile not found.', [], Response::HTTP_NOT_FOUND, 'PROFILE_NOT_FOUND');
         }
+
+        $profile->makeVisible('user');
 
         return $this->successResponse($profile, 'Profile details retrieved.');
     }
