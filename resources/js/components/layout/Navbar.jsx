@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { ShieldCheck, Menu, X, HeartHandshake, User, LogOut, Smartphone, ChevronDown, Sun, Moon, Sparkles } from 'lucide-react';
 import Button from '../ui/Button';
 import ThemeToggle from '../ui/ThemeToggle';
@@ -11,34 +12,23 @@ import { getRequestCounts } from '../../api/requests';
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
-  const [pendingProposalsCount, setPendingProposalsCount] = useState(0);
   const toolsDropdownRef = useRef(null);
   const location = useLocation();
   const { user, authenticated, logout } = useAuth();
   const { toggleTheme, isDark } = useTheme();
 
-  // Fetch pending proposals count for badge
-  useEffect(() => {
-    if (!authenticated) {
-      setPendingProposalsCount(0);
-      return;
-    }
+  // Fetch pending proposals count for badge via TanStack Query (synced across tabs)
+  const { data: requestCountsData } = useQuery({
+    queryKey: ['requestCounts'],
+    queryFn: async () => {
+      const res = await getRequestCounts();
+      return (res.success && res.data) ? res.data : null;
+    },
+    enabled: !!authenticated,
+    refetchInterval: 60000,
+  });
 
-    const fetchCounts = async () => {
-      try {
-        const res = await getRequestCounts();
-        if (res.success && res.data) {
-          setPendingProposalsCount(res.data.pending_received || 0);
-        }
-      } catch (e) {
-        // quiet ignore
-      }
-    };
-
-    fetchCounts();
-    const interval = setInterval(fetchCounts, 45000);
-    return () => clearInterval(interval);
-  }, [authenticated, location.pathname]);
+  const pendingProposalsCount = requestCountsData?.pending_received || 0;
 
   // Close menus on route change
   useEffect(() => {

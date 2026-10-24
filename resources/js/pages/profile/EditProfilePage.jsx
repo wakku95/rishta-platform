@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import { getProfile, saveProfile, getProfileOptions } from '../../api/profile';
 import Card from '../../components/ui/Card';
@@ -110,6 +111,7 @@ const HEIGHT_OPTIONS = Array.from({ length: 101 }, (_, i) => {
 
 export default function EditProfilePage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { user, refreshUser } = useAuth();
 
   const [loading, setLoading] = useState(true);
@@ -214,6 +216,7 @@ export default function EditProfilePage() {
         payload.sect = null;
       }
       await saveProfile(payload);
+      queryClient.invalidateQueries({ queryKey: ['myProfile'] });
       await refreshUser();
       navigate('/profile');
     } catch (err) {

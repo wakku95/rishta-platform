@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import useAuth from '../../hooks/useAuth';
 import { getProfile, activateProfile, hideProfile, getProfilePreview } from '../../api/profile';
 import Card from '../../components/ui/Card';
@@ -37,9 +38,21 @@ import {
 export default function ProfilePage() {
   const { user, emailVerified, refreshUser } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { data: profile = null, isLoading: loading } = useQuery({
+    queryKey: ['myProfile'],
+    queryFn: async () => {
+      try {
+        const res = await getProfile();
+        return res.data;
+      } catch (err) {
+        if (err.response?.status === 404) return null;
+        throw err;
+      }
+    },
+  });
+
   const [error, setError] = useState('');
   const [actionSuccess, setActionSuccess] = useState('');
   const [actionLoading, setActionLoading] = useState(false);
@@ -56,26 +69,6 @@ export default function ProfilePage() {
     action: null,
     confirmVariant: 'primary',
   });
-
-  const fetchProfileData = async () => {
-    setLoading(true);
-    try {
-      const res = await getProfile();
-      setProfile(res.data);
-    } catch (err) {
-      if (err.response?.status === 404) {
-        setProfile(null);
-      } else {
-        setError('Could not load profile data.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchProfileData();
-  }, []);
 
   const handleOpenPreview = async () => {
     setPreviewModalOpen(true);
@@ -100,7 +93,8 @@ export default function ProfilePage() {
     setError('');
     try {
       const res = await activateProfile();
-      setProfile(res.data);
+      queryClient.setQueryData(['myProfile'], res.data);
+      queryClient.invalidateQueries({ queryKey: ['myProfile'] });
       await refreshUser();
       setActionSuccess('Your matrimonial profile is now active and discoverable.');
     } catch (err) {
@@ -117,7 +111,8 @@ export default function ProfilePage() {
     setError('');
     try {
       const res = await hideProfile();
-      setProfile(res.data);
+      queryClient.setQueryData(['myProfile'], res.data);
+      queryClient.invalidateQueries({ queryKey: ['myProfile'] });
       await refreshUser();
       setActionSuccess('Your profile has been hidden from search results.');
     } catch (err) {

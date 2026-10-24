@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Bookmark, Search, ArrowRight } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getShortlists } from '../../api/shortlist';
 import ProfileCard from '../../components/profile/ProfileCard';
 import Button from '../../components/ui/Button';
@@ -9,32 +10,27 @@ import EmptyState from '../../components/ui/EmptyState';
 import Pagination from '../../components/ui/Pagination';
 
 export default function ShortlistPage() {
-  const [profiles, setProfiles] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState(null);
 
-  useEffect(() => {
-    fetchShortlists(page);
-  }, [page]);
+  const { data: shortlistResponse, isLoading } = useQuery({
+    queryKey: ['shortlists', page],
+    queryFn: () => getShortlists({ page }),
+  });
 
-  const fetchShortlists = async (targetPage = 1) => {
-    setLoading(true);
-    try {
-      const res = await getShortlists({ page: targetPage });
-      setProfiles(res.data || []);
-      setMeta(res.meta || null);
-    } catch (err) {
-      console.error('Failed to load shortlists:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const profiles = shortlistResponse?.data || [];
+  const meta = shortlistResponse?.meta || null;
 
   const handleShortlistChange = (profileCode, isShortlisted) => {
     if (!isShortlisted) {
-      // Remove from current view
-      setProfiles((prev) => prev.filter((p) => p.profile_code !== profileCode));
+      // Optimistically remove from cached view
+      queryClient.setQueryData(['shortlists', page], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          data: (old.data || []).filter((p) => p.profile_code !== profileCode),
+        };
+      });
     }
   };
 
@@ -64,7 +60,7 @@ export default function ShortlistPage() {
       </div>
 
       {/* Content */}
-      {loading ? (
+      {isLoading ? (
         <div className="py-20">
           <LoadingState text="Loading your shortlisted candidates..." />
         </div>

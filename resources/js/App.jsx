@@ -48,6 +48,8 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import VerifiedRoute from './components/auth/VerifiedRoute';
 import AdminRoute from './components/auth/AdminRoute';
 import ScrollToTop from './components/layout/ScrollToTop';
+import { QueryClientProvider } from '@tanstack/react-query';
+import { queryClient } from './config/queryClient';
 
 // Admin Pages
 import AdminPage from './pages/admin/AdminPage';
@@ -55,12 +57,13 @@ import AdminPage from './pages/admin/AdminPage';
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        <BrowserRouter>
-          <ScrollToTop />
-          <Routes>
-            <Route path="/" element={<AppLayout />}>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <AuthProvider>
+          <BrowserRouter>
+            <ScrollToTop />
+            <Routes>
+              <Route path="/" element={<AppLayout />}>
             {/* Public informational pages */}
             <Route index element={<HomePage />} />
             <Route path="how-it-works" element={<HowItWorksPage />} />
@@ -121,5 +124,6 @@ export default function App() {
       </BrowserRouter>
     </AuthProvider>
     </ThemeProvider>
+    </QueryClientProvider>
   );
 }

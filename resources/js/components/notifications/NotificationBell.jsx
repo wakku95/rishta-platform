@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { 
   Bell, Check, CheckCheck, Info, AlertTriangle, 
   AlertOctagon, CheckCircle2, ExternalLink, ChevronRight, X 
@@ -8,32 +9,21 @@ import { notificationApi } from '../../api/notifications';
 
 export default function NotificationBell() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [notifications, setNotifications] = useState([]);
   const dropdownRef = useRef(null);
 
-  const fetchNotifications = async () => {
-    try {
+  const { data: notifData } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
       const res = await notificationApi.getNotifications();
-      if (res.success) {
-        setUnreadCount(res.unread_count || 0);
-        setNotifications(res.data || []);
-      }
-    } catch (err) {
-      // Quiet fail if guest or network error
-      console.error('Failed to fetch notifications:', err);
-    }
-  };
+      return (res.success) ? res : { unread_count: 0, data: [] };
+    },
+    refetchInterval: 60000,
+  });
 
-  useEffect(() => {
-    fetchNotifications();
-
-    // Check every 60 seconds
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
-  }, []);
+  const unreadCount = notifData?.unread_count || 0;
+  const notifications = notifData?.data || [];
 
   // Handle click outside to close dropdown
   useEffect(() => {
@@ -52,8 +42,7 @@ export default function NotificationBell() {
     if (e) e.stopPropagation();
     try {
       await notificationApi.markAsRead(id);
-      setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
-      setUnreadCount(prev => Math.max(0, prev - 1));
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     } catch (err) {
       console.error('Failed to mark read:', err);
     }
@@ -62,8 +51,7 @@ export default function NotificationBell() {
   const handleMarkAllAsRead = async () => {
     try {
       await notificationApi.markAllAsRead();
-      setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
-      setUnreadCount(0);
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
     } catch (err) {
       console.error('Failed to mark all as read:', err);
     }

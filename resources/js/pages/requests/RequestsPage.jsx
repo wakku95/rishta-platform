@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Send,
   Inbox,
@@ -47,13 +48,46 @@ import useAuth from '../../hooks/useAuth';
 
 export default function RequestsPage() {
   const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState('received'); // 'received' | 'sent' | 'assisted'
   const [statusFilter, setStatusFilter] = useState('');
-  const [requests, setRequests] = useState([]);
-  const [counts, setCounts] = useState({ received: 0, sent: 0, assisted_inquiries: 0 });
-  const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
-  const [meta, setMeta] = useState(null);
+
+  // TanStack React Query for counts & requests feed
+  const { data: countsData } = useQuery({
+    queryKey: ['requestCounts'],
+    queryFn: async () => {
+      const res = await getRequestCounts();
+      return (res.success && res.data) ? res.data : { received: 0, sent: 0, assisted_inquiries: 0 };
+    },
+  });
+
+  const counts = countsData || { received: 0, sent: 0, assisted_inquiries: 0 };
+
+  const { data: requestsResponse, isLoading: loading } = useQuery({
+    queryKey: ['requests', activeTab, page, statusFilter],
+    queryFn: async () => {
+      if (activeTab === 'assisted') {
+        const res = await getMyAssistedInquiries({ page });
+        return res;
+      } else {
+        const params = { page };
+        if (statusFilter) params.status = statusFilter;
+        const res = activeTab === 'received'
+          ? await getReceivedRequests(params)
+          : await getSentRequests(params);
+        return res;
+      }
+    },
+  });
+
+  const requests = requestsResponse?.data || [];
+  const meta = requestsResponse?.meta || null;
+
+  const fetchRequests = () => {
+    queryClient.invalidateQueries({ queryKey: ['requests'] });
+    queryClient.invalidateQueries({ queryKey: ['requestCounts'] });
+  };
 
   // Actions
   const [actionLoading, setActionLoading] = useState(false);
@@ -72,10 +106,6 @@ export default function RequestsPage() {
   const [identityGateOpen, setIdentityGateOpen] = useState(false);
   const [assistedReplyModalOpen, setAssistedReplyModalOpen] = useState(false);
   const [selectedAssistedInquiry, setSelectedAssistedInquiry] = useState(null);
-
-  useEffect(() => {
-    fetchRequests(activeTab, page, statusFilter);
-  }, [activeTab, page, statusFilter]);
 
   // Handle returning from Safepay Checkout redirect
   useEffect(() => {
@@ -107,46 +137,6 @@ export default function RequestsPage() {
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, []);
-
-  const fetchCounts = async () => {
-    try {
-      const res = await getRequestCounts();
-      if (res.success && res.data) {
-        setCounts(res.data);
-      }
-    } catch (e) {
-      // quiet
-    }
-  };
-
-  useEffect(() => {
-    fetchCounts();
-  }, [activeTab]);
-
-  const fetchRequests = async (tab, targetPage = 1, status = '') => {
-    setLoading(true);
-    try {
-      if (tab === 'assisted') {
-        const res = await getMyAssistedInquiries({ page: targetPage });
-        setRequests(res.data || []);
-        setMeta(res.meta || null);
-      } else {
-        const params = { page: targetPage };
-        if (status) params.status = status;
-
-        const res = tab === 'received'
-          ? await getReceivedRequests(params)
-          : await getSentRequests(params);
-
-        setRequests(res.data || []);
-        setMeta(res.meta || null);
-      }
-    } catch (err) {
-      console.error('Failed to load requests:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleAccept = async () => {
     if (!selectedRequest) return;

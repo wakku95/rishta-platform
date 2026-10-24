@@ -1,8 +1,10 @@
 import React, { useState, useEffect, useCallback, useContext } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Filter, RotateCcw, Search, SlidersHorizontal, Users, Sparkles, EyeOff, X } from 'lucide-react';
 import { searchProfiles, hideProfile, unhideProfile, getHiddenProfiles } from '../../api/discovery';
 import { getProfileOptions, getProfile } from '../../api/profile';
+import { searchAssistedListings } from '../../api/listings';
 import { AuthContext } from '../../contexts/AuthContext';
 import Card from '../../components/ui/Card';
 import Select from '../../components/ui/Select';
@@ -45,23 +47,10 @@ const parseFiltersFromSearchParams = (searchParams) => {
 };
 
 export default function SearchProfilesPage() {
+  const queryClient = useQueryClient();
   const [searchParams, setSearchParams] = useSearchParams();
   const [filters, setFilters] = useState(() => parseFiltersFromSearchParams(searchParams));
   const [activeFilters, setActiveFilters] = useState(() => parseFiltersFromSearchParams(searchParams));
-  const [options, setOptions] = useState({
-    genders: [],
-    religions: [],
-    sects: [],
-    cities: [],
-    educations: [],
-    professions: [],
-    marital_statuses: [],
-  });
-  const [profiles, setProfiles] = useState([]);
-  const [meta, setMeta] = useState({ current_page: 1, last_page: 1, total: 0, per_page: 12 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [validationErrors, setValidationErrors] = useState({});
   const [filterPanelOpen, setFilterPanelOpen] = useState(false);
   const [undoToast, setUndoToast] = useState(null);
   const [hiddenModalOpen, setHiddenModalOpen] = useState(false);
@@ -70,18 +59,96 @@ export default function SearchProfilesPage() {
 
   // Registered User Auto Match state
   const { user } = useContext(AuthContext);
-  const [userProfile, setUserProfile] = useState(null);
   const [isAutoMatchActive, setIsAutoMatchActive] = useState(() => searchParams.get('auto_match') === '1');
 
-  useEffect(() => {
-    if (user) {
-      getProfile().then(res => {
-        if (res.data) setUserProfile(res.data);
-      }).catch(() => {});
-    } else {
-      setUserProfile(null);
-    }
-  }, [user]);
+  // TanStack Query for Canonical Options (Cached for entire session)
+  const { data: profileOptionsData } = useQuery({
+    queryKey: ['profileOptions'],
+    queryFn: async () => {
+      const res = await getProfileOptions();
+      return res.data || null;
+    },
+    staleTime: Infinity,
+  });
+
+  const options = profileOptionsData || {
+    genders: [],
+    religions: [],
+    sects: [],
+    cities: [],
+    educations: [],
+    professions: [],
+    marital_statuses: [],
+  };
+
+  // TanStack Query for User Profile (Shares cache with ProfilePage)
+  const { data: userProfileData } = useQuery({
+    queryKey: ['myProfile'],
+    queryFn: async () => {
+      try {
+        const res = await getProfile();
+        return res.data;
+      } catch {
+        return null;
+      }
+    },
+    enabled: !!user,
+  });
+
+  const userProfile = userProfileData || null;
+
+  // TanStack Query for Discovery Candidate Feed
+  const {
+    data: discoveryData,
+    isLoading: loading,
+    error: queryErrorObj,
+  } = useQuery({
+    queryKey: ['discoveryProfiles', activeFilters],
+    queryFn: async () => {
+      const cleanParams = Object.entries(activeFilters).reduce((acc, [key, val]) => {
+        if (val !== '' && val !== null && val !== undefined) {
+          acc[key] = val;
+        }
+        return acc;
+      }, {});
+
+      const [resProfiles, resListings] = await Promise.all([
+        searchProfiles(cleanParams),
+        searchAssistedListings(cleanParams).catch(() => ({ data: [] })),
+      ]);
+
+      const regularData = resProfiles.data || [];
+      const listingsWithTag = (resListings?.data || []).map((l) => ({ ...l, is_assisted_listing: true }));
+      const combined = [...regularData, ...listingsWithTag];
+
+      const regularTotal = resProfiles.meta?.total ?? regularData.length;
+      const assistedTotal = resListings?.meta?.total ?? listingsWithTag.length;
+      const combinedTotal = regularTotal + assistedTotal;
+
+      return {
+        profiles: combined,
+        meta: {
+          current_page: resProfiles.meta?.current_page || 1,
+          last_page: resProfiles.meta?.last_page || 1,
+          per_page: resProfiles.meta?.per_page || 12,
+          total: combinedTotal,
+        },
+      };
+    },
+  });
+
+  const profiles = discoveryData?.profiles || [];
+  const meta = discoveryData?.meta || { current_page: 1, last_page: 1, total: 0, per_page: 12 };
+
+  const error = queryErrorObj
+    ? (queryErrorObj.response?.status === 403
+        ? (queryErrorObj.response.data?.message || 'Access restricted. Please verify your email.')
+        : (queryErrorObj.response?.data?.message || 'Unable to load candidate profiles.'))
+    : null;
+
+  const validationErrors = queryErrorObj?.response?.status === 422
+    ? (queryErrorObj.response.data.errors || {})
+    : {};
 
   const handleApplyAutoMatch = () => {
     if (!userProfile?.preferences) return;
@@ -115,87 +182,12 @@ export default function SearchProfilesPage() {
     setSearchParams(params);
   };
 
-  // Load canonical options once
-  useEffect(() => {
-    const fetchOptions = async () => {
-      try {
-        const res = await getProfileOptions();
-        if (res.data) {
-          setOptions(res.data);
-        }
-      } catch (err) {
-        // Silently use defaults if options endpoint has issues
-        console.warn('Could not fetch canonical options, using defaults.', err);
-      }
-    };
-    fetchOptions();
-  }, []);
-
-  // Fetch search results whenever activeFilters change
-  const fetchProfiles = useCallback(async (searchParams) => {
-    setLoading(true);
-    setError(null);
-    setValidationErrors({});
-
-    try {
-      // Filter out empty string parameters before sending
-      const cleanParams = Object.entries(searchParams).reduce((acc, [key, val]) => {
-        if (val !== '' && val !== null && val !== undefined) {
-          acc[key] = val;
-        }
-        return acc;
-      }, {});
-
-      // Fetch normal profiles and assisted listings in parallel
-      const [resProfiles, resListings] = await Promise.all([
-        searchProfiles(cleanParams),
-        import('../../api/listings').then(m => m.searchAssistedListings(cleanParams)).catch(() => ({ data: [] }))
-      ]);
-
-      if (resProfiles.data) {
-        // Tag listings so we can use a different card component
-        const listingsWithTag = (resListings?.data || []).map(l => ({ ...l, is_assisted_listing: true }));
-        
-        // Merge - we'll just append them to the end of the normal results for this page
-        setProfiles([...resProfiles.data, ...listingsWithTag]);
-        
-        const regularTotal = resProfiles.meta?.total ?? resProfiles.data.length;
-        const assistedTotal = resListings?.meta?.total ?? listingsWithTag.length;
-        const combinedTotal = regularTotal + assistedTotal;
-
-        // Use normal profile pagination for page controls, but display combined total count
-        setMeta({
-          current_page: resProfiles.meta?.current_page || 1,
-          last_page: resProfiles.meta?.last_page || 1,
-          per_page: resProfiles.meta?.per_page || 12,
-          total: combinedTotal,
-        });
-      }
-    } catch (err) {
-      if (err.response?.status === 422) {
-        setValidationErrors(err.response.data.errors || {});
-        setError('Please check the filter parameters and correct any invalid values.');
-      } else if (err.response?.status === 403) {
-        setError(err.response.data.message || 'Access restricted. Please verify your email.');
-      } else {
-        setError('Unable to load candidate profiles. Please check your connection and try again.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   // Synchronize filters whenever URL search parameters change (e.g. from Home page or browser back/forward)
   useEffect(() => {
     const urlFilters = parseFiltersFromSearchParams(searchParams);
     setFilters(urlFilters);
     setActiveFilters(urlFilters);
   }, [searchParams]);
-
-  // Fetch search results whenever activeFilters change
-  useEffect(() => {
-    fetchProfiles(activeFilters);
-  }, [activeFilters, fetchProfiles]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -225,7 +217,7 @@ export default function SearchProfilesPage() {
     });
 
     if (params.toString() === searchParams.toString()) {
-      fetchProfiles(nextFilters);
+      queryClient.invalidateQueries({ queryKey: ['discoveryProfiles', nextFilters] });
     } else {
       setSearchParams(params);
     }
@@ -237,12 +229,10 @@ export default function SearchProfilesPage() {
     setFilters(INITIAL_FILTERS);
     setActiveFilters(INITIAL_FILTERS);
     setIsAutoMatchActive(false);
-    setValidationErrors({});
-    setError(null);
     if (searchParams.toString() !== '') {
       setSearchParams({});
     } else {
-      fetchProfiles(INITIAL_FILTERS);
+      queryClient.invalidateQueries({ queryKey: ['discoveryProfiles', INITIAL_FILTERS] });
     }
   };
 
@@ -260,7 +250,13 @@ export default function SearchProfilesPage() {
   const handleHideProfile = async (profileCode, candidateObj) => {
     try {
       await hideProfile(profileCode);
-      setProfiles((prev) => prev.filter((p) => (p.profile_code || p.listing_code) !== profileCode));
+      queryClient.setQueryData(['discoveryProfiles', activeFilters], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          profiles: (old.profiles || []).filter((p) => (p.profile_code || p.listing_code) !== profileCode),
+        };
+      });
 
       if (undoToast?.timerId) {
         clearTimeout(undoToast.timerId);
@@ -288,9 +284,15 @@ export default function SearchProfilesPage() {
     try {
       await unhideProfile(code);
       if (item) {
-        setProfiles((prev) => [item, ...prev]);
+        queryClient.setQueryData(['discoveryProfiles', activeFilters], (old) => {
+          if (!old) return old;
+          return {
+            ...old,
+            profiles: [item, ...(old.profiles || [])],
+          };
+        });
       } else {
-        fetchProfiles(activeFilters);
+        queryClient.invalidateQueries({ queryKey: ['discoveryProfiles', activeFilters] });
       }
       setUndoToast(null);
     } catch (err) {
@@ -315,7 +317,7 @@ export default function SearchProfilesPage() {
     try {
       await unhideProfile(code);
       setHiddenList((prev) => prev.filter((item) => item.code !== code));
-      fetchProfiles(activeFilters);
+      queryClient.invalidateQueries({ queryKey: ['discoveryProfiles'] });
     } catch (err) {
       console.error('Failed to unhide profile:', err);
     }
