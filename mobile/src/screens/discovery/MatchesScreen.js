@@ -23,7 +23,7 @@ import HiddenProfilesModal from '../../components/discovery/HiddenProfilesModal'
 import { profilesApi } from '../../api/profiles';
 import { Ionicons } from '@expo/vector-icons';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function MatchesScreen({ navigation }) {
   const { authenticated } = useAuth();
