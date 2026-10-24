@@ -1,24 +1,103 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useAuth } from '../../contexts/AuthContext';
 import { Colors } from '../../constants/colors';
 import { profilesApi } from '../../api/profiles';
+import { authApi } from '../../api/auth';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function OnboardingBanner() {
   const navigation = useNavigation();
-  const { authenticated, emailVerified, hasProfile, hasPreferences, profileStatus, refreshUser } = useAuth();
+  const {
+    authenticated,
+    emailVerified,
+    hasProfile,
+    hasPreferences,
+    profileStatus,
+    refreshUser,
+    resendVerification,
+  } = useAuth();
+
+  const [isCheckingStatus, setIsCheckingStatus] = useState(false);
+  const [isResending, setIsResending] = useState(false);
 
   if (!authenticated) return null;
 
   // If profile is active, onboarding is complete — hide banner
   if (profileStatus === 'active') return null;
 
+  const handleResend = async () => {
+    if (isResending) return;
+    setIsResending(true);
+    try {
+      if (resendVerification) {
+        await resendVerification();
+      } else {
+        await authApi.resendEmailVerification();
+      }
+      Alert.alert(
+        'Verification Email Sent / تصدیقی ای میل بھیج دی گئی',
+        'A fresh verification link has been sent to your email address. Please check your inbox and spam folder.\n\nنیا تصدیقی لنک آپ کے ای میل پر بھیج دیا گیا ہے۔ اپنا ان باکس اور سپیم فولڈر چیک کریں۔'
+      );
+    } catch (err) {
+      if (err.response?.status === 429) {
+        Alert.alert(
+          'Please Wait / انتظار فرمائیں',
+          'Too many requests. Please wait a few minutes before requesting another verification email.\n\nسیکیورٹی وجوہات کی بنا پر چند منٹ بعد دوبارہ کوشش کریں۔'
+        );
+      } else if (err.response?.status === 400 && err.response?.data?.message?.includes('already verified')) {
+        await refreshUser();
+        Alert.alert(
+          'Email Verified! / ای میل تصدیق شدہ',
+          'Your email is already verified. You can now complete your matrimonial profile.'
+        );
+      } else {
+        Alert.alert(
+          'Notice / نوٹس',
+          err.response?.data?.message || 'Could not send verification email. Please check your connection and try again.'
+        );
+      }
+    } finally {
+      setIsResending(false);
+    }
+  };
+
+  const handleCheckStatus = async () => {
+    if (isCheckingStatus) return;
+    setIsCheckingStatus(true);
+    try {
+      const u = await refreshUser();
+      if (u?.email_verified) {
+        Alert.alert(
+          'Email Verified! / ای میل تصدیق شدہ',
+          'Your email has been verified. You can now complete your matrimonial profile.\n\nآپ کا ای میل تصدیق ہوچکا ہے۔ اب آپ اپنا رشتہ پروفائل مکمل کر سکتے ہیں۔'
+        );
+      } else {
+        Alert.alert(
+          'Verification Required / تصدیق درکار ہے',
+          'We sent a verification link to your email address. Please check your email inbox.\n\nاگر آپ کو ای میل موصول نہیں ہوئی تو "Resend Email" پر ٹیپ کریں۔',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'Resend Email / دوبارہ بھیجیں',
+              onPress: handleResend,
+            },
+          ]
+        );
+      }
+    } catch (e) {
+      Alert.alert('Notice', 'Unable to check verification status right now.');
+    } finally {
+      setIsCheckingStatus(false);
+    }
+  };
+
   let config = null;
 
   if (!emailVerified) {
     config = {
+      isEmailStep: true,
       step: 'Step 1 of 3: Email Verification',
       titleEng: 'Verify your email to continue.',
       titleUrdu: 'اپنا ای میل تصدیق کریں تاکہ آپ آگے بڑھ سکیں۔',
@@ -26,18 +105,6 @@ export default function OnboardingBanner() {
       descUrdu: 'براہ کرم تصدیقی لنک کے لیے اپنا ان باکس چیک کریں۔',
       icon: 'mail-outline',
       iconColor: '#F59E0B',
-      buttonText: 'Check Status',
-      onPress: async () => {
-        const u = await refreshUser();
-        if (u?.email_verified) {
-          Alert.alert('Email Verified! / ای میل تصدیق شدہ', 'Your email has been verified. You can now complete your matrimonial profile.');
-        } else {
-          Alert.alert(
-            'Verification Required / تصدیق درکار ہے',
-            'We sent a verification link to your email address. Please click the link in your email and tap Check Status here.'
-          );
-        }
-      },
       bgColor: 'rgba(245, 158, 11, 0.12)',
       borderColor: 'rgba(245, 158, 11, 0.35)',
       badgeBg: 'rgba(245, 158, 11, 0.2)',
@@ -122,14 +189,50 @@ export default function OnboardingBanner() {
         <Text style={styles.descUrdu} dir="rtl">{config.descUrdu}</Text>
       </View>
 
-      <TouchableOpacity
-        activeOpacity={0.8}
-        style={[styles.actionBtn, { borderColor: config.borderColor }]}
-        onPress={config.onPress}
-      >
-        <Text style={styles.actionBtnText}>{config.buttonText}</Text>
-        <Ionicons name="arrow-forward" size={14} color={Colors.white} />
-      </TouchableOpacity>
+      {config.isEmailStep ? (
+        <View style={styles.btnRow}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[styles.actionBtnHalf, { borderColor: config.borderColor }]}
+            onPress={handleCheckStatus}
+            disabled={isCheckingStatus || isResending}
+          >
+            {isCheckingStatus ? (
+              <ActivityIndicator size="small" color={Colors.white} />
+            ) : (
+              <>
+                <Ionicons name="refresh-outline" size={14} color={Colors.white} />
+                <Text style={styles.actionBtnText}>Check Status</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[styles.actionBtnHalf, styles.resendBtn]}
+            onPress={handleResend}
+            disabled={isCheckingStatus || isResending}
+          >
+            {isResending ? (
+              <ActivityIndicator size="small" color="#FBBF24" />
+            ) : (
+              <>
+                <Ionicons name="mail-unread-outline" size={14} color="#FBBF24" />
+                <Text style={[styles.actionBtnText, { color: '#FBBF24' }]}>Resend Email</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
+      ) : (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={[styles.actionBtn, { borderColor: config.borderColor }]}
+          onPress={config.onPress}
+        >
+          <Text style={styles.actionBtnText}>{config.buttonText}</Text>
+          <Ionicons name="arrow-forward" size={14} color={Colors.white} />
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -186,6 +289,28 @@ const styles = StyleSheet.create({
     color: Colors.slate[400],
     textAlign: 'right',
     lineHeight: 16,
+  },
+  btnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 4,
+  },
+  actionBtnHalf: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(255, 255, 255, 0.12)',
+    borderWidth: 1,
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 6,
+  },
+  resendBtn: {
+    backgroundColor: 'rgba(245, 158, 11, 0.18)',
+    borderColor: 'rgba(245, 158, 11, 0.45)',
   },
   actionBtn: {
     flexDirection: 'row',

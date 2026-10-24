@@ -149,6 +149,10 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const resendVerification = async () => {
+    return await authApi.resendEmailVerification();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -165,6 +169,7 @@ export const AuthProvider = ({ children }) => {
         register,
         logout,
         refreshUser,
+        resendVerification,
       }}
     >
       {children}

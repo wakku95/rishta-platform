@@ -29,7 +29,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function CandidateDetailScreen({ route, navigation }) {
   const { profileCode } = route.params;
-  const { authenticated, isIdentityVerified, refreshUser, emailVerified, hasProfile, profileStatus } = useAuth();
+  const { authenticated, isIdentityVerified, refreshUser, emailVerified, hasProfile, profileStatus, resendVerification } = useAuth();
   const [candidate, setCandidate] = useState(null);
   const [activeRequest, setActiveRequest] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -209,7 +209,30 @@ export default function CandidateDetailScreen({ route, navigation }) {
     if (!emailVerified) {
       Alert.alert(
         'Email Verification Required / ای میل تصدیق درکار ہے',
-        'Please verify your email address before sending a formal Rishta proposal.\n\nرشتہ کی درخواست بھیجنے سے پہلے اپنا ای میل تصدیق کریں۔'
+        'Please verify your email address before sending a formal Rishta proposal.\n\nرشتہ کی درخواست بھیجنے سے پہلے اپنا ای میل تصدیق کریں۔',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Resend Email / دوبارہ بھیجیں',
+            onPress: async () => {
+              try {
+                if (resendVerification) {
+                  await resendVerification();
+                }
+                Alert.alert(
+                  'Verification Email Sent / تصدیقی ای میل بھیج دی گئی',
+                  'A fresh verification link has been sent to your email address. Please check your inbox and spam folder.\n\nنیا تصدیقی لنک آپ کے ای میل پر بھیج دیا گیا ہے۔'
+                );
+              } catch (err) {
+                if (err.response?.status === 429) {
+                  Alert.alert('Please Wait / انتظار فرمائیں', 'Too many requests. Please wait a few minutes before requesting another verification email.');
+                } else {
+                  Alert.alert('Notice', err.response?.data?.message || 'Could not send verification email.');
+                }
+              }
+            },
+          },
+        ]
       );
       return;
     }
