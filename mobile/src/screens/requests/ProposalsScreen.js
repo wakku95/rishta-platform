@@ -16,8 +16,10 @@ import {
   TextInput,
   KeyboardAvoidingView,
   Linking,
+  Image,
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
+import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../constants/colors';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
@@ -62,6 +64,17 @@ export default function ProposalsScreen({ navigation }) {
   const [contactTarget, setContactTarget] = useState(null);
   const [contactData, setContactData] = useState(null);
   const [contactLoading, setContactLoading] = useState(false);
+  const [unlockStatus, setUnlockStatus] = useState(null);
+  const [manualTid, setManualTid] = useState('');
+  const [receiptAsset, setReceiptAsset] = useState(null);
+  const [submittingProof, setSubmittingProof] = useState(false);
+  const [copiedTill, setCopiedTill] = useState(false);
+  const [copiedIban, setCopiedIban] = useState(false);
+  const [unlockPhone, setUnlockPhone] = useState('');
+  const [unlockOtp, setUnlockOtp] = useState('');
+  const [otpStep, setOtpStep] = useState('input_phone');
+  const [sendingOtp, setSendingOtp] = useState(false);
+  const [verifyingOtp, setVerifyingOtp] = useState(false);
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -306,27 +319,203 @@ export default function ProposalsScreen({ navigation }) {
     }
   };
 
-  // 6. Contact Unlock & Details Modal Handlers
+  // 6. Photo Verification Request Handler
+  const handleRequestPhoto = (proposal) => {
+    Alert.alert(
+      'Request Candidate Photo / تصویر کی درخواست',
+      'Are you sure you want to request candidate to share their private photo for mutual evaluation?',
+      [
+        { text: 'Cancel / منسوخ', style: 'cancel' },
+        {
+          text: 'Request Photo / درخواست بھیجیں',
+          onPress: async () => {
+            try {
+              const res = await requestsApi.requestVerification(proposal.request_code || proposal.id, 'photo');
+              Alert.alert('Requested / درخواست بھیج دی گئی', res?.message || 'Photo request sent to candidate.');
+              fetchRequests(typeTab, statusFilter);
+            } catch (err) {
+              Alert.alert('Error', err.response?.data?.message || 'Failed to send photo request.');
+            }
+          },
+        },
+      ]
+    );
+  };
+
+  // 7. Contact Unlock & Details Modal Handlers
   const handleOpenContactModal = async (proposal) => {
     setContactTarget(proposal);
     setContactModalOpen(true);
+    setManualTid('');
+    setReceiptAsset(null);
+    setOtpStep('input_phone');
+    setUnlockOtp('');
+    await loadUnlockData(proposal);
+  };
+
+  const loadUnlockData = async (proposal) => {
     setContactLoading(true);
     setContactData(null);
+    setUnlockStatus(null);
+    const reqCode = proposal.request_code || proposal.id;
     try {
-      const res = await requestsApi.getUnlockedContact(proposal.request_code || proposal.id);
-      if (res?.success && res?.data) {
-        setContactData(res.data);
+      // 1. Check if already unlocked
+      try {
+        const contactRes = await requestsApi.getUnlockedContact(reqCode);
+        if (contactRes?.success && contactRes?.data) {
+          setContactData(contactRes.data);
+          setContactLoading(false);
+          return;
+        }
+      } catch (e) {
+        // Not unlocked yet
+      }
+
+      // 2. Load unlock status
+      const statusRes = await requestsApi.getUnlockStatus(reqCode);
+      const data = statusRes?.data || null;
+      setUnlockStatus(data);
+      if (data?.is_unlocked) {
+        const contactRes = await requestsApi.getUnlockedContact(reqCode);
+        setContactData(contactRes?.data || null);
+      } else if (data?.my_phone) {
+        setUnlockPhone(data.my_phone);
       }
     } catch (err) {
-      // If contact not unlocked yet, get unlock status
-      try {
-        const statusRes = await requestsApi.getUnlockStatus(proposal.request_code || proposal.id);
-        setContactData(statusRes?.data || null);
-      } catch (e) {
-        // quiet
-      }
+      console.log('Unlock status error:', err.response?.data || err.message);
     } finally {
       setContactLoading(false);
+    }
+  };
+
+  const handleCopyText = async (text, type) => {
+    try {
+      await Clipboard.setStringAsync(text);
+      if (type === 'till') {
+        setCopiedTill(true);
+        setTimeout(() => setCopiedTill(false), 2000);
+      } else if (type === 'iban') {
+        setCopiedIban(true);
+        setTimeout(() => setCopiedIban(false), 2000);
+      }
+      Alert.alert('Copied / کاپی ہو گیا', `${text} copied to clipboard.`);
+    } catch (e) {
+      // quiet
+    }
+  };
+
+  const handlePickReceipt = async () => {
+    Alert.alert(
+      'Select Receipt / رسید منتخب کریں',
+      'Choose image source for payment screenshot:',
+      [
+        {
+          text: 'Gallery / گیلری',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Media library permission is required to select receipts.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              quality: 0.8,
+              allowsEditing: true,
+            });
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+              setReceiptAsset(result.assets[0]);
+            }
+          },
+        },
+        {
+          text: 'Camera / کیمرہ',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Camera permission is required to capture receipts.');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              quality: 0.8,
+              allowsEditing: true,
+            });
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+              setReceiptAsset(result.assets[0]);
+            }
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleSubmitPaymentProof = async () => {
+    if (!contactTarget) return;
+    const cleanTid = manualTid.trim();
+    if (cleanTid.length < 6) {
+      Alert.alert('Required', 'Please enter a valid Transaction ID / Reference (minimum 6 characters).');
+      return;
+    }
+    if (!receiptAsset) {
+      Alert.alert('Required', 'Please select or capture your payment screenshot/receipt.');
+      return;
+    }
+
+    setSubmittingProof(true);
+    try {
+      const formData = new FormData();
+      formData.append('transaction_reference', cleanTid);
+      formData.append('receipt', {
+        uri: receiptAsset.uri,
+        name: receiptAsset.fileName || 'receipt.jpg',
+        type: receiptAsset.mimeType || 'image/jpeg',
+      });
+
+      await requestsApi.submitManualPaymentProof(contactTarget.request_code || contactTarget.id, formData);
+      Alert.alert(
+        'Proof Submitted / رسید جمع ہو گئی',
+        'Your payment proof has been submitted for admin verification. Once verified, contact details will be unlocked.'
+      );
+      setReceiptAsset(null);
+      setManualTid('');
+      loadUnlockData(contactTarget);
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to submit payment proof.');
+    } finally {
+      setSubmittingProof(false);
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (!unlockPhone.trim()) {
+      Alert.alert('Required', 'Please enter your mobile phone number.');
+      return;
+    }
+    setSendingOtp(true);
+    try {
+      const res = await requestsApi.sendUnlockOtp(contactTarget.request_code || contactTarget.id, unlockPhone.trim());
+      setOtpStep('input_otp');
+      Alert.alert('OTP Sent', res.message || 'A 6-digit verification code has been sent to your mobile.');
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to send OTP.');
+    } finally {
+      setSendingOtp(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (!unlockOtp.trim() || unlockOtp.trim().length < 4) {
+      Alert.alert('Required', 'Please enter the verification code.');
+      return;
+    }
+    setVerifyingOtp(true);
+    try {
+      await requestsApi.verifyUnlockOtp(contactTarget.request_code || contactTarget.id, unlockOtp.trim());
+      Alert.alert('Verified! / تصدیق مکمل', 'Mobile number verified successfully!');
+      loadUnlockData(contactTarget);
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to verify OTP code.');
+    } finally {
+      setVerifyingOtp(false);
     }
   };
 
@@ -834,35 +1023,90 @@ export default function ProposalsScreen({ navigation }) {
                       <View style={styles.reviewNoticeBox}>
                         <Ionicons name="time-outline" size={15} color={Colors.gold[400]} />
                         <Text style={styles.reviewNoticeText}>
-                          {isSender
+                          {item.sender_answers || item.has_sender_answers || item.sender_answers_pending_moderation
+                            ? isSender
+                              ? 'Your answers to candidate\'s questions have been submitted and are under admin review.'
+                              : 'Candidate has submitted answers to your questions! They are currently under admin review.'
+                            : isSender
                             ? 'Candidate has responded! Their answers are under admin review.'
                             : 'Your response is awaiting admin approval before delivery.'}
                         </Text>
                       </View>
-                    ) : isSender && item.receiver_questions && !item.sender_answers ? (
-                      <View style={{ marginTop: 6 }}>
-                        <Button
-                          title="Answer Candidate's Questions / جواب دیں"
-                          variant="primary"
-                          size="sm"
-                          onPress={() => handleOpenReplyModal(item)}
-                          style={{ backgroundColor: Colors.cyan?.[600] || '#0891b2' }}
-                        />
-                      </View>
-                    ) : (
-                      <View style={styles.acceptedActionWrap}>
-                        <View style={styles.unlockedBox}>
-                          <Ionicons name="checkmark-circle" size={16} color={Colors.emerald[400]} />
-                          <Text style={styles.unlockedText}>
-                            Proposal Accepted! Both parties are mutually interested.
+                    ) : item.receiver_questions && !item.sender_answers ? (
+                      isSender ? (
+                        <View style={{ marginTop: 6 }}>
+                          <Button
+                            title="Answer Candidate's Questions / جواب دیں"
+                            variant="primary"
+                            size="sm"
+                            onPress={() => handleOpenReplyModal(item)}
+                            style={{ backgroundColor: Colors.cyan?.[600] || '#0891b2' }}
+                          />
+                        </View>
+                      ) : (
+                        <View style={styles.waitingNoticeBox}>
+                          <Ionicons name="hourglass-outline" size={15} color={Colors.gold[400]} />
+                          <Text style={styles.waitingNoticeText}>
+                            Awaiting candidate's answers to your questions / امیدوار کے جوابات کا انتظار ہے
                           </Text>
                         </View>
+                      )
+                    ) : (
+                      /* Phase 4.5: Mutual Q&A Completed & Mutual Trust Gate */
+                      <View style={styles.mutualTrustGate}>
+                        <View style={styles.mutualStageHeader}>
+                          <Ionicons name="sparkles" size={16} color={Colors.magenta[400]} />
+                          <Text style={styles.mutualStageTitle}>
+                            Stage: Mutual Q&A Completed / سوال و جواب کا مرحلہ مکمل
+                          </Text>
+                        </View>
+                        <Text style={styles.mutualStageSubtitle}>
+                          Carefully evaluate candidate answers. You can request candidate photo and unlock verified contact details.
+                        </Text>
+
+                        <View style={styles.mutualActionsRow}>
+                          {/* Photo Exchange Action */}
+                          {item.candidate_photo_shared ? (
+                            <View style={styles.photoSharedBadge}>
+                              <Ionicons name="image" size={14} color={Colors.cyan[300]} />
+                              <Text style={styles.photoSharedBadgeText}>Photo Shared ✅</Text>
+                            </View>
+                          ) : item.photo_requested_by_me ? (
+                            <View style={styles.photoPendingBadge}>
+                              <Ionicons name="time-outline" size={14} color={Colors.gold[400]} />
+                              <Text style={styles.photoPendingBadgeText}>Photo Requested</Text>
+                            </View>
+                          ) : (
+                            <TouchableOpacity
+                              style={styles.photoReqBtn}
+                              onPress={() => handleRequestPhoto(item)}
+                            >
+                              <Ionicons name="camera-outline" size={14} color={Colors.cyan[300]} />
+                              <Text style={styles.photoReqBtnText}>Request Photo</Text>
+                            </TouchableOpacity>
+                          )}
+
+                          {/* CNIC Verified Status Badge */}
+                          {item.candidate_nic_shared || item.candidate_is_identity_verified ? (
+                            <View style={styles.cnicVerifiedBadge}>
+                              <Ionicons name="shield-checkmark" size={14} color={Colors.emerald[400]} />
+                              <Text style={styles.cnicVerifiedBadgeText}>CNIC Verified ✅</Text>
+                            </View>
+                          ) : (
+                            <View style={styles.cnicPendingBadge}>
+                              <Ionicons name="shield-outline" size={14} color={Colors.slate[400]} />
+                              <Text style={styles.cnicPendingBadgeText}>Identity Pending</Text>
+                            </View>
+                          )}
+                        </View>
+
+                        {/* Unlock Contact Button */}
                         <Button
-                          title="View Verified Contact / رابطہ دیکھیں"
+                          title="Satisfied? Unlock Contact / رابطہ انلاک کریں"
                           variant="primary"
                           size="sm"
                           onPress={() => handleOpenContactModal(item)}
-                          style={{ marginTop: 8 }}
+                          style={{ marginTop: 10, backgroundColor: Colors.magenta[600] }}
                         />
                       </View>
                     )}
@@ -1230,8 +1474,8 @@ export default function ProposalsScreen({ navigation }) {
               <Ionicons name="close" size={24} color={Colors.white} />
             </TouchableOpacity>
             <View style={{ flex: 1, marginLeft: 10 }}>
-              <Text style={styles.modalTitle}>Verified Contact Details</Text>
-              <Text style={styles.modalUrduTitle}>تصدیق شدہ خاندانی رابطہ نمبر</Text>
+              <Text style={styles.modalTitle}>Mutual Contact Unlock</Text>
+              <Text style={styles.modalUrduTitle}>خاندانی رابطہ اور تصدیقی مراحل</Text>
             </View>
           </View>
 
@@ -1240,61 +1484,304 @@ export default function ProposalsScreen({ navigation }) {
               <View style={styles.centerContainer}>
                 <ActivityIndicator size="large" color={Colors.magenta[500]} />
                 <Text style={{ color: Colors.slate[400], marginTop: 12, fontSize: 13 }}>
-                  Fetching contact details...
+                  Checking contact unlock status...
                 </Text>
               </View>
-            ) : contactData?.contact || contactData?.phone ? (
+            ) : contactData?.phone || contactData?.contact?.phone ? (
               <View style={styles.contactDetailsCard}>
                 <View style={styles.contactHeaderRow}>
-                  <Ionicons name="call" size={20} color={Colors.emerald[400]} />
-                  <Text style={styles.contactTitle}>Direct Family Contact Information</Text>
+                  <Ionicons name="checkmark-circle" size={24} color={Colors.emerald[400]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.contactTitle}>Direct Family Contact Information</Text>
+                    <Text style={{ fontSize: 11, color: Colors.emerald[300], marginTop: 1 }}>
+                      Verified via SMS OTP & Administration Audit
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.contactItemRow}>
+                  <Text style={styles.contactItemLabel}>Candidate / Family Name:</Text>
+                  <Text style={[styles.contactItemVal, { color: Colors.white }]}>
+                    {contactData.name || contactData.guardian_name || 'Candidate Family'}
+                  </Text>
                 </View>
 
                 <View style={styles.contactItemRow}>
                   <Text style={styles.contactItemLabel}>Phone Number / فون نمبر:</Text>
-                  <Text style={styles.contactItemVal}>{contactData.phone || contactData.contact?.phone || 'Provided via Matchmaker'}</Text>
+                  <Text style={styles.contactItemVal}>{contactData.phone || contactData.contact?.phone}</Text>
                 </View>
 
                 {(contactData.guardian_name || contactData.contact?.guardian_name) ? (
                   <View style={styles.contactItemRow}>
                     <Text style={styles.contactItemLabel}>Guardian / سرپرست:</Text>
-                    <Text style={styles.contactItemVal}>{contactData.guardian_name || contactData.contact?.guardian_name}</Text>
+                    <Text style={[styles.contactItemVal, { color: Colors.white }]}>
+                      {contactData.guardian_name || contactData.contact?.guardian_name}
+                    </Text>
                   </View>
                 ) : null}
 
                 {(contactData.email || contactData.contact?.email) ? (
                   <View style={styles.contactItemRow}>
                     <Text style={styles.contactItemLabel}>Email Address / ای میل:</Text>
-                    <Text style={styles.contactItemVal}>{contactData.email || contactData.contact?.email}</Text>
+                    <Text style={[styles.contactItemVal, { fontSize: 13, color: Colors.slate[200] }]}>
+                      {contactData.email || contactData.contact?.email}
+                    </Text>
                   </View>
                 ) : null}
 
                 <View style={styles.contactInstructionBox}>
                   <Ionicons name="shield-checkmark" size={16} color={Colors.emerald[400]} />
                   <Text style={styles.contactInstructionText}>
-                    This contact has been verified via SMS OTP and CNIC audit. Please reach out with mutual respect and Islamic etiquette.
+                    This contact has been verified via SMS OTP and CNIC audit. Please reach out directly with mutual respect and Islamic etiquette.
                   </Text>
                 </View>
 
+                {/* Call & WhatsApp Buttons */}
                 {contactData.phone ? (
-                  <Button
-                    title={`Call Candidate: ${contactData.phone}`}
-                    variant="primary"
-                    onPress={() => Linking.openURL(`tel:${contactData.phone}`)}
-                    style={{ marginTop: 12, backgroundColor: Colors.emerald[600] }}
-                  />
+                  <View style={{ flexDirection: 'row', gap: 10, marginTop: 10 }}>
+                    <Button
+                      title="Call Candidate"
+                      variant="primary"
+                      size="sm"
+                      onPress={() => Linking.openURL(`tel:${contactData.phone}`)}
+                      style={{ flex: 1, backgroundColor: Colors.emerald[600] }}
+                    />
+                    <Button
+                      title="WhatsApp"
+                      variant="primary"
+                      size="sm"
+                      onPress={() => {
+                        const cleanPhone = String(contactData.phone).replace(/[^0-9]/g, '');
+                        Linking.openURL(`https://wa.me/${cleanPhone}`);
+                      }}
+                      style={{ flex: 1, backgroundColor: '#25D366' }}
+                    />
+                  </View>
                 ) : null}
               </View>
-            ) : (
-              <View style={styles.contactLockedCard}>
-                <Ionicons name="lock-closed" size={36} color={Colors.gold[400]} style={{ alignSelf: 'center', marginBottom: 10 }} />
-                <Text style={styles.contactLockedTitle}>Mutual Contact Unlock</Text>
+            ) : unlockStatus?.pending_payment ? (
+              <View style={[styles.contactLockedCard, { borderColor: 'rgba(245, 158, 11, 0.4)' }]}>
+                <Ionicons name="time" size={36} color={Colors.gold[400]} style={{ alignSelf: 'center', marginBottom: 10 }} />
+                <Text style={styles.contactLockedTitle}>Payment Proof Submitted / رسید زیرِ جائزہ</Text>
                 <Text style={styles.contactLockedDesc}>
-                  Both candidate families have accepted this Rishta proposal! Contact details require mutual phone OTP verification to maintain verified safety.
+                  Your payment proof has been received and is currently pending admin verification.
+                  Payments are audited within a few hours during business hours.
                 </Text>
-                <Text style={[styles.contactLockedDesc, { marginTop: 8 }]}>
-                  Please complete the Contact Unlock steps in the web portal or verify your mobile number.
+
+                <View style={[styles.bankDetailsCard, { width: '100%', marginTop: 12 }]}>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Transaction ID / رسید نمبر:</Text>
+                    <Text style={styles.bankDetailVal}>{unlockStatus.pending_payment.transaction_reference}</Text>
+                  </View>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Amount / رقم:</Text>
+                    <Text style={[styles.bankDetailVal, { color: Colors.gold[400] }]}>
+                      Rs. {unlockStatus.pending_payment.amount ? Number(unlockStatus.pending_payment.amount).toFixed(0) : '2500'} PKR
+                    </Text>
+                  </View>
+                </View>
+
+                <Button
+                  title="Check Verification Status / اسٹیٹس ریفریش کریں"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => loadUnlockData(contactTarget)}
+                  style={{ marginTop: 14, width: '100%' }}
+                />
+              </View>
+            ) : unlockStatus?.is_paid && !unlockStatus?.my_verified ? (
+              <View style={styles.contactLockedCard}>
+                <Ionicons name="phone-portrait-outline" size={36} color={Colors.magenta[400]} style={{ alignSelf: 'center', marginBottom: 10 }} />
+                <Text style={[styles.contactLockedTitle, { color: Colors.white }]}>
+                  Verify Mobile Number / فون نمبر کی تصدیق
                 </Text>
+                <Text style={styles.contactLockedDesc}>
+                  Payment verified! To ensure safety and authenticity, please verify your mobile number via OTP.
+                </Text>
+
+                {otpStep === 'input_phone' ? (
+                  <View style={{ width: '100%', marginTop: 12 }}>
+                    <Text style={styles.fieldLabel}>Mobile Phone Number (03XX-XXXXXXX):</Text>
+                    <TextInput
+                      style={[styles.textArea, { minHeight: 44, marginTop: 6 }]}
+                      value={unlockPhone}
+                      onChangeText={setUnlockPhone}
+                      placeholder="03001234567"
+                      placeholderTextColor={Colors.slate[500]}
+                      keyboardType="phone-pad"
+                    />
+                    <Button
+                      title="Send OTP Code / کوڈ حاصل کریں"
+                      variant="primary"
+                      isLoading={sendingOtp}
+                      onPress={handleSendOtp}
+                      style={{ marginTop: 12, backgroundColor: Colors.magenta[600] }}
+                    />
+                  </View>
+                ) : (
+                  <View style={{ width: '100%', marginTop: 12 }}>
+                    <Text style={styles.fieldLabel}>Enter 6-Digit Verification Code:</Text>
+                    <TextInput
+                      style={[styles.textArea, { minHeight: 44, marginTop: 6, textAlign: 'center', fontSize: 18, letterSpacing: 4 }]}
+                      value={unlockOtp}
+                      onChangeText={setUnlockOtp}
+                      placeholder="XXXXXX"
+                      placeholderTextColor={Colors.slate[500]}
+                      keyboardType="number-pad"
+                      maxLength={6}
+                    />
+                    <Button
+                      title="Verify & Unlock / تصدیق کر کے رابطہ حاصل کریں"
+                      variant="primary"
+                      isLoading={verifyingOtp}
+                      onPress={handleVerifyOtp}
+                      style={{ marginTop: 12, backgroundColor: Colors.emerald[600] }}
+                    />
+                    <TouchableOpacity onPress={handleSendOtp} style={{ marginTop: 10, alignSelf: 'center' }}>
+                      <Text style={{ fontSize: 12, color: Colors.cyan[400], fontWeight: '600' }}>
+                        Resend Code / دوبارہ کوڈ بھیجیں
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+              </View>
+            ) : (!contactTarget?.is_sender && unlockStatus?.my_role !== 'sender') ? (
+              <View style={styles.contactLockedCard}>
+                <Ionicons name="hourglass-outline" size={36} color={Colors.cyan[400]} style={{ alignSelf: 'center', marginBottom: 10 }} />
+                <Text style={[styles.contactLockedTitle, { color: Colors.white }]}>
+                  Awaiting Sender's Payment / فیس کی ادائیگی کا انتظار
+                </Text>
+                <Text style={styles.contactLockedDesc}>
+                  The proposal sender is responsible for paying the contact unlock fee (Rs. 2,500 PKR).
+                </Text>
+                <View style={[styles.contactInstructionBox, { marginTop: 12, width: '100%' }]}>
+                  <Ionicons name="checkmark-circle" size={16} color={Colors.emerald[400]} />
+                  <Text style={styles.contactInstructionText}>
+                    No Fee For You: As the proposal receiver, you do not need to pay anything. Once sender pays and admin verifies, contact details will be unlocked for both families.
+                  </Text>
+                </View>
+                <Button
+                  title="Check Status / اسٹیٹس چیک کریں"
+                  variant="secondary"
+                  size="sm"
+                  onPress={() => loadUnlockData(contactTarget)}
+                  style={{ marginTop: 14, width: '100%' }}
+                />
+              </View>
+            ) : (
+              /* SENDER PAYMENT SUBMISSION FORM */
+              <View style={{ gap: 12 }}>
+                {unlockStatus?.rejected_payment && (
+                  <View style={[styles.revisionNoticeBox, { marginTop: 0 }]}>
+                    <Ionicons name="alert-circle" size={16} color={Colors.rose[400]} />
+                    <View style={{ flex: 1 }}>
+                      <Text style={[styles.revisionNoticeTitle, { color: Colors.rose[400] }]}>
+                        Previous Payment Proof Rejected:
+                      </Text>
+                      <Text style={styles.revisionNoticeText}>
+                        {unlockStatus.rejected_payment.admin_notes || 'Transaction reference could not be verified. Please submit valid proof.'}
+                      </Text>
+                    </View>
+                  </View>
+                )}
+
+                {/* Bank & Payment Particulars */}
+                <View style={styles.bankDetailsCard}>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Exact Amount / رقم:</Text>
+                    <Text style={[styles.bankDetailVal, { color: Colors.gold[400], fontSize: 14 }]}>
+                      Rs. 2500 PKR
+                    </Text>
+                  </View>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Account Title / نام:</Text>
+                    <Text style={styles.bankDetailVal}>muhammad shop</Text>
+                  </View>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Bank Name / بینک:</Text>
+                    <Text style={styles.bankDetailVal}>Mobilink Microfinance Bank (JazzCash)</Text>
+                  </View>
+
+                  {/* IBAN */}
+                  <View style={styles.bankDetailRow}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.bankDetailLabel}>IBAN (Any Bank Transfer):</Text>
+                      <Text style={[styles.bankDetailVal, { fontSize: 11, color: Colors.cyan[300] }]}>
+                        PK74JCMA1009921032404609
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.copyBtn, copiedIban && styles.copyBtnCopied]}
+                      onPress={() => handleCopyText('PK74JCMA1009921032404609', 'iban')}
+                    >
+                      <Ionicons name={copiedIban ? 'checkmark' : 'copy-outline'} size={12} color={copiedIban ? Colors.emerald[400] : Colors.slate[300]} />
+                      <Text style={[styles.copyBtnText, copiedIban && { color: Colors.emerald[400] }]}>
+                        {copiedIban ? 'Copied' : 'Copy'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Till ID */}
+                  <View style={styles.bankDetailRow}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.bankDetailLabel}>Till ID (JazzCash App):</Text>
+                      <Text style={[styles.bankDetailVal, { fontSize: 13, color: Colors.gold[400] }]}>
+                        984453113
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.copyBtn, copiedTill && styles.copyBtnCopied]}
+                      onPress={() => handleCopyText('984453113', 'till')}
+                    >
+                      <Ionicons name={copiedTill ? 'checkmark' : 'copy-outline'} size={12} color={copiedTill ? Colors.emerald[400] : Colors.slate[300]} />
+                      <Text style={[styles.copyBtnText, copiedTill && { color: Colors.emerald[400] }]}>
+                        {copiedTill ? 'Copied' : 'Copy'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  <Text style={{ fontSize: 10, color: Colors.slate[400], lineHeight: 14 }}>
+                    💡 Send Rs. 2500 from any app (JazzCash, Easypaisa, Nayapay, SadaPay, HBL, Meezan) to IBAN or Till ID above, then submit TID and screenshot below.
+                  </Text>
+                </View>
+
+                {/* Form: TID & Screenshot */}
+                <View style={{ gap: 8 }}>
+                  <Text style={styles.fieldLabel}>Transaction Reference / TID Number:</Text>
+                  <TextInput
+                    style={[styles.textArea, { minHeight: 44 }]}
+                    value={manualTid}
+                    onChangeText={setManualTid}
+                    placeholder="e.g. 0123456789"
+                    placeholderTextColor={Colors.slate[500]}
+                  />
+
+                  <Text style={[styles.fieldLabel, { marginTop: 4 }]}>Payment Screenshot / رسید کی تصویر:</Text>
+                  {receiptAsset ? (
+                    <View style={styles.receiptPreviewBox}>
+                      <Image source={{ uri: receiptAsset.uri }} style={styles.receiptPreviewImg} />
+                      <TouchableOpacity
+                        style={{ position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.6)', padding: 4, borderRadius: 12 }}
+                        onPress={() => setReceiptAsset(null)}
+                      >
+                        <Ionicons name="close" size={16} color={Colors.white} />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity style={styles.receiptSelectBtn} onPress={handlePickReceipt}>
+                      <Ionicons name="camera-outline" size={18} color={Colors.magenta[400]} />
+                      <Text style={styles.receiptSelectText}>Upload Screenshot / رسید منتخب کریں</Text>
+                    </TouchableOpacity>
+                  )}
+
+                  <Button
+                    title="Submit Payment Proof / رسید جمع کریں"
+                    variant="primary"
+                    isLoading={submittingProof}
+                    onPress={handleSubmitPaymentProof}
+                    style={{ marginTop: 10, backgroundColor: Colors.magenta[600] }}
+                  />
+                </View>
               </View>
             )}
 
@@ -1567,6 +2054,135 @@ const styles = StyleSheet.create({
     color: Colors.gold[400],
     lineHeight: 16,
     fontWeight: '600',
+  },
+  waitingNoticeBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    padding: 10,
+    borderRadius: 12,
+    backgroundColor: 'rgba(245, 158, 11, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.25)',
+    marginTop: 6,
+  },
+  waitingNoticeText: {
+    flex: 1,
+    fontSize: 11,
+    color: Colors.gold[400],
+    lineHeight: 16,
+    fontWeight: '600',
+  },
+  mutualTrustGate: {
+    marginTop: 8,
+    padding: 12,
+    backgroundColor: Colors.navy[900],
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: 'rgba(225, 29, 116, 0.35)',
+    gap: 6,
+  },
+  mutualStageHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  mutualStageTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  mutualStageSubtitle: {
+    fontSize: 11,
+    color: Colors.slate[400],
+    lineHeight: 15,
+  },
+  mutualActionsRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 6,
+  },
+  photoSharedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(6, 182, 212, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.4)',
+  },
+  photoSharedBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.cyan[300],
+  },
+  photoPendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+  },
+  photoPendingBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.gold[400],
+  },
+  photoReqBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: Colors.navy[800],
+    borderWidth: 1,
+    borderColor: Colors.cyan[500],
+  },
+  photoReqBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.cyan[300],
+  },
+  cnicVerifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.35)',
+  },
+  cnicVerifiedBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.emerald[400],
+  },
+  cnicPendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: Colors.navy[950],
+    borderWidth: 1,
+    borderColor: Colors.navy[750],
+  },
+  cnicPendingBadgeText: {
+    fontSize: 11,
+    fontWeight: '600',
+    color: Colors.slate[400],
   },
   acceptedActionWrap: {
     marginTop: 6,
@@ -1876,5 +2492,84 @@ const styles = StyleSheet.create({
     color: Colors.slate[300],
     textAlign: 'center',
     lineHeight: 18,
+  },
+  bankDetailsCard: {
+    backgroundColor: Colors.navy[950],
+    borderRadius: 14,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.navy[750],
+    gap: 10,
+    marginTop: 8,
+  },
+  bankDetailRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.navy[850],
+  },
+  bankDetailLabel: {
+    fontSize: 11,
+    color: Colors.slate[400],
+    fontWeight: '600',
+  },
+  bankDetailVal: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  copyBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    backgroundColor: Colors.navy[800],
+    borderWidth: 1,
+    borderColor: Colors.slate[600],
+  },
+  copyBtnCopied: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)',
+    borderColor: Colors.emerald[500],
+  },
+  copyBtnText: {
+    fontSize: 10,
+    fontWeight: '700',
+    color: Colors.slate[200],
+  },
+  receiptPreviewBox: {
+    height: 120,
+    borderRadius: 10,
+    backgroundColor: Colors.navy[950],
+    borderWidth: 1,
+    borderColor: Colors.navy[750],
+    overflow: 'hidden',
+    marginTop: 6,
+  },
+  receiptPreviewImg: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain',
+  },
+  receiptSelectBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 12,
+    borderRadius: 10,
+    backgroundColor: Colors.navy[950],
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderColor: Colors.magenta[500],
+    marginTop: 6,
+  },
+  receiptSelectText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.magenta[400],
   },
 });

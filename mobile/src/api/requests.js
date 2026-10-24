@@ -88,9 +88,34 @@ export const requestsApi = {
     return res.data;
   },
 
+  // Phase 4.5: Photo & CNIC verification request
+  requestVerification: async (requestCode, type) => {
+    const res = await apiClient.post(`/requests/${requestCode}/request-verification`, { type });
+    return res.data;
+  },
+
+  uploadProposalPhoto: async (requestCode, formData) => {
+    const res = await apiClient.post(`/requests/${requestCode}/upload-photo`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+
   // Phase 5: Mutual OTP verification & Contact details unlock
   getUnlockStatus: async (requestCode) => {
     const res = await apiClient.get(`/requests/${requestCode}/unlock/status`);
+    return res.data;
+  },
+
+  initiatePayment: async (requestCode) => {
+    const res = await apiClient.post(`/requests/${requestCode}/payment/initiate`);
+    return res.data;
+  },
+
+  submitManualPaymentProof: async (requestCode, formData) => {
+    const res = await apiClient.post(`/requests/${requestCode}/payment/submit-proof`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
     return res.data;
   },
 
