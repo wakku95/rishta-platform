@@ -2112,21 +2112,21 @@ export default function ProposalsScreen({ navigation }) {
 
                 {/* Watermark Diagonal Overlay (Always visible across the image for protection) */}
                 <View style={styles.watermarkOverlay} pointerEvents="none">
-                  {[-12, 1, 14, 27, 40, 53, 66, 79, 92, 105].map((topPct, idx) => (
-                    <Text
-                      key={idx}
-                      style={[
-                        styles.watermarkLine,
-                        {
-                          top: `${topPct}%`,
-                          marginLeft: idx % 2 === 0 ? -40 : 20,
-                        },
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {viewerProfileCode} • {viewerPhone} • RISHTA SECURE • {viewerProfileCode}
-                    </Text>
-                  ))}
+                  {/* Rotated Grid Container - Android & iOS Safe */}
+                  <View style={styles.watermarkRotatedContainer}>
+                    {Array.from({ length: 15 }).map((_, idx) => (
+                      <Text
+                        key={idx}
+                        style={[
+                          styles.watermarkRowText,
+                          { marginLeft: idx % 2 === 0 ? -30 : 30 },
+                        ]}
+                        numberOfLines={1}
+                      >
+                        {viewerProfileCode} • {viewerPhone} • RISHTA SECURE • {viewerProfileCode} • {viewerPhone}
+                      </Text>
+                    ))}
+                  </View>
 
                   {/* Top Security Strip */}
                   <View style={styles.watermarkTopStrip}>
@@ -3275,8 +3275,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   viewerImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
     width: '100%',
     height: '100%',
+    zIndex: 1,
   },
   viewerImageSharp: {
     opacity: 1,
@@ -3285,23 +3291,37 @@ const styles = StyleSheet.create({
     opacity: 0.15,
   },
   watermarkOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    zIndex: 25,
-    elevation: 25,
-    overflow: 'hidden',
-  },
-  watermarkLine: {
     position: 'absolute',
-    left: -120,
-    right: -120,
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 40,
+    elevation: 20,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  watermarkRotatedContainer: {
+    width: 700,
+    height: 700,
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transform: [{ rotate: '-25deg' }],
+    gap: 20,
+  },
+  watermarkRowText: {
+    width: 700,
     textAlign: 'center',
-    fontSize: 13,
+    fontSize: 12.5,
     fontWeight: '900',
-    color: 'rgba(255, 255, 255, 0.65)',
+    color: 'rgba(255, 255, 255, 0.70)',
     textShadowColor: 'rgba(0, 0, 0, 0.95)',
     textShadowOffset: { width: 1.5, height: 1.5 },
     textShadowRadius: 3,
-    transform: [{ rotate: '-25deg' }],
     letterSpacing: 2,
   },
   watermarkTopStrip: {
@@ -3310,15 +3330,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 30,
-    backgroundColor: 'rgba(15, 23, 42, 0.90)',
+    backgroundColor: 'rgba(15, 23, 42, 0.92)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(245, 158, 11, 0.4)',
-    zIndex: 30,
-    elevation: 30,
+    zIndex: 50,
+    elevation: 25,
   },
   watermarkTopText: {
     color: '#fbbf24',
@@ -3333,15 +3353,15 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 32,
-    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    backgroundColor: 'rgba(15, 23, 42, 0.94)',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 12,
     borderTopWidth: 1,
     borderTopColor: 'rgba(56, 189, 248, 0.4)',
-    zIndex: 30,
-    elevation: 30,
+    zIndex: 50,
+    elevation: 25,
   },
   watermarkBottomText: {
     color: Colors.cyan[300],
@@ -3350,7 +3370,15 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   coverOverlay: {
-    ...StyleSheet.absoluteFillObject,
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    width: '100%',
+    height: '100%',
+    zIndex: 60,
+    elevation: 30,
     backgroundColor: 'rgba(10, 15, 30, 0.85)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -3383,14 +3411,16 @@ const styles = StyleSheet.create({
   },
   activeViewingPill: {
     position: 'absolute',
-    top: 10,
+    top: 36,
+    zIndex: 70,
+    elevation: 35,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: 12,
     paddingVertical: 5,
     borderRadius: 20,
-    backgroundColor: 'rgba(10, 15, 30, 0.85)',
+    backgroundColor: 'rgba(10, 15, 30, 0.88)',
     borderWidth: 1,
     borderColor: Colors.cyan[400],
   },
