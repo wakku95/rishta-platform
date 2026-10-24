@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -14,7 +14,7 @@ import {
   Modal,
   RefreshControl,
 } from 'react-native';
-import { useFocusEffect } from '@react-navigation/native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Colors } from '../../constants/colors';
 import { Config } from '../../constants/config';
 import Card from '../../components/common/Card';
@@ -40,34 +40,27 @@ export default function MyProfileScreen({ navigation }) {
     isEducationVerified,
   } = useAuth();
 
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const queryClient = useQueryClient();
   const [refreshing, setRefreshing] = useState(false);
   const [togglingVisibility, setTogglingVisibility] = useState(false);
   const [socialModalOpen, setSocialModalOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
 
-  const fetchProfileData = async () => {
-    try {
+  const {
+    data: profile,
+    isLoading: loading,
+    refetch,
+  } = useQuery({
+    queryKey: ['my_profile'],
+    queryFn: async () => {
       const res = await profilesApi.getMyProfile();
-      setProfile(res.data || res);
-    } catch (err) {
-      console.warn('Failed to load profile data:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useFocusEffect(
-    useCallback(() => {
-      fetchProfileData();
-    }, [])
-  );
+      return res.data || res;
+    },
+  });
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await Promise.allSettled([refreshUser(), fetchProfileData()]);
+    await Promise.allSettled([refreshUser(), refetch()]);
     setRefreshing(false);
   };
 
@@ -88,7 +81,7 @@ export default function MyProfileScreen({ navigation }) {
               try {
                 await profilesApi.hideSelfProfile();
                 await refreshUser();
-                await fetchProfileData();
+                await refetch();
                 Alert.alert('Profile Hidden', 'Your profile is now hidden from public discovery.');
               } catch (err) {
                 Alert.alert('Error', err.response?.data?.message || 'Failed to hide profile.');
@@ -112,7 +105,7 @@ export default function MyProfileScreen({ navigation }) {
               try {
                 await profilesApi.activateSelfProfile();
                 await refreshUser();
-                await fetchProfileData();
+                await refetch();
                 Alert.alert('Profile Activated!', 'Your profile is now active and discoverable.');
               } catch (err) {
                 Alert.alert(

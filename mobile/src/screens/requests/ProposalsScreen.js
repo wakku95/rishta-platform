@@ -29,17 +29,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { Config } from '../../constants/config';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function ProposalsScreen({ navigation }) {
   const { isIdentityVerified, user, token } = useAuth();
   const viewerProfileCode = user?.profile?.profile_code || user?.profile_code || user?.code || 'MEMBER';
   const viewerPhone = user?.phone || user?.profile?.phone || 'CONFIDENTIAL';
-  const [requests, setRequests] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
   const [typeTab, setTypeTab] = useState('received'); // 'received' | 'sent' | 'assisted'
   const [statusFilter, setStatusFilter] = useState(''); // '' (all), 'pending', 'accepted', 'declined', 'cancelled', 'expired'
-  const [counts, setCounts] = useState({ received: 0, sent: 0, assisted_inquiries: 0 });
   const [copiedCode, setCopiedCode] = useState(null);
 
   // Accept Proposal Modal States
@@ -103,55 +101,51 @@ export default function ProposalsScreen({ navigation }) {
   const [assistedReplyText, setAssistedReplyText] = useState('');
   const [submittingAssistedReply, setSubmittingAssistedReply] = useState(false);
 
-  const fetchCounts = useCallback(async () => {
-    try {
+  const {
+    data: counts = { received: 0, sent: 0, assisted_inquiries: 0 },
+    refetch: refetchCounts,
+  } = useQuery({
+    queryKey: ['request_counts'],
+    queryFn: async () => {
       const res = await requestsApi.getRequestCounts();
-      if (res?.success && res?.data) {
-        setCounts(res.data);
-      }
-    } catch (e) {
-      // quiet
-    }
-  }, []);
+      return res?.success && res?.data ? res.data : { received: 0, sent: 0, assisted_inquiries: 0 };
+    },
+  });
 
-  const fetchRequests = useCallback(async (activeTab = typeTab, filter = statusFilter) => {
-    try {
+  const {
+    data: requests = [],
+    isLoading: loading,
+    isRefetching: refreshing,
+    refetch: refetchRequests,
+  } = useQuery({
+    queryKey: ['requests', typeTab, statusFilter],
+    queryFn: async () => {
       let res;
-      if (activeTab === 'assisted') {
+      if (typeTab === 'assisted') {
         res = await requestsApi.getMyAssistedInquiries();
-      } else if (activeTab === 'received') {
+      } else if (typeTab === 'received') {
         const params = {};
-        if (filter) params.status = filter;
+        if (statusFilter) params.status = statusFilter;
         res = await requestsApi.getReceivedRequests(params);
       } else {
         const params = {};
-        if (filter) params.status = filter;
+        if (statusFilter) params.status = statusFilter;
         res = await requestsApi.getSentRequests(params);
       }
-
       const rawList = res?.data?.data || res?.data || res || [];
-      const list = Array.isArray(rawList) ? rawList : [];
-      setRequests(list);
-    } catch (err) {
-      console.warn('Failed to fetch requests:', err);
-      setRequests([]);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, [typeTab, statusFilter]);
-
-  useEffect(() => {
-    setLoading(true);
-    fetchRequests(typeTab, statusFilter);
-    fetchCounts();
-  }, [typeTab, statusFilter, fetchRequests, fetchCounts]);
+      return Array.isArray(rawList) ? rawList : [];
+    },
+  });
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchRequests(typeTab, statusFilter);
-    fetchCounts();
-  }, [typeTab, statusFilter, fetchRequests, fetchCounts]);
+    refetchRequests();
+    refetchCounts();
+  }, [refetchRequests, refetchCounts]);
+
+  const fetchRequests = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['requests'] });
+    queryClient.invalidateQueries({ queryKey: ['request_counts'] });
+  }, [queryClient]);
 
   const handleCopyCode = async (code) => {
     if (!code) return;

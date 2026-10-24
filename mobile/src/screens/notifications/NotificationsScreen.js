@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Platform,
   Linking,
 } from 'react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Colors } from '../../constants/colors';
 import { Config } from '../../constants/config';
 import Card from '../../components/common/Card';
@@ -21,35 +22,28 @@ import { Ionicons } from '@expo/vector-icons';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
 
 export default function NotificationsScreen({ navigation }) {
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
 
-  const fetchNotifications = async () => {
-    try {
+  const {
+    data: notifications = [],
+    isLoading: loading,
+    isRefetching: refreshing,
+    refetch,
+  } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
       const res = await notificationsApi.getNotifications();
-      setNotifications(res.data || res || []);
-    } catch (err) {
-      console.warn('Failed to load notifications:', err);
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  };
-
-  useEffect(() => {
-    setLoading(true);
-    fetchNotifications();
-  }, []);
+      return res.data || res || [];
+    },
+  });
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    fetchNotifications();
-  }, []);
+    refetch();
+  }, [refetch]);
 
   const handleMarkAsRead = async (id) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    queryClient.setQueryData(['notifications'], (prev) =>
+      (prev || []).map((n) => (n.id === id ? { ...n, is_read: true } : n))
     );
     try {
       await notificationsApi.markAsRead(id);
@@ -59,12 +53,14 @@ export default function NotificationsScreen({ navigation }) {
   };
 
   const handleMarkAllRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    queryClient.setQueryData(['notifications'], (prev) =>
+      (prev || []).map((n) => ({ ...n, is_read: true }))
+    );
     try {
       await notificationsApi.markAllAsRead();
     } catch (e) {
       console.warn('Failed to mark all notifications as read:', e);
-      fetchNotifications();
+      refetch();
     }
   };
 
