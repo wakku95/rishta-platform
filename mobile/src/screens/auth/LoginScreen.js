@@ -73,11 +73,11 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
 
-          {/* Heading with Official Logo */}
+          {/* Heading with Official Logo (No Background) */}
           <View style={styles.header}>
             <Image
-              source={require('../../../assets/raabtanow-icon.png')}
-              style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 12 }}
+              source={require('../../../assets/raabtanow-logo-white-transparent.png')}
+              style={{ width: 220, height: 60, marginBottom: 14 }}
               resizeMode="contain"
             />
             <Text style={styles.title}>Welcome Back</Text>

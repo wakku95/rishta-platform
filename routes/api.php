@@ -97,6 +97,8 @@ Route::prefix('discovery')->group(function () {
 Route::prefix('listings')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'index'])
         ->middleware('throttle:60,1');
+    Route::get('/my-inquiries', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'myInquiries'])
+        ->middleware('auth:sanctum');
     Route::get('/{listing_code}', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'show'])
         ->middleware('throttle:60,1');
     Route::post('/{listing_code}/interest', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'submitInterest'])
@@ -120,6 +122,8 @@ Route::middleware('auth:sanctum')->prefix('shortlists')->group(function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware('auth:sanctum')->prefix('requests')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'index']);
+    Route::get('/counts', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'counts']);
     Route::post('/', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/sent', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'sent']);
     Route::get('/received', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'received']);

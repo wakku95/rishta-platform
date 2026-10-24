@@ -43,24 +43,22 @@ export const AuthProvider = ({ children }) => {
           setUser(savedUser);
         }
 
-        // Validate token against backend /auth/me only if real token
-        if (savedToken !== 'session_cookie_active') {
-          try {
-            const userData = await authApi.me();
-            const freshUser = userData.user || userData.data || userData;
-            if (freshUser && (freshUser.id || freshUser.email)) {
-              setUser(freshUser);
-              await SecureStore.setItemAsync(Config.STORAGE_KEYS.USER_DATA, JSON.stringify(freshUser));
-            }
-          } catch (e) {
-            console.warn('Profile sync notice:', e.message);
-            // If server explicitly reports 401 Unauthenticated, the token is revoked/expired
-            if (e.response?.status === 401) {
-              await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.AUTH_TOKEN);
-              await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.USER_DATA);
-              setToken(null);
-              setUser(null);
-            }
+        // Validate / refresh user against backend /auth/me
+        try {
+          const userData = await authApi.me();
+          const freshUser = userData.user || userData.data || userData;
+          if (freshUser && (freshUser.id || freshUser.email)) {
+            setUser(freshUser);
+            await SecureStore.setItemAsync(Config.STORAGE_KEYS.USER_DATA, JSON.stringify(freshUser));
+          }
+        } catch (e) {
+          console.warn('Profile sync notice:', e.message);
+          // If server explicitly reports 401 Unauthenticated and using real bearer token
+          if (e.response?.status === 401 && savedToken !== 'session_cookie_active') {
+            await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.AUTH_TOKEN);
+            await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.USER_DATA);
+            setToken(null);
+            setUser(null);
           }
         }
       } catch (err) {

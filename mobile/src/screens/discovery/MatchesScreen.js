@@ -344,18 +344,18 @@ export default function MatchesScreen({ navigation }) {
       {/* Top Header */}
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
             <Image
               source={require('../../../assets/raabtanow-icon.png')}
-              style={{ width: 38, height: 38, borderRadius: 10 }}
+              style={{ width: 36, height: 36, borderRadius: 8 }}
               resizeMode="contain"
             />
             <View>
               <Text style={styles.brandTitle}>
                 Raabta<Text style={{ color: Colors.magenta[400] }}>Now</Text>
               </Text>
-              <Text style={styles.headerSubtitle}>
-                {totalCount !== null ? `${totalCount} Verified Candidates` : 'Discover Compatible Rishtas'}
+              <Text style={styles.headerSubtitle} numberOfLines={1}>
+                Privacy Protected
               </Text>
             </View>
           </View>

@@ -220,8 +220,19 @@ class DiscoveryController extends Controller
             ->where('profile_id', $profile->id)
             ->exists();
 
-        $activePairHash = \App\Models\RishtaRequest::generateActivePairHash($user->id, $profile->user_id);
-        $activeRequest = \App\Models\RishtaRequest::where('active_pair_hash', $activePairHash)->first();
+        $activeRequest = \App\Models\RishtaRequest::where(function ($q) use ($user, $profile) {
+            $q->where(function ($sub) use ($user, $profile) {
+                $sub->where('sender_id', $user->id)->where('receiver_id', $profile->user_id);
+            })->orWhere(function ($sub) use ($user, $profile) {
+                $sub->where('sender_id', $profile->user_id)->where('receiver_id', $user->id);
+            });
+        })
+        ->whereIn('status', [
+            \App\Models\RishtaRequest::STATUS_PENDING,
+            \App\Models\RishtaRequest::STATUS_ACCEPTED,
+        ])
+        ->latest('id')
+        ->first();
 
         // If found, check lazy expiration
         if ($activeRequest) {
@@ -236,6 +247,7 @@ class DiscoveryController extends Controller
             $activeRequestData = [
                 'request_code' => $activeRequest->request_code,
                 'status' => $activeRequest->status,
+                'admin_status' => $activeRequest->admin_status ?? \App\Models\RishtaRequest::ADMIN_STATUS_APPROVED,
                 'is_sender' => ($activeRequest->sender_id === $user->id),
                 'expires_at' => $activeRequest->expires_at?->toIso8601String(),
                 'created_at' => $activeRequest->created_at?->toIso8601String(),

@@ -25,6 +25,8 @@ import {
   declineRequest,
   cancelRequest,
   requestVerification,
+  getMyAssistedInquiries,
+  getRequestCounts,
 } from '../../api/requests';
 import Card from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -40,11 +42,14 @@ import ReplyProposalModal from '../../components/requests/ReplyProposalModal';
 import EditProposalModal from '../../components/requests/EditProposalModal';
 import PhotoExchangeModal from '../../components/requests/PhotoExchangeModal';
 import IdentityVerificationGateModal from '../../components/verification/IdentityVerificationGateModal';
+import useAuth from '../../hooks/useAuth';
 
 export default function RequestsPage() {
-  const [activeTab, setActiveTab] = useState('received'); // 'received' | 'sent'
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('received'); // 'received' | 'sent' | 'assisted'
   const [statusFilter, setStatusFilter] = useState('');
   const [requests, setRequests] = useState([]);
+  const [counts, setCounts] = useState({ received: 0, sent: 0, assisted_inquiries: 0 });
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [meta, setMeta] = useState(null);
@@ -100,18 +105,39 @@ export default function RequestsPage() {
     }
   }, []);
 
+  const fetchCounts = async () => {
+    try {
+      const res = await getRequestCounts();
+      if (res.success && res.data) {
+        setCounts(res.data);
+      }
+    } catch (e) {
+      // quiet
+    }
+  };
+
+  useEffect(() => {
+    fetchCounts();
+  }, [activeTab]);
+
   const fetchRequests = async (tab, targetPage = 1, status = '') => {
     setLoading(true);
     try {
-      const params = { page: targetPage };
-      if (status) params.status = status;
+      if (tab === 'assisted') {
+        const res = await getMyAssistedInquiries({ page: targetPage });
+        setRequests(res.data || []);
+        setMeta(res.meta || null);
+      } else {
+        const params = { page: targetPage };
+        if (status) params.status = status;
 
-      const res = tab === 'received'
-        ? await getReceivedRequests(params)
-        : await getSentRequests(params);
+        const res = tab === 'received'
+          ? await getReceivedRequests(params)
+          : await getSentRequests(params);
 
-      setRequests(res.data || []);
-      setMeta(res.meta || null);
+        setRequests(res.data || []);
+        setMeta(res.meta || null);
+      }
     } catch (err) {
       console.error('Failed to load requests:', err);
     } finally {
@@ -197,6 +223,55 @@ export default function RequestsPage() {
     setConfirmPhotoRequestOpen(false);
     await handleRequestVerification(reqCode, 'photo');
     setPhotoRequestTarget(null);
+  };
+
+  const getAssistedStatusBadge = (status) => {
+    switch (status) {
+      case 'new':
+        return (
+          <Badge variant="warning" className="inline-flex items-center gap-1 font-bold">
+            <Clock className="w-3 h-3" />
+            <span>Under Review / زیرِ غور</span>
+          </Badge>
+        );
+      case 'contacted':
+        return (
+          <Badge variant="info" className="inline-flex items-center gap-1 font-bold">
+            <Clock className="w-3 h-3" />
+            <span>Matchmaker Reviewing / رابطہ ہوا</span>
+          </Badge>
+        );
+      case 'in_progress':
+        return (
+          <Badge variant="purple" className="inline-flex items-center gap-1 font-bold">
+            <Sparkles className="w-3 h-3" />
+            <span>In Coordination / پیشرفت میں</span>
+          </Badge>
+        );
+      case 'introduced':
+        return (
+          <Badge variant="success" className="inline-flex items-center gap-1 font-bold">
+            <CheckCircle className="w-3 h-3" />
+            <span>Introduced / تعارف کروایا گیا</span>
+          </Badge>
+        );
+      case 'rejected':
+        return (
+          <Badge variant="danger" className="inline-flex items-center gap-1 font-bold">
+            <XCircle className="w-3 h-3" />
+            <span>Not Suitable / غیر موزوں</span>
+          </Badge>
+        );
+      case 'cancelled':
+        return (
+          <Badge variant="neutral" className="inline-flex items-center gap-1 font-bold">
+            <Ban className="w-3 h-3" />
+            <span>Cancelled / منسوخ</span>
+          </Badge>
+        );
+      default:
+        return <Badge variant="neutral">{status}</Badge>;
+    }
   };
 
   const getStatusBadge = (status, adminStatus, isSender) => {
@@ -298,76 +373,198 @@ export default function RequestsPage() {
 
       {/* Navigation Tabs */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex rounded-xl bg-navy-850 p-1 border border-slate-750 max-w-xs">
+        <div className="flex rounded-xl bg-navy-850 p-1 border border-slate-750 max-w-full sm:max-w-lg overflow-x-auto">
           <button
             onClick={() => { setActiveTab('received'); setPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 min-w-[120px] flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'received'
                 ? 'bg-gradient-to-r from-magenta-500 to-purple-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Inbox className="w-4 h-4" />
+            <Inbox className="w-4 h-4 shrink-0" />
             <span>Received</span>
+            {counts.received > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-navy-900/80 font-bold border border-white/20">
+                {counts.received}
+              </span>
+            )}
           </button>
           <button
             onClick={() => { setActiveTab('sent'); setPage(1); }}
-            className={`flex-1 flex items-center justify-center gap-2 py-2 px-4 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+            className={`flex-1 min-w-[110px] flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'sent'
                 ? 'bg-gradient-to-r from-magenta-500 to-purple-600 text-white shadow-sm'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Send className="w-4 h-4" />
+            <Send className="w-4 h-4 shrink-0" />
             <span>Sent</span>
+            {counts.sent > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-navy-900/80 font-bold border border-white/20">
+                {counts.sent}
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => { setActiveTab('assisted'); setPage(1); }}
+            className={`flex-1 min-w-[145px] flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'assisted'
+                ? 'bg-gradient-to-r from-magenta-500 to-purple-600 text-white shadow-sm'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Sparkles className="w-4 h-4 shrink-0 text-amber-400" />
+            <span>Assisted Inquiries</span>
+            {counts.assisted_inquiries > 0 && (
+              <span className="ml-1 px-1.5 py-0.2 rounded-full text-[10px] bg-navy-900/80 font-bold border border-white/20">
+                {counts.assisted_inquiries}
+              </span>
+            )}
           </button>
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-slate-400">Filter status:</span>
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
-            className="text-xs font-medium rounded-xl border border-slate-700 py-1.5 px-3 bg-navy-750 text-white focus:border-magenta-500 cursor-pointer"
-          >
-            <option value="">All Statuses</option>
-            <option value="pending">Pending</option>
-            <option value="accepted">Accepted</option>
-            <option value="declined">Declined</option>
-            <option value="cancelled">Cancelled</option>
-            <option value="expired">Expired</option>
-          </select>
-        </div>
+        {/* Status Filter (Proposal tabs only) */}
+        {activeTab !== 'assisted' && (
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-slate-400">Filter status:</span>
+            <select
+              value={statusFilter}
+              onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}
+              className="text-xs font-medium rounded-xl border border-slate-700 py-1.5 px-3 bg-navy-750 text-white focus:border-magenta-500 cursor-pointer"
+            >
+              <option value="">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="accepted">Accepted</option>
+              <option value="declined">Declined</option>
+              <option value="cancelled">Cancelled</option>
+              <option value="expired">Expired</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       {loading ? (
         <div className="py-20">
-          <LoadingState text={`Loading ${activeTab} rishta requests...`} />
+          <LoadingState text={`Loading ${activeTab === 'assisted' ? 'assisted profile inquiries' : `${activeTab} rishta requests`}...`} />
         </div>
       ) : requests.length === 0 ? (
         <div className="py-12">
-          <EmptyState
-            icon={activeTab === 'received' ? Inbox : Send}
-            title={activeTab === 'received' ? 'No received requests' : 'No sent requests'}
-            description={
-              activeTab === 'received'
-                ? 'You have not received any Rishta requests yet. When candidates express formal interest in your profile, they will appear here.'
-                : 'You have not sent any Rishta requests yet. Search active candidates and send a formal expression of interest.'
-            }
-            action={
-              activeTab === 'sent' && (
+          {activeTab === 'assisted' ? (
+            <EmptyState
+              icon={Sparkles}
+              title="No assisted inquiries yet / کوئی اسسٹڈ رابطہ نہیں"
+              description="You have not inquired about any matchmaker-assisted profiles yet. When you inquire about assisted profiles, they will appear here along with live coordinator status updates."
+              action={
                 <Link to="/search">
-                  <Button variant="primary">Browse Candidates</Button>
+                  <Button variant="primary">Browse Assisted Profiles</Button>
                 </Link>
-              )
-            }
-          />
+              }
+            />
+          ) : (
+            <EmptyState
+              icon={activeTab === 'received' ? Inbox : Send}
+              title={activeTab === 'received' ? 'No received requests' : 'No sent requests'}
+              description={
+                activeTab === 'received'
+                  ? 'You have not received any Rishta requests yet. When candidates express formal interest in your profile, they will appear here.'
+                  : 'You have not sent any Rishta requests yet. Search active candidates and send a formal expression of interest.'
+              }
+              action={
+                activeTab === 'sent' && (
+                  <Link to="/search">
+                    <Button variant="primary">Browse Candidates</Button>
+                  </Link>
+                )
+              }
+            />
+          )}
         </div>
       ) : (
         <div className="space-y-4">
-          {requests.map((req) => {
+          {activeTab === 'assisted' ? (
+            requests.map((inq) => {
+              const listing = inq.listing;
+              return (
+                <Card
+                  key={inq.id}
+                  className="p-3.5 sm:p-5 bg-navy-800 border border-slate-750 shadow-md hover:border-magenta-500/40 transition-colors rounded-2xl flex flex-col gap-3 sm:gap-4"
+                >
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+                    {/* Left: Inquiry Info & Listing Summary */}
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="font-mono text-xs font-bold text-slate-400 bg-navy-900 px-2.5 py-1 rounded-lg border border-slate-750">
+                          Inquiry #{inq.id}
+                        </span>
+                        {getAssistedStatusBadge(inq.status)}
+                        <span className="text-xs text-slate-400">
+                          {inq.created_at ? new Date(inq.created_at).toLocaleDateString() : ''}
+                        </span>
+                      </div>
+
+                      {listing ? (
+                        <div>
+                          <div className="flex items-baseline gap-2">
+                            <Link
+                              to={`/assisted-listings/${listing.listing_code}`}
+                              className="font-serif text-lg font-bold text-white hover:text-magenta-400 transition-colors"
+                            >
+                              Assisted Listing #{listing.listing_code}
+                            </Link>
+                            <span className="text-xs font-bold text-slate-400">
+                              ({listing.age ? `${listing.age} yrs • ` : ''}{listing.gender} • {listing.city})
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {[listing.education, listing.profession, listing.marital_status].filter(Boolean).join(' • ')}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-xs text-slate-500 italic">Listing details no longer available</p>
+                      )}
+                    </div>
+
+                    {/* Right: Actions */}
+                    <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-750/70">
+                      {listing && (
+                        <Link to={`/assisted-listings/${listing.listing_code}`}>
+                          <Button variant="secondary" size="sm" icon={Eye} className="font-bold">
+                            View Listing / مکمل تفصیل
+                          </Button>
+                        </Link>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* User Submitted Message */}
+                  {inq.message && (
+                    <div className="w-full pt-3 border-t border-slate-750/70">
+                      <div className="bg-navy-900/80 p-3 rounded-xl border border-slate-750/80 text-xs">
+                        <span className="font-bold text-slate-400 block text-[10px] uppercase mb-1">
+                          Your Submitted Message / آپ کا پیغام:
+                        </span>
+                        <p className="text-slate-200 italic leading-relaxed">"{inq.message}"</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Admin Coordinator Notes */}
+                  {inq.admin_notes && (
+                    <div className="w-full p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-xs space-y-1">
+                      <div className="flex items-center gap-1.5 font-bold text-purple-300 uppercase text-[10px]">
+                        <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                        <span>Matchmaker Update / اسسٹنٹ کوآرڈینیٹر کا جواب:</span>
+                      </div>
+                      <p className="leading-relaxed pl-5 italic text-purple-100">{inq.admin_notes}</p>
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          ) : (
+            requests.map((req) => {
             const candidate = req.candidate_profile;
             return (
               <Card
@@ -413,8 +610,8 @@ export default function RequestsPage() {
                   <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-750/70">
                     {candidate && (
                       <Link to={`/profiles/${candidate.profile_code}`}>
-                        <Button variant="secondary" size="sm" icon={Eye}>
-                          View Profile
+                        <Button variant="secondary" size="sm" icon={Eye} className="font-bold">
+                          View Profile / مکمل پروفائل
                         </Button>
                       </Link>
                     )}
@@ -427,22 +624,29 @@ export default function RequestsPage() {
                           <span>{req.is_sender ? 'Response under admin moderation' : 'Awaiting admin approval of your response'}</span>
                         </span>
                       ) : req.admin_status === 'needs_revision' ? (
-                        <Button
-                          variant="primary"
-                          size="sm"
-                          icon={AlertCircle}
-                          onClick={() => {
-                            setSelectedRequest(req);
-                            if (req.is_sender) {
-                              setReplyModalOpen(true);
-                            } else {
-                              setConfirmAcceptOpen(true);
-                            }
-                          }}
-                          className="font-bold shadow-md bg-amber-600 hover:bg-amber-500 text-white"
-                        >
-                          Edit & Resubmit Response
-                        </Button>
+                        req.can_edit_response ? (
+                          <Button
+                            variant="primary"
+                            size="sm"
+                            icon={AlertCircle}
+                            onClick={() => {
+                              setSelectedRequest(req);
+                              if (req.is_sender) {
+                                setReplyModalOpen(true);
+                              } else {
+                                setConfirmAcceptOpen(true);
+                              }
+                            }}
+                            className="font-bold shadow-md bg-amber-600 hover:bg-amber-500 text-white"
+                          >
+                            Edit & Resubmit Response
+                          </Button>
+                        ) : (
+                          <span className="text-xs text-amber-300 font-semibold bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/30 flex items-center gap-1.5">
+                            <Clock className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                            <span>Candidate has been requested by admin to revise their response</span>
+                          </span>
+                        )
                       ) : req.is_sender && req.receiver_questions && !req.sender_answers ? (
                         <Button
                           variant="primary"
@@ -481,7 +685,8 @@ export default function RequestsPage() {
                           icon={CheckCircle}
                           onClick={() => {
                             setSelectedRequest(req);
-                            if (!req.i_am_identity_verified) {
+                            const isVerified = Boolean(req.i_am_identity_verified || user?.is_identity_verified);
+                            if (!isVerified) {
                               setIdentityGateOpen(true);
                             } else {
                               setConfirmAcceptOpen(true);
@@ -531,7 +736,7 @@ export default function RequestsPage() {
                 </div>
 
                 {/* Proposal Q&A Section */}
-                {(req.sender_intro || req.sender_questions || req.receiver_intro || req.receiver_answers || req.receiver_questions || req.sender_answers) && (
+                {(req.sender_intro || req.sender_questions || req.receiver_intro || req.receiver_answers || req.receiver_questions || req.sender_answers || (req.is_sender && (req.receiver_response_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && !req.sender_answers))) || (!req.is_sender && (req.sender_answers_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && req.has_sender_answers)))) && (
                   <div className="w-full pt-3 border-t border-slate-750/70 space-y-2.5">
                     <div className="flex items-center gap-1.5 text-[11px] font-bold text-magenta-400">
                       <MessageSquare className="w-3.5 h-3.5" />
@@ -557,22 +762,31 @@ export default function RequestsPage() {
                         </div>
                       )}
 
-                      {req.receiver_intro && (
-                        <div className="bg-navy-900/80 p-2.5 rounded-xl border border-purple-500/20">
-                          <span className="font-bold text-purple-400 block text-[10px] uppercase">
-                            {req.is_sender ? "Candidate's Family & Background" : 'Your Family & Background'}:
-                          </span>
-                          <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.receiver_intro}"</p>
-                        </div>
-                      )}
-
-                      {req.is_sender && req.admin_status === 'pending_review' && (req.receiver_answers || req.receiver_questions) ? (
+                      {req.is_sender && (req.receiver_response_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && !req.sender_answers)) ? (
                         <div className="col-span-1 md:col-span-2 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
-                          <Clock className="w-4 h-4 shrink-0 text-amber-400" />
-                          <span>Candidate has responded to your proposal! Their answers are currently under admin review and will appear here once approved.</span>
+                          {req.admin_status === 'needs_revision' ? (
+                            <>
+                              <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+                              <span>Candidate has been requested by administration to revise their response before delivery.</span>
+                            </>
+                          ) : (
+                            <>
+                              <Clock className="w-4 h-4 shrink-0 text-amber-400" />
+                              <span>Candidate has responded to your proposal! Their answers are currently under admin review and will appear here once approved.</span>
+                            </>
+                          )}
                         </div>
                       ) : (
                         <>
+                          {req.receiver_intro && (
+                            <div className="bg-navy-900/80 p-2.5 rounded-xl border border-purple-500/20">
+                              <span className="font-bold text-purple-400 block text-[10px] uppercase">
+                                {req.is_sender ? "Candidate's Family & Background" : 'Your Family & Background'}:
+                              </span>
+                              <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.receiver_intro}"</p>
+                            </div>
+                          )}
+
                           {req.receiver_answers && (
                             <div className="bg-navy-900/80 p-2.5 rounded-xl border border-emerald-500/20">
                               <span className="font-bold text-emerald-400 block text-[10px] uppercase">
@@ -591,19 +805,28 @@ export default function RequestsPage() {
                             </div>
                           )}
 
-                          {req.sender_answers && (!req.is_sender && req.admin_status === 'pending_review' ? (
+                          {!req.is_sender && (req.sender_answers_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && req.has_sender_answers)) ? (
                             <div className="col-span-1 md:col-span-2 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
-                              <Clock className="w-4 h-4 shrink-0 text-amber-400" />
-                              <span>Sender has submitted answers to your questions! They are currently under moderation review and will appear here shortly.</span>
+                              {req.admin_status === 'needs_revision' ? (
+                                <>
+                                  <AlertCircle className="w-4 h-4 shrink-0 text-amber-400" />
+                                  <span>Sender has been requested by administration to revise their answers before delivery.</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Clock className="w-4 h-4 shrink-0 text-amber-400" />
+                                  <span>Sender has submitted answers to your questions! They are currently under moderation review and will appear here shortly.</span>
+                                </>
+                              )}
                             </div>
-                          ) : (
+                          ) : req.sender_answers ? (
                             <div className="bg-navy-900/80 p-2.5 rounded-xl border border-teal-500/20">
                               <span className="font-bold text-teal-400 block text-[10px] uppercase">
                                 {req.is_sender ? 'Your Answers to Questions' : "Candidate's Answers"}:
                               </span>
                               <p className="text-slate-200 mt-1 italic leading-relaxed">"{req.sender_answers}"</p>
                             </div>
-                          ))}
+                          ) : null}
                         </>
                       )}
                     </div>
@@ -735,28 +958,32 @@ export default function RequestsPage() {
                   <div className="w-full p-3 bg-amber-500/15 border border-amber-500/30 rounded-xl text-amber-200 text-xs space-y-1.5">
                     <div className="flex items-center gap-1.5 font-bold text-amber-400 uppercase text-[11px]">
                       <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
-                      <span>Moderator Feedback / درکار ترمیم:</span>
+                      <span>{req.can_edit_response ? 'Moderator Feedback / درکار ترمیم:' : 'Moderator Update:'}</span>
                     </div>
-                    <p className="leading-relaxed pl-5 italic text-amber-100">"{req.admin_notes}"</p>
-                    <div className="pl-5 pt-1">
-                      <Button
-                        size="sm"
-                        variant="primary"
-                        onClick={() => {
-                          setSelectedRequest(req);
-                          if (req.status === 'pending') {
-                            setEditProposalModalOpen(true);
-                          } else if (req.is_sender) {
-                            setReplyModalOpen(true);
-                          } else {
-                            setConfirmAcceptOpen(true);
-                          }
-                        }}
-                        className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs"
-                      >
-                        Edit & Resubmit Answers
-                      </Button>
-                    </div>
+                    <p className="leading-relaxed pl-5 italic text-amber-100">
+                      {req.can_edit_response ? `"${req.admin_notes}"` : 'The other candidate has been requested by administration to revise their answers before delivery.'}
+                    </p>
+                    {req.can_edit_response && (
+                      <div className="pl-5 pt-1">
+                        <Button
+                          size="sm"
+                          variant="primary"
+                          onClick={() => {
+                            setSelectedRequest(req);
+                            if (req.status === 'pending') {
+                              setEditProposalModalOpen(true);
+                            } else if (req.is_sender) {
+                              setReplyModalOpen(true);
+                            } else {
+                              setConfirmAcceptOpen(true);
+                            }
+                          }}
+                          className="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs"
+                        >
+                          Edit & Resubmit Answers
+                        </Button>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -768,7 +995,7 @@ export default function RequestsPage() {
                 )}
               </Card>
             );
-          })}
+          }))}
 
           {meta && meta.last_page > 1 && (
             <div className="flex justify-center pt-6">
@@ -914,6 +1141,9 @@ export default function RequestsPage() {
           actionType="accept"
           onVerified={() => {
             setIdentityGateOpen(false);
+            if (selectedRequest) {
+              setConfirmAcceptOpen(true);
+            }
             fetchRequests(activeTab, page, statusFilter);
           }}
         />

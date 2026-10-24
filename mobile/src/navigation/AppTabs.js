@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Colors } from '../constants/colors';
 import MatchesScreen from '../screens/discovery/MatchesScreen';
@@ -8,10 +8,41 @@ import NotificationsScreen from '../screens/notifications/NotificationsScreen';
 import MyProfileScreen from '../screens/profile/MyProfileScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import { requestsApi } from '../api/requests';
+import { notificationsApi } from '../api/notifications';
 
 const Tab = createBottomTabNavigator();
 
 export default function AppTabs() {
+  const [pendingProposalsCount, setPendingProposalsCount] = useState(0);
+  const [unreadAlertsCount, setUnreadAlertsCount] = useState(0);
+
+  const fetchBadgeCounts = useCallback(async () => {
+    try {
+      const [countsRes, notifsRes] = await Promise.allSettled([
+        requestsApi.getRequestCounts(),
+        notificationsApi.getNotifications(),
+      ]);
+
+      if (countsRes.status === 'fulfilled' && countsRes.value?.success) {
+        setPendingProposalsCount(countsRes.value?.data?.pending_received || 0);
+      }
+
+      if (notifsRes.status === 'fulfilled') {
+        const unread = notifsRes.value?.unread_count || 0;
+        setUnreadAlertsCount(unread);
+      }
+    } catch (e) {
+      // quiet fail
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchBadgeCounts();
+    const interval = setInterval(fetchBadgeCounts, 45000);
+    return () => clearInterval(interval);
+  }, [fetchBadgeCounts]);
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -51,8 +82,34 @@ export default function AppTabs() {
     >
       <Tab.Screen name="Matches" component={MatchesScreen} options={{ tabBarLabel: 'Matches' }} />
       <Tab.Screen name="Shortlist" component={ShortlistScreen} options={{ tabBarLabel: 'Shortlist' }} />
-      <Tab.Screen name="Proposals" component={ProposalsScreen} options={{ tabBarLabel: 'Proposals' }} />
-      <Tab.Screen name="Alerts" component={NotificationsScreen} options={{ tabBarLabel: 'Alerts' }} />
+      <Tab.Screen
+        name="Proposals"
+        component={ProposalsScreen}
+        options={{
+          tabBarLabel: 'Proposals',
+          tabBarBadge: pendingProposalsCount > 0 ? (pendingProposalsCount > 99 ? '99+' : pendingProposalsCount) : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: Colors.magenta[500],
+            color: '#FFFFFF',
+            fontSize: 10,
+            fontWeight: 'bold',
+          },
+        }}
+      />
+      <Tab.Screen
+        name="Alerts"
+        component={NotificationsScreen}
+        options={{
+          tabBarLabel: 'Alerts',
+          tabBarBadge: unreadAlertsCount > 0 ? (unreadAlertsCount > 99 ? '99+' : unreadAlertsCount) : undefined,
+          tabBarBadgeStyle: {
+            backgroundColor: Colors.magenta[500],
+            color: '#FFFFFF',
+            fontSize: 10,
+            fontWeight: 'bold',
+          },
+        }}
+      />
       <Tab.Screen name="Profile" component={MyProfileScreen} options={{ tabBarLabel: 'Profile' }} />
     </Tab.Navigator>
   );

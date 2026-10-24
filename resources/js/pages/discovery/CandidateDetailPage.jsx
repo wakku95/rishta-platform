@@ -120,6 +120,21 @@ export default function CandidateDetailPage() {
       return;
     }
 
+    if (activeRequest) {
+      if (!activeRequest.is_sender) {
+        setActionFeedback({
+          type: 'info',
+          message: 'This candidate has already sent you a proposal! Please accept or respond to their proposal above instead of sending a new one.',
+        });
+      } else {
+        setActionFeedback({
+          type: 'info',
+          message: 'You already have an active proposal with this candidate. Track its progress under Proposals.',
+        });
+      }
+      return;
+    }
+
     if (profileStatus !== 'active') {
       setShowInactiveModal(true);
       return;

@@ -25,7 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function AssistedDetailScreen({ route, navigation }) {
   const { listingCode } = route.params;
-  const { isIdentityVerified, user } = useAuth();
+  const { isIdentityVerified, user, refreshUser } = useAuth();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [interestModalOpen, setInterestModalOpen] = useState(false);
@@ -107,7 +107,15 @@ export default function AssistedDetailScreen({ route, navigation }) {
 
   const handleSubmitInterest = async () => {
     // 1. Mandatory Identity Verification Gate (Matches our Backend & Web implementation)
-    if (!isIdentityVerified) {
+    let verified = isIdentityVerified;
+    if (!verified && refreshUser) {
+      const fresh = await refreshUser();
+      if (fresh?.is_identity_verified) {
+        verified = true;
+      }
+    }
+
+    if (!verified) {
       Alert.alert(
         'CNIC Verification Required / شناختی تصدیق ضروری ہے',
         'To safeguard candidate family dignity, matchmaker introductions are exclusive to candidates with verified CNIC & Live Selfie.',

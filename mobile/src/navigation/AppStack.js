@@ -4,6 +4,7 @@ import AppTabs from './AppTabs';
 import CandidateDetailScreen from '../screens/discovery/CandidateDetailScreen';
 import AssistedDetailScreen from '../screens/discovery/AssistedDetailScreen';
 import VerificationScreen from '../screens/profile/VerificationScreen';
+import ProposalsScreen from '../screens/requests/ProposalsScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -19,6 +20,7 @@ export default function AppStack() {
       <Stack.Screen name="CandidateDetail" component={CandidateDetailScreen} />
       <Stack.Screen name="AssistedDetail" component={AssistedDetailScreen} />
       <Stack.Screen name="Verification" component={VerificationScreen} />
+      <Stack.Screen name="Proposals" component={ProposalsScreen} />
     </Stack.Navigator>
   );
 }

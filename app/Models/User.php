@@ -123,10 +123,25 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isIdentityVerified(): bool
     {
-        return $this->verifications()
+        $hasVerification = $this->verifications()
             ->where('type', ProfileVerification::TYPE_IDENTITY)
             ->where('status', ProfileVerification::STATUS_APPROVED)
             ->exists();
+
+        if ($hasVerification) {
+            return true;
+        }
+
+        // Also check if candidate verification request was approved via magic link
+        if ($this->profile) {
+            return CandidateVerificationRequest::where('candidate_type', 'candidate')
+                ->where('candidate_id', $this->profile->id)
+                ->where('status', 'approved')
+                ->whereIn('document_type', ['cnic', 'identity', 'photo', null])
+                ->exists();
+        }
+
+        return false;
     }
 
     /**
@@ -134,10 +149,24 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function isEducationVerified(): bool
     {
-        return $this->verifications()
+        $hasEdu = $this->verifications()
             ->where('type', ProfileVerification::TYPE_EDUCATION)
             ->where('status', ProfileVerification::STATUS_APPROVED)
             ->exists();
+
+        if ($hasEdu) {
+            return true;
+        }
+
+        if ($this->profile) {
+            return CandidateVerificationRequest::where('candidate_type', 'candidate')
+                ->where('candidate_id', $this->profile->id)
+                ->where('status', 'approved')
+                ->where('document_type', 'degree')
+                ->exists();
+        }
+
+        return false;
     }
 
     /**

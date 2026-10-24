@@ -78,8 +78,8 @@ export default function RegisterScreen({ navigation }) {
 
           <View style={styles.header}>
             <Image
-              source={require('../../../assets/raabtanow-icon.png')}
-              style={{ width: 60, height: 60, borderRadius: 15, marginBottom: 10 }}
+              source={require('../../../assets/raabtanow-logo-white-transparent.png')}
+              style={{ width: 220, height: 60, marginBottom: 12 }}
               resizeMode="contain"
             />
             <Text style={styles.title}>Create Account</Text>

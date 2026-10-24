@@ -652,12 +652,12 @@ export default function SearchProfilesPage() {
         </form>
       </Card>
 
-      {/* Results Header: Profiles Count & Hidden Profiles */}
+      {/* Results Header: Candidate Matches & Hidden Profiles */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
         <div className="flex items-center gap-2">
           <Users className="w-4 h-4 text-magenta-400" />
           <span className="text-sm font-bold text-white">
-            {loading ? 'Searching...' : `${meta.total} ${meta.total === 1 ? 'profile' : 'profiles'} found`}
+            {loading ? 'Searching profiles...' : 'Available Candidate Profiles / دستیاب رشتے'}
           </span>
         </div>
 

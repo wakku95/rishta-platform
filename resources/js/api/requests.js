@@ -256,3 +256,25 @@ export const submitManualPaymentProof = async (requestCode, formData) => {
   });
   return response.data;
 };
+
+/**
+ * Fetch proposal and assisted inquiry counts for current user.
+ *
+ * @returns {Promise<Object>}
+ */
+export const getRequestCounts = async () => {
+  const response = await api.get('/requests/counts');
+  return response.data;
+};
+
+/**
+ * Fetch assisted profile inquiries submitted by the current user.
+ *
+ * @param {Object} params
+ * @returns {Promise<Object>}
+ */
+export const getMyAssistedInquiries = async (params = {}) => {
+  const response = await api.get('/listings/my-inquiries', { params });
+  return response.data;
+};
+

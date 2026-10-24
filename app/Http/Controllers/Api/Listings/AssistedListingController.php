@@ -104,6 +104,55 @@ class AssistedListingController extends Controller
         return new AssistedListingPublicResource($listing);
     }
 
+    public function myInquiries(Request $request)
+    {
+        $user = $request->user();
+
+        $inquiries = AssistedListingInterest::with('assistedListing')
+            ->where('user_id', $user->id)
+            ->latest()
+            ->paginate($request->integer('per_page', 12));
+
+        $items = collect($inquiries->items())->map(function ($interest) {
+            $listing = $interest->assistedListing;
+            return [
+                'id' => $interest->id,
+                'status' => $interest->status,
+                'message' => $interest->message,
+                'submitter_name' => $interest->submitter_name,
+                'submitter_contact' => $interest->submitter_contact,
+                'admin_notes' => $interest->admin_notes,
+                'created_at' => $interest->created_at ? $interest->created_at->toISOString() : null,
+                'listing' => $listing ? [
+                    'id' => $listing->id,
+                    'listing_code' => $listing->listing_code,
+                    'gender' => $listing->gender,
+                    'age' => $listing->date_of_birth ? $listing->date_of_birth->age : null,
+                    'city' => $listing->city,
+                    'education' => $listing->education,
+                    'profession' => $listing->profession,
+                    'marital_status' => $listing->marital_status,
+                    'religion' => $listing->religion,
+                    'sect' => $listing->sect,
+                    'public_about' => $listing->public_about,
+                    'listing_status' => $listing->listing_status,
+                    'identity_verified' => !is_null($listing->identity_verified_at),
+                ] : null,
+            ];
+        });
+
+        return response()->json([
+            'success' => true,
+            'data' => $items,
+            'meta' => [
+                'current_page' => $inquiries->currentPage(),
+                'last_page' => $inquiries->lastPage(),
+                'per_page' => $inquiries->perPage(),
+                'total' => $inquiries->total(),
+            ],
+        ]);
+    }
+
     public function submitInterest(SubmitInterestRequest $request, $listing_code)
     {
         $listing = AssistedListing::where('listing_code', $listing_code)

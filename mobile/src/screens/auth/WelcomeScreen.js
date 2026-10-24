@@ -9,18 +9,13 @@ export default function WelcomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
       
-      {/* Brand Header with Official Logo */}
+      {/* Brand Header with Official Refined Logo (No Background) */}
       <View style={styles.heroSection}>
         <Image
-          source={require('../../../assets/raabtanow-icon.png')}
-          style={{ width: 84, height: 84, borderRadius: 20, marginBottom: 12 }}
+          source={require('../../../assets/raabtanow-logo-white-transparent.png')}
+          style={{ width: 280, height: 76, marginBottom: 16 }}
           resizeMode="contain"
         />
-
-        <Text style={styles.brandTitle}>
-          Raabta<Text style={{ color: Colors.magenta[400] }}>Now</Text>
-        </Text>
-        <Text style={styles.brandSubtitle}>Privacy-First Matrimonial</Text>
 
         <View style={styles.taglineCard}>
           <Text style={styles.urduTagline}>خاندانی وقار اور مکمل پردہ داری کے ساتھ بااعتماد رشتے</Text>

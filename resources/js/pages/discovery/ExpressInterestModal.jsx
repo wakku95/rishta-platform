@@ -5,7 +5,7 @@ import { submitListingInterest } from '../../api/listings';
 import useAuth from '../../hooks/useAuth';
 
 export default function ExpressInterestModal({ isOpen, onClose, listing }) {
-  const { user, authenticated, hasProfile } = useAuth();
+  const { user, authenticated, hasProfile, refreshUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -25,6 +25,9 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
     if (isOpen) {
       setSuccess(false);
       setError(null);
+      if (authenticated && !user?.is_identity_verified && refreshUser) {
+        refreshUser();
+      }
       // Pre-fill if logged in
       if (authenticated && user) {
         setFormData({
@@ -240,16 +243,24 @@ export default function ExpressInterestModal({ isOpen, onClose, listing }) {
                 </div>
               ) : null}
 
-              <div className="pt-2">
+              <div className="pt-2 flex flex-col gap-2">
                 <button
                   type="button"
-                  onClick={() => navigate('/verification')}
+                  onClick={async () => {
+                    if (refreshUser) {
+                      const updated = await refreshUser();
+                      if (updated?.is_identity_verified) {
+                        return;
+                      }
+                    }
+                    navigate('/verification');
+                  }}
                   className="w-full inline-flex items-center justify-center gap-2 px-6 py-2.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 rounded-xl text-xs font-black transition shadow-md shadow-amber-500/20 cursor-pointer"
                 >
                   <ShieldCheck className="w-4 h-4" />
                   <span>
                     {user?.identity_verification_status === 'pending'
-                      ? 'Check Verification Status'
+                      ? 'Re-check Verification Status'
                       : user?.identity_verification_status === 'rejected'
                       ? 'Re-submit Identity Verification'
                       : 'Verify My Identity Now (شناختی تصدیق کروائیں)'}

@@ -4,6 +4,7 @@ import Modal from '../ui/Modal';
 import Button from '../ui/Button';
 import LiveSelfieCamera from './LiveSelfieCamera';
 import { verificationApi } from '../../api/verification';
+import useAuth from '../../hooks/useAuth';
 
 export default function IdentityVerificationGateModal({
   isOpen,
@@ -11,6 +12,7 @@ export default function IdentityVerificationGateModal({
   actionType = 'send', // 'send' | 'accept'
   onVerified,
 }) {
+  const { refreshUser } = useAuth();
   const [loadingStatus, setLoadingStatus] = useState(true);
   const [verificationData, setVerificationData] = useState(null);
 
@@ -37,6 +39,10 @@ export default function IdentityVerificationGateModal({
     try {
       const data = await verificationApi.getStatus();
       setVerificationData(data);
+      if (data?.identity?.status === 'approved' || data?.summary?.identity_verified) {
+        if (refreshUser) refreshUser();
+        if (onVerified) onVerified();
+      }
     } catch (err) {
       console.error('Failed to load verification status:', err);
     } finally {
@@ -136,7 +142,16 @@ export default function IdentityVerificationGateModal({
             <p className="text-xs text-slate-300">
               آپ کا شناختی کارڈ ایڈمن سے منظور شدہ ہے۔ اب آپ بلا رکاوٹ پروپوزل بھیج اور قبول کر سکتے ہیں۔
             </p>
-            <Button variant="primary" size="sm" onClick={onClose} className="mt-3">
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={async () => {
+                if (refreshUser) await refreshUser();
+                if (onVerified) onVerified();
+                onClose();
+              }}
+              className="mt-3"
+            >
               Proceed / آگے بڑھیں
             </Button>
           </div>

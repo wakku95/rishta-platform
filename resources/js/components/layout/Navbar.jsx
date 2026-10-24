@@ -6,14 +6,39 @@ import ThemeToggle from '../ui/ThemeToggle';
 import NotificationBell from '../notifications/NotificationBell';
 import useAuth from '../../hooks/useAuth';
 import { useTheme } from '../../contexts/ThemeContext';
+import { getRequestCounts } from '../../api/requests';
 
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [toolsDropdownOpen, setToolsDropdownOpen] = useState(false);
+  const [pendingProposalsCount, setPendingProposalsCount] = useState(0);
   const toolsDropdownRef = useRef(null);
   const location = useLocation();
   const { user, authenticated, logout } = useAuth();
   const { toggleTheme, isDark } = useTheme();
+
+  // Fetch pending proposals count for badge
+  useEffect(() => {
+    if (!authenticated) {
+      setPendingProposalsCount(0);
+      return;
+    }
+
+    const fetchCounts = async () => {
+      try {
+        const res = await getRequestCounts();
+        if (res.success && res.data) {
+          setPendingProposalsCount(res.data.pending_received || 0);
+        }
+      } catch (e) {
+        // quiet ignore
+      }
+    };
+
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 45000);
+    return () => clearInterval(interval);
+  }, [authenticated, location.pathname]);
 
   // Close menus on route change
   useEffect(() => {
@@ -59,7 +84,7 @@ export default function Navbar() {
   const desktopNavLinks = authenticated
     ? [
         { name: 'Find Matches', href: '/search' },
-        { name: 'Requests', href: '/requests' },
+        { name: 'Proposals', href: '/requests' },
         { name: 'Shortlist', href: '/shortlist' },
         { name: 'My Profile', href: '/profile' },
       ]
@@ -73,7 +98,7 @@ export default function Navbar() {
   const mobileNavLinks = authenticated
     ? [
         { name: 'Find Matches', href: '/search' },
-        { name: 'Requests', href: '/requests' },
+        { name: 'Proposals', href: '/requests' },
         { name: 'Shortlist', href: '/shortlist' },
         { name: 'My Profile', href: '/profile' },
         { name: 'Dashboard', href: '/dashboard' },
@@ -112,18 +137,26 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center gap-1.5 text-sm font-medium">
             {desktopNavLinks.map((link) => {
               const isActive = location.pathname === link.href;
+              const isProposals = link.name === 'Proposals';
+              const showBadge = isProposals && pendingProposalsCount > 0;
+
               return (
                 <Link
                   key={link.name}
                   to={link.href}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`px-3 py-1.5 rounded-xl transition-all duration-150 whitespace-nowrap ${
+                  className={`px-3 py-1.5 rounded-xl transition-all duration-150 whitespace-nowrap inline-flex items-center gap-1.5 ${
                     isActive
                       ? 'bg-magenta-500/15 text-magenta-400 font-semibold border border-magenta-500/30 shadow-xs'
                       : 'text-slate-300 hover:text-white hover:bg-navy-800/80'
                   }`}
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {showBadge && (
+                    <span className="inline-flex items-center justify-center px-1.5 py-0.2 min-w-[18px] h-[18px] text-[10px] font-bold rounded-full bg-magenta-500 text-white shadow-xs">
+                      {pendingProposalsCount > 99 ? '99+' : pendingProposalsCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}
@@ -283,19 +316,27 @@ export default function Navbar() {
           <div className="space-y-1">
             {mobileNavLinks.map((link) => {
               const isActive = location.pathname === link.href;
+              const isProposals = link.name === 'Proposals';
+              const showBadge = isProposals && pendingProposalsCount > 0;
+
               return (
                 <Link
                   key={link.name}
                   to={link.href}
                   onClick={() => setMobileMenuOpen(false)}
                   aria-current={isActive ? 'page' : undefined}
-                  className={`block px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
+                  className={`flex items-center justify-between px-4 py-3 rounded-xl text-base font-semibold transition-colors ${
                     isActive
                       ? 'bg-magenta-500/15 text-magenta-400 border border-magenta-500/40 font-bold'
                       : 'text-slate-300 hover:text-white hover:bg-navy-800'
                   }`}
                 >
-                  {link.name}
+                  <span>{link.name}</span>
+                  {showBadge && (
+                    <span className="inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold rounded-full bg-magenta-500 text-white shadow-xs">
+                      {pendingProposalsCount > 99 ? '99+' : pendingProposalsCount}
+                    </span>
+                  )}
                 </Link>
               );
             })}

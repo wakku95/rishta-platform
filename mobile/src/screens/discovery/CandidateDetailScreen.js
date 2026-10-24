@@ -29,8 +29,9 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function CandidateDetailScreen({ route, navigation }) {
   const { profileCode } = route.params;
-  const { isIdentityVerified } = useAuth();
+  const { isIdentityVerified, refreshUser } = useAuth();
   const [candidate, setCandidate] = useState(null);
+  const [activeRequest, setActiveRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [proposalModalOpen, setProposalModalOpen] = useState(false);
   const [senderIntro, setSenderIntro] = useState('');
@@ -46,6 +47,14 @@ export default function CandidateDetailScreen({ route, navigation }) {
       setTimeout(() => setCopied(false), 2000);
     } catch (e) {
       console.warn('Clipboard copy error:', e);
+    }
+  };
+
+  const handleGoToProposals = () => {
+    try {
+      navigation.navigate('MainTabs', { screen: 'Proposals' });
+    } catch (e) {
+      navigation.navigate('Proposals');
     }
   };
 
@@ -89,7 +98,12 @@ export default function CandidateDetailScreen({ route, navigation }) {
     const fetchCandidate = async () => {
       try {
         const res = await profilesApi.getDetail(profileCode);
-        setCandidate(res.data || res);
+        const candData = res.data || res;
+        setCandidate(candData);
+        const actReq = candData.viewer_context?.active_request;
+        if (actReq) {
+          setActiveRequest(actReq);
+        }
       } catch (err) {
         Alert.alert('Error', 'Failed to load candidate biodata.');
         navigation.goBack();
@@ -124,8 +138,48 @@ export default function CandidateDetailScreen({ route, navigation }) {
     );
   };
 
-  const handleOpenProposalModal = () => {
-    if (!isIdentityVerified) {
+  const handleOpenProposalModal = async () => {
+    // 1. Guard against duplicate proposal attempts
+    if (activeRequest) {
+      if (!activeRequest.is_sender) {
+        Alert.alert(
+          'Proposal Already Received / رشتہ موصول ہوچکا ہے',
+          'This candidate has already sent you a proposal! You cannot send a duplicate request — please check your Proposals tab to view and respond to their request.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'View in Proposals',
+              style: 'default',
+              onPress: handleGoToProposals,
+            },
+          ]
+        );
+      } else {
+        Alert.alert(
+          'Proposal Already Sent / رشتہ زیرِ التواء ہے',
+          'You already have an active proposal sent to this candidate. Track its status in your Proposals tab.',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            {
+              text: 'View in Proposals',
+              style: 'default',
+              onPress: handleGoToProposals,
+            },
+          ]
+        );
+      }
+      return;
+    }
+
+    let verified = isIdentityVerified;
+    if (!verified && refreshUser) {
+      const fresh = await refreshUser();
+      if (fresh?.is_identity_verified) {
+        verified = true;
+      }
+    }
+
+    if (!verified) {
       Alert.alert(
         'CNIC Verification Required / شناختی کارڈ کی تصدیق لازمی ہے',
         'To maintain a safe, family-vetted environment and protect candidate privacy, your CNIC (front & back) and live selfie must be verified before you can send a formal Rishta proposal.',
@@ -144,7 +198,15 @@ export default function CandidateDetailScreen({ route, navigation }) {
   };
 
   const handleSendProposal = async () => {
-    if (!isIdentityVerified) {
+    let verified = isIdentityVerified;
+    if (!verified && refreshUser) {
+      const fresh = await refreshUser();
+      if (fresh?.is_identity_verified) {
+        verified = true;
+      }
+    }
+
+    if (!verified) {
       setProposalModalOpen(false);
       Alert.alert(
         'Identity Verification Required',
@@ -246,7 +308,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, activeRequest && { paddingBottom: 220 }]}>
         {/* Profile Card Header */}
         <Card style={styles.profileHeaderCard}>
           <GenderAvatar
@@ -323,14 +385,64 @@ export default function CandidateDetailScreen({ route, navigation }) {
 
       {/* Fixed Bottom Action Bar */}
       <View style={styles.bottomBar}>
-        <Button
-          title="Send Formal Rishta Proposal"
-          onPress={handleOpenProposalModal}
-          variant="primary"
-          size="lg"
-          icon={() => <Ionicons name="heart" size={18} color={Colors.white} />}
-          style={styles.proposalButton}
-        />
+        {!activeRequest ? (
+          <Button
+            title="Send Formal Rishta Proposal"
+            onPress={handleOpenProposalModal}
+            variant="primary"
+            size="lg"
+            icon={() => <Ionicons name="heart" size={18} color={Colors.white} />}
+            style={styles.proposalButton}
+          />
+        ) : activeRequest.is_sender ? (
+          <View style={styles.activeRequestBox}>
+            <View style={styles.activeRequestHeader}>
+              <Ionicons name="time" size={16} color={Colors.gold[400]} />
+              <Text style={styles.activeRequestTitle}>
+                {activeRequest.status === 'accepted'
+                  ? 'Proposal Accepted / رشتہ منظور'
+                  : activeRequest.admin_status === 'pending_review'
+                  ? 'Proposal Sent (Under Admin Review)'
+                  : 'Proposal Sent to Candidate'}
+              </Text>
+            </View>
+            <Text style={styles.activeRequestSubtitle}>
+              {activeRequest.status === 'accepted'
+                ? 'Both candidate families have accepted this rishta proposal.'
+                : 'You have an active proposal with this candidate. Go to Proposals to track status.'}
+            </Text>
+            <Button
+              title="View in Proposals Tab / تجاویز دیکھیں"
+              onPress={handleGoToProposals}
+              variant="secondary"
+              size="sm"
+              style={{ marginTop: 8 }}
+            />
+          </View>
+        ) : (
+          <View style={styles.activeRequestBox}>
+            <View style={styles.activeRequestHeader}>
+              <Ionicons name="mail-unread" size={16} color={Colors.magenta[400]} />
+              <Text style={styles.activeRequestTitle}>
+                {activeRequest.status === 'accepted'
+                  ? 'Proposal Accepted / رشتہ منظور'
+                  : 'Candidate Sent You a Proposal!'}
+              </Text>
+            </View>
+            <Text style={styles.activeRequestSubtitle}>
+              {activeRequest.status === 'accepted'
+                ? 'Both candidate families have accepted this rishta proposal.'
+                : 'This candidate has sent you a proposal. Respond directly from your Proposals tab.'}
+            </Text>
+            <Button
+              title="Respond to Proposal / جواب دیں"
+              onPress={handleGoToProposals}
+              variant="primary"
+              size="sm"
+              style={{ marginTop: 8 }}
+            />
+          </View>
+        )}
       </View>
 
       {/* Comprehensive Proposal Modal with Both Question Fields */}
@@ -644,6 +756,29 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.35,
     shadowRadius: 8,
     elevation: 4,
+  },
+  activeRequestBox: {
+    backgroundColor: Colors.navy[950],
+    borderRadius: 14,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: Colors.navy[750],
+  },
+  activeRequestHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  activeRequestTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  activeRequestSubtitle: {
+    fontSize: 11,
+    color: Colors.slate[400],
+    lineHeight: 16,
   },
   proposalModalContainer: {
     flex: 1,

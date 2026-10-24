@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { CheckCircle, Heart, MessageSquare, AlertCircle, HelpCircle, User, Sparkles, ShieldCheck } from 'lucide-react';
 import Modal from '../ui/Modal';
@@ -15,6 +15,14 @@ export default function AcceptProposalModal({ isOpen, onClose, request, onSucces
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showGate, setShowGate] = useState(false);
+
+  useEffect(() => {
+    if (request) {
+      setReceiverAnswers(request.receiver_answers || '');
+      setReceiverIntro(request.receiver_intro || '');
+      setReceiverQuestions(request.receiver_questions || '');
+    }
+  }, [request, isOpen]);
 
   if (!isOpen || !request) return null;
 

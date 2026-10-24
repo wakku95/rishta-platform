@@ -106,6 +106,7 @@ export default function App() {
             <Route element={<VerifiedRoute />}>
               <Route path="shortlist" element={<ShortlistPage />} />
               <Route path="requests" element={<RequestsPage />} />
+              <Route path="proposals" element={<RequestsPage />} />
             </Route>
 
             {/* Admin Control Portal */}

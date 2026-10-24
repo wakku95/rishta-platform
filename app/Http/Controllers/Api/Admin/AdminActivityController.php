@@ -272,14 +272,23 @@ class AdminActivityController extends Controller
             'reviewed_at' => now(),
         ]);
 
+        // Determine WHO submitted the content that requires revision:
+        // 1. If proposal is accepted and sender has NOT yet replied, it's the receiver's response being moderated.
+        // 2. If sender has replied, it's the sender's answer being moderated.
+        // 3. If proposal is pending, it's the sender's initial proposal.
+        $isResponseRevision = ($rishtaRequest->status === RishtaRequest::STATUS_ACCEPTED && empty($rishtaRequest->sender_answers));
+        $targetUserId = $isResponseRevision ? $rishtaRequest->receiver_id : $rishtaRequest->sender_id;
+        $notificationTitle = $isResponseRevision ? 'Proposal Response Needs Revision ⚠️' : 'Proposal Needs Revision ⚠️';
+        $buttonLabel = $isResponseRevision ? 'Edit Response' : 'Edit Proposal';
+
         try {
             \App\Models\Announcement::sendToUser(
-                $rishtaRequest->sender_id,
-                'Proposal Needs Revision ⚠️',
+                $targetUserId,
+                $notificationTitle,
                 "Admin requested a revision on proposal [{$rishtaRequest->request_code}]: " . $request->input('admin_notes'),
                 'warning',
                 '/requests',
-                'Edit Proposal'
+                $buttonLabel
             );
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Log::warning("Failed to send revision notification: {$e->getMessage()}");
@@ -291,6 +300,7 @@ class AdminActivityController extends Controller
             'admin_status' => $rishtaRequest->admin_status,
             'status' => $rishtaRequest->status,
             'admin_notes' => $rishtaRequest->admin_notes,
+            'target_user_id' => $targetUserId,
         ], "Revision requested for proposal [{$rishtaRequest->request_code}]. The candidate can now edit their answers without permanent decline.");
     }
 

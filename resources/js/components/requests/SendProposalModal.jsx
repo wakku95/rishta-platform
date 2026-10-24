@@ -8,12 +8,18 @@ import { sendRishtaRequest } from '../../api/requests';
 import IdentityVerificationGateModal from '../verification/IdentityVerificationGateModal';
 
 export default function SendProposalModal({ isOpen, onClose, candidate, onSuccess }) {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const [senderIntro, setSenderIntro] = useState('');
   const [senderQuestions, setSenderQuestions] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showGate, setShowGate] = useState(false);
+
+  React.useEffect(() => {
+    if (isOpen && user && !user.is_identity_verified && refreshUser) {
+      refreshUser();
+    }
+  }, [isOpen]);
 
   if (!isOpen || !candidate) return null;
 
@@ -209,10 +215,14 @@ export default function SendProposalModal({ isOpen, onClose, candidate, onSucces
     {showGate && (
       <IdentityVerificationGateModal
         isOpen={showGate}
-        onClose={() => setShowGate(false)}
-        actionType="send"
-        onVerified={() => {
+        onClose={async () => {
           setShowGate(false);
+          if (refreshUser) await refreshUser();
+        }}
+        actionType="send"
+        onVerified={async () => {
+          setShowGate(false);
+          if (refreshUser) await refreshUser();
           handleSubmit(new Event('submit'));
         }}
       />

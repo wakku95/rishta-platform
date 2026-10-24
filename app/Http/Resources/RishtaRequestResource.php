@@ -22,16 +22,95 @@ class RishtaRequestResource extends JsonResource
         $targetUser = $isSender ? $this->receiver : $this->sender;
         $targetProfile = $targetUser?->profile;
 
+        // Determine who must edit if revision is requested by admin
+        $isResponseUnderRevision = $this->status === \App\Models\RishtaRequest::STATUS_ACCEPTED && empty($this->sender_answers);
+        $isSenderAnswersUnderRevision = $this->status === \App\Models\RishtaRequest::STATUS_ACCEPTED && !empty($this->sender_answers);
+        $isInitialProposalUnderRevision = $this->status === \App\Models\RishtaRequest::STATUS_PENDING;
+
+        $needsRevisionTarget = null;
+        if (($this->admin_status ?? null) === \App\Models\RishtaRequest::ADMIN_STATUS_NEEDS_REVISION) {
+            if ($isInitialProposalUnderRevision || $isSenderAnswersUnderRevision) {
+                $needsRevisionTarget = 'sender';
+            } elseif ($isResponseUnderRevision) {
+                $needsRevisionTarget = 'receiver';
+            }
+        }
+
+        $canEditResponse = false;
+        if ($needsRevisionTarget === 'sender' && $isSender) {
+            $canEditResponse = true;
+        } elseif ($needsRevisionTarget === 'receiver' && !$isSender) {
+            $canEditResponse = true;
+        }
+
+        // Moderation privacy: ensure unapproved text/edits are not leaked to the counter-party before admin approval
+        $adminStatus = $this->admin_status ?? \App\Models\RishtaRequest::ADMIN_STATUS_APPROVED;
+        $isApproved = ($adminStatus === \App\Models\RishtaRequest::ADMIN_STATUS_APPROVED);
+
+        // Receiver's response is pending moderation when status is accepted, sender hasn't replied yet, and admin hasn't approved the response
+        $isReceiverResponsePendingModeration = ($this->status === \App\Models\RishtaRequest::STATUS_ACCEPTED && empty($this->sender_answers) && !$isApproved);
+
+        // Sender's answers to counter-questions are pending moderation when sender has submitted answers and admin hasn't approved them
+        $isSenderAnswersPendingModeration = ($this->status === \App\Models\RishtaRequest::STATUS_ACCEPTED && !empty($this->sender_answers) && !$isApproved);
+
+        // Initial proposal is pending moderation when status is pending and admin hasn't approved it
+        $isInitialProposalPendingModeration = ($this->status === \App\Models\RishtaRequest::STATUS_PENDING && !$isApproved);
+
+        $hasReceiverResponse = !empty($this->receiver_intro) || !empty($this->receiver_answers) || !empty($this->receiver_questions);
+        $hasSenderAnswers = !empty($this->sender_answers);
+
+        // Safe field values
+        $senderIntro = $this->sender_intro;
+        $senderQuestions = $this->sender_questions;
+        $receiverIntro = $this->receiver_intro;
+        $receiverAnswers = $this->receiver_answers;
+        $receiverQuestions = $this->receiver_questions;
+        $senderAnswers = $this->sender_answers;
+
+        $isAdmin = (bool) $request->user()?->isAdmin();
+
+        if (!$isAdmin) {
+            if ($isSender) {
+                // If receiver's response has not been approved by admin, hide receiver's response from sender
+                if ($isReceiverResponsePendingModeration) {
+                    $receiverIntro = null;
+                    $receiverAnswers = null;
+                    $receiverQuestions = null;
+                }
+            } else {
+                // Current user is receiver
+                // If initial proposal is not yet approved, hide sender's intro and questions
+                if ($isInitialProposalPendingModeration) {
+                    $senderIntro = null;
+                    $senderQuestions = null;
+                }
+                // If sender's answers to counter-questions are not yet approved, hide sender_answers from receiver
+                if ($isSenderAnswersPendingModeration) {
+                    $senderAnswers = null;
+                }
+            }
+        }
+
         return [
+            'id' => $this->id,
             'request_code' => $this->request_code,
+            'direction' => $isSender ? 'sent' : 'received',
+            'type' => $isSender ? 'sent' : 'received',
+            'can_edit_response' => $canEditResponse,
+            'needs_revision_target' => $needsRevisionTarget,
+            'receiver_response_pending_moderation' => $isReceiverResponsePendingModeration,
+            'sender_answers_pending_moderation' => $isSenderAnswersPendingModeration,
+            'has_receiver_response' => $hasReceiverResponse,
+            'has_sender_answers' => $hasSenderAnswers,
+            'message' => $senderIntro ?: ($senderQuestions ?: null),
             'status' => $this->status,
-            'admin_status' => $this->admin_status ?? RishtaRequest::ADMIN_STATUS_APPROVED,
-            'sender_intro' => $this->sender_intro,
-            'sender_questions' => $this->sender_questions,
-            'receiver_intro' => $this->receiver_intro,
-            'receiver_answers' => $this->receiver_answers,
-            'receiver_questions' => $this->receiver_questions,
-            'sender_answers' => $this->sender_answers,
+            'admin_status' => $adminStatus,
+            'sender_intro' => $senderIntro,
+            'sender_questions' => $senderQuestions,
+            'receiver_intro' => $receiverIntro,
+            'receiver_answers' => $receiverAnswers,
+            'receiver_questions' => $receiverQuestions,
+            'sender_answers' => $senderAnswers,
             'photo_request_status' => $this->photo_request_status ?? 'none',
             'photo_requested_by_me' => ($isSender ? (bool) $this->sender_requested_photo : (bool) $this->receiver_requested_photo) || ($this->photo_requested_by === $currentUserId),
             'photo_requested_by_candidate' => ($isSender ? (bool) $this->receiver_requested_photo : (bool) $this->sender_requested_photo) || (!empty($this->photo_requested_by) && $this->photo_requested_by !== $currentUserId),

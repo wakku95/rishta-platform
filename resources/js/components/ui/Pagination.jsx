@@ -18,7 +18,7 @@ export default function Pagination({
     <div className={`flex flex-col sm:flex-row items-center justify-between gap-4 py-4 ${className}`}>
       <p className="text-xs text-slate-400">
         Page <span className="font-semibold text-white">{currentPage}</span> of{' '}
-        <span className="font-semibold text-white">{lastPage}</span> ({total} total)
+        <span className="font-semibold text-white">{lastPage}</span>
       </p>
 
       <div className="flex items-center gap-2">

@@ -10,8 +10,10 @@ import Alert from '../ui/Alert';
 import Modal from '../ui/Modal';
 import { verificationApi } from '../../api/verification';
 import LiveSelfieCamera from '../verification/LiveSelfieCamera';
+import useAuth from '../../hooks/useAuth';
 
 export default function VerificationSection() {
+  const { refreshUser } = useAuth();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -35,6 +37,9 @@ export default function VerificationSection() {
     try {
       const res = await verificationApi.getStatus();
       setData(res);
+      if (res?.identity?.status === 'approved' || res?.summary?.identity_verified) {
+        if (refreshUser) refreshUser();
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to load verification status.');
     } finally {

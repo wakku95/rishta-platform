@@ -36,8 +36,12 @@ export default function VerificationScreen({ navigation }) {
   const fetchStatus = async () => {
     try {
       const res = await verificationApi.getStatus();
-      setData(res.data || res);
+      const statusData = res.data || res;
+      setData(statusData);
       setSessionExpired(false);
+      if (statusData?.identity?.status === 'approved' || statusData?.summary?.identity_verified) {
+        await refreshUser();
+      }
     } catch (err) {
       console.warn('Failed to fetch status:', err);
       if (

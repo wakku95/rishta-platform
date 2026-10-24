@@ -7,6 +7,11 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#111827",
+    "splash": {
+      "image": "./assets/raabtanow-logo-white-transparent.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#111827"
+    },
     "platforms": [
       "ios",
       "android"

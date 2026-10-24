@@ -30,6 +30,26 @@ export const Colors = {
     300: '#FCD34D',
   },
 
+  // Amber Accent
+  amber: {
+    600: '#D97706',
+    500: '#F59E0B',
+    400: '#FBBF24',
+    300: '#FCD34D',
+    200: '#FDE68A',
+    100: '#FEF3C7',
+  },
+
+  // Cyan Accent
+  cyan: {
+    600: '#0891B2',
+    500: '#06B6D4',
+    400: '#22D3EE',
+    300: '#67E8F9',
+    200: '#A5F3FC',
+    100: '#CFFAFE',
+  },
+
   // Success / Verified Badge
   emerald: {
     600: '#059669',

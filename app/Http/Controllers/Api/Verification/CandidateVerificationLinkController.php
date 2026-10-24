@@ -196,6 +196,29 @@ class CandidateVerificationLinkController extends Controller
                     $listing->update(['education_verified_at' => now()]);
                 }
             }
+        } elseif ($record->candidate_type === 'candidate') {
+            $profile = \App\Models\Profile::find($record->candidate_id);
+            if ($profile && $profile->user_id) {
+                $verifType = ($record->document_type === 'degree')
+                    ? \App\Models\ProfileVerification::TYPE_EDUCATION
+                    : \App\Models\ProfileVerification::TYPE_IDENTITY;
+
+                \App\Models\ProfileVerification::updateOrCreate(
+                    [
+                        'user_id' => $profile->user_id,
+                        'type' => $verifType,
+                    ],
+                    [
+                        'status' => \App\Models\ProfileVerification::STATUS_APPROVED,
+                        'reviewed_at' => now(),
+                        'reviewed_by' => $request->user()?->id,
+                        'document_front_path' => $record->document_front_path,
+                        'document_back_path' => $record->document_back_path,
+                        'live_photo_path' => $record->live_photo_path,
+                        'rejection_reason' => null,
+                    ]
+                );
+            }
         }
 
         return $this->successResponse($record, 'Candidate verification approved successfully.');

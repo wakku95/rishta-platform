@@ -122,14 +122,23 @@ class RishtaRequestController extends Controller
         // 6. Database transaction with concurrency lock and lazy expiration cleanup
         try {
             $rishtaRequest = DB::transaction(function () use ($request, $sender, $receiver, $activePairHash) {
-                // Check if an active request exists with this hash
-                $existing = RishtaRequest::where('active_pair_hash', $activePairHash)
-                    ->lockForUpdate()
-                    ->first();
+                // Check if an active request exists between both candidates
+                $existing = RishtaRequest::where(function ($q) use ($sender, $receiver, $activePairHash) {
+                    $q->where('active_pair_hash', $activePairHash)
+                      ->orWhere(function ($sub) use ($sender, $receiver) {
+                          $sub->where('sender_id', $sender->id)->where('receiver_id', $receiver->id);
+                      })
+                      ->orWhere(function ($sub) use ($sender, $receiver) {
+                          $sub->where('sender_id', $receiver->id)->where('receiver_id', $sender->id);
+                      });
+                })
+                ->whereIn('status', [RishtaRequest::STATUS_PENDING, RishtaRequest::STATUS_ACCEPTED])
+                ->lockForUpdate()
+                ->first();
 
                 if ($existing) {
                     // Check lazy expiration
-                    if ($existing->status === RishtaRequest::STATUS_PENDING && $existing->expires_at->isPast()) {
+                    if ($existing->status === RishtaRequest::STATUS_PENDING && $existing->expires_at && $existing->expires_at->isPast()) {
                         $existing->update([
                             'status' => RishtaRequest::STATUS_EXPIRED,
                             'active_pair_hash' => null,
@@ -137,9 +146,11 @@ class RishtaRequestController extends Controller
                     } else {
                         // Request is currently active
                         if ($existing->status === RishtaRequest::STATUS_ACCEPTED) {
-                            abort(Response::HTTP_CONFLICT, 'ACTIVE_REQUEST_EXISTS:A connection is already active between both candidates.');
+                            abort(Response::HTTP_CONFLICT, 'ACTIVE_REQUEST_EXISTS:A rishta connection is already accepted and active between both candidates.');
+                        } elseif ($existing->sender_id === $receiver->id) {
+                            abort(Response::HTTP_CONFLICT, 'ACTIVE_REQUEST_EXISTS:This candidate has already sent you a formal Rishta proposal. Please check your Proposals tab to view and respond to their proposal.');
                         } else {
-                            abort(Response::HTTP_CONFLICT, 'ACTIVE_REQUEST_EXISTS:A pending request already exists between both candidates.');
+                            abort(Response::HTTP_CONFLICT, 'ACTIVE_REQUEST_EXISTS:You already have a pending proposal with this candidate. Please check your Proposals tab.');
                         }
                     }
                 }
@@ -183,6 +194,104 @@ class RishtaRequestController extends Controller
             'Rishta proposal submitted successfully. It will be delivered to the candidate once reviewed by our moderation team.',
             Response::HTTP_CREATED
         );
+    }
+
+    /**
+     * Get aggregate badge and proposal counts for the current user.
+     */
+    public function counts(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        // Pending received proposals that need user's action
+        $pendingReceived = RishtaRequest::where('receiver_id', $user->id)
+            ->where('status', RishtaRequest::STATUS_PENDING)
+            ->where('admin_status', RishtaRequest::ADMIN_STATUS_APPROVED)
+            ->count();
+
+        // Total received proposals
+        $totalReceived = RishtaRequest::where('receiver_id', $user->id)
+            ->where(function ($q) {
+                $q->where(function ($sub) {
+                    $sub->where('status', RishtaRequest::STATUS_PENDING)
+                        ->where('admin_status', RishtaRequest::ADMIN_STATUS_APPROVED);
+                })->orWhere('status', '!=', RishtaRequest::STATUS_PENDING);
+            })
+            ->count();
+
+        // Sent proposals count
+        $sent = RishtaRequest::where('sender_id', $user->id)->count();
+
+        // Assisted inquiries count
+        $assistedInquiries = \App\Models\AssistedListingInterest::where('user_id', $user->id)->count();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'pending_received' => $pendingReceived,
+                'received' => $totalReceived,
+                'sent' => $sent,
+                'assisted_inquiries' => $assistedInquiries,
+            ],
+        ]);
+    }
+
+    /**
+     * Get paginated list of all requests (or filtered by type=sent|received).
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $type = $request->input('type');
+        if ($type === 'received') {
+            return $this->received($request);
+        }
+        if ($type === 'sent') {
+            return $this->sent($request);
+        }
+
+        $user = $request->user();
+        $perPage = $request->integer('per_page', 20);
+        if ($perPage < 1 || $perPage > 50) {
+            $perPage = 20;
+        }
+
+        $query = RishtaRequest::query()
+            ->where(function ($q) use ($user) {
+                $q->where('sender_id', $user->id)
+                  ->orWhere(function ($recv) use ($user) {
+                      $recv->where('receiver_id', $user->id)
+                           ->where(function ($sub) {
+                               $sub->where(function ($p) {
+                                   $p->where('status', RishtaRequest::STATUS_PENDING)
+                                     ->where('admin_status', RishtaRequest::ADMIN_STATUS_APPROVED);
+                               })
+                               ->orWhere('status', '!=', RishtaRequest::STATUS_PENDING);
+                           });
+                  });
+            })
+            ->with(['sender.profile', 'receiver.profile']);
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+
+        $paginator = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        foreach ($paginator->items() as $item) {
+            $item->checkAndApplyLazyExpiration();
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Proposals retrieved successfully.',
+            'data' => RishtaRequestResource::collection($paginator->items()),
+            'meta' => [
+                'current_page' => $paginator->currentPage(),
+                'last_page' => $paginator->lastPage(),
+                'per_page' => $paginator->perPage(),
+                'total' => $paginator->total(),
+            ],
+        ], Response::HTTP_OK);
     }
 
     /**
