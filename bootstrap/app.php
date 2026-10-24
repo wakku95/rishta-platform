@@ -16,6 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
         \App\Console\Commands\PurgeApprovedDocumentsCommand::class,
     ])
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->trustProxies(at: '*');
         $middleware->statefulApi();
         $middleware->redirectGuestsTo(fn (\Illuminate\Http\Request $request) => $request->is('api/*') ? null : '/login');
         $middleware->alias([

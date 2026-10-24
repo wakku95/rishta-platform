@@ -289,6 +289,57 @@ class AuthenticationTest extends TestCase
         Event::assertDispatched(Verified::class);
     }
 
+    public function test_email_verification_succeeds_even_with_proxy_scheme_mismatch(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'unverified2@example.com',
+        ]);
+
+        // Generate signed URL with HTTPS
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(60),
+            [
+                'id' => $user->id,
+                'hash' => sha1($user->getEmailForVerification()),
+            ]
+        );
+
+        // Access via HTTP (simulating reverse proxy SSL termination)
+        $httpUrl = str_replace('https://', 'http://', $verificationUrl);
+        $response = $this->getJson($httpUrl);
+
+        $response->assertStatus(200)
+            ->assertJson([
+                'success' => true,
+                'data' => ['email_verified' => true],
+            ]);
+
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+    }
+
+    public function test_email_verification_redirects_to_dashboard_when_accessed_via_browser(): void
+    {
+        $user = User::factory()->unverified()->create([
+            'email' => 'browser_user@example.com',
+        ]);
+
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(60),
+            [
+                'id' => $user->id,
+                'hash' => sha1($user->getEmailForVerification()),
+            ]
+        );
+
+        // Regular browser request (wants HTML)
+        $response = $this->get($verificationUrl);
+
+        $response->assertRedirect('/dashboard?verified=1');
+        $this->assertTrue($user->fresh()->hasVerifiedEmail());
+    }
+
     public function test_email_verification_fails_with_invalid_signature(): void
     {
         $user = User::factory()->unverified()->create([

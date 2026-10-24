@@ -31,7 +31,7 @@ Route::prefix('auth')->group(function () {
 
     // Email verification link (accessed from email)
     Route::get('/email/verify/{id}/{hash}', [EmailVerificationController::class, 'verify'])
-        ->middleware(['signed', 'throttle:6,1'])
+        ->middleware(['throttle:6,1'])
         ->name('verification.verify');
 
     // Authenticated session routes

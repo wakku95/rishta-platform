@@ -34,7 +34,52 @@ class EmailVerificationController extends Controller
             return redirect('/verify-email?error=invalid_hash');
         }
 
-        if (!$request->hasValidSignature()) {
+        // Multi-tier signature validation:
+        // 1. Direct absolute signature check
+        $hasValidSignature = $request->hasValidSignature();
+
+        // 2. Relative signature check (immune to scheme/host proxy modifications)
+        if (!$hasValidSignature) {
+            $hasValidSignature = $request->hasValidSignature(false);
+        }
+
+        // 3. Scheme normalization check (http vs https reverse proxy mismatch)
+        if (!$hasValidSignature) {
+            $fullUrl = $request->fullUrl();
+            $alternateUrl = str_starts_with($fullUrl, 'https://')
+                ? 'http://' . substr($fullUrl, 8)
+                : (str_starts_with($fullUrl, 'http://') ? 'https://' . substr($fullUrl, 7) : null);
+
+            if ($alternateUrl) {
+                $altRequest = Request::create($alternateUrl, 'GET', $request->query->all(), $request->cookies->all(), [], $request->server->all());
+                $hasValidSignature = $altRequest->hasValidSignature();
+            }
+        }
+
+        // 4. Host normalization check (www vs non-www)
+        if (!$hasValidSignature) {
+            $host = $request->getHost();
+            $altHost = str_starts_with($host, 'www.')
+                ? substr($host, 4)
+                : 'www.' . $host;
+
+            $altHostUrl = str_replace($host, $altHost, $request->fullUrl());
+            $altHostRequest = Request::create($altHostUrl, 'GET', $request->query->all(), $request->cookies->all(), [], $request->server->all());
+            $hasValidSignature = $altHostRequest->hasValidSignature();
+
+            // Also check alternate scheme with alternate host
+            if (!$hasValidSignature) {
+                $altHostAndScheme = str_starts_with($altHostUrl, 'https://')
+                    ? 'http://' . substr($altHostUrl, 8)
+                    : (str_starts_with($altHostUrl, 'http://') ? 'https://' . substr($altHostUrl, 7) : null);
+                if ($altHostAndScheme) {
+                    $altBothRequest = Request::create($altHostAndScheme, 'GET', $request->query->all(), $request->cookies->all(), [], $request->server->all());
+                    $hasValidSignature = $altBothRequest->hasValidSignature();
+                }
+            }
+        }
+
+        if (!$hasValidSignature) {
             if ($request->wantsJson()) {
                 return $this->errorResponse(
                     'Verification link has expired or is invalid.',
