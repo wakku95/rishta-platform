@@ -736,7 +736,7 @@ export default function RequestsPage() {
                 </div>
 
                 {/* Proposal Q&A Section */}
-                {(req.sender_intro || req.sender_questions || req.receiver_intro || req.receiver_answers || req.receiver_questions || req.sender_answers || (req.is_sender && (req.receiver_response_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && !req.sender_answers))) || (!req.is_sender && (req.sender_answers_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && req.has_sender_answers)))) && (
+                {(req.sender_intro || req.sender_questions || req.receiver_intro || req.receiver_answers || req.receiver_questions || req.sender_answers || (req.is_sender && (req.receiver_response_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved'))) || (!req.is_sender && (req.sender_answers_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && req.has_sender_answers)))) && (
                   <div className="w-full pt-3 border-t border-slate-750/70 space-y-2.5">
                     <div className="flex items-center gap-1.5 text-[11px] font-bold text-magenta-400">
                       <MessageSquare className="w-3.5 h-3.5" />
@@ -762,7 +762,7 @@ export default function RequestsPage() {
                         </div>
                       )}
 
-                      {req.is_sender && (req.receiver_response_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved' && !req.sender_answers)) ? (
+                      {req.is_sender && (req.receiver_response_pending_moderation || (req.status === 'accepted' && req.admin_status !== 'approved')) ? (
                         <div className="col-span-1 md:col-span-2 bg-amber-500/10 p-2.5 rounded-xl border border-amber-500/30 text-amber-300 text-xs flex items-center gap-2">
                           {req.admin_status === 'needs_revision' ? (
                             <>

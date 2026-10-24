@@ -587,7 +587,7 @@ export default function ProposalsScreen({ navigation }) {
             const isReceived = typeTab === 'received';
             const candidate = item.candidate_profile || (isReceived ? item.sender?.profile || item.sender : item.receiver?.profile || item.receiver);
             const candCode = candidate?.profile_code;
-            const isSender = !isReceived;
+            const isSender = item.is_sender !== undefined ? Boolean(item.is_sender) : !isReceived;
             const badgeInfo = getBadgeInfo(item, isSender);
 
             return (
@@ -652,7 +652,7 @@ export default function ProposalsScreen({ navigation }) {
                 ) : null}
 
                 {/* Comprehensive Proposal Communication Thread (Q&A Section) */}
-                {(item.sender_intro || item.sender_questions || item.receiver_intro || item.receiver_answers || item.receiver_questions || item.sender_answers || (isSender && (item.receiver_response_pending_moderation || (item.status === 'accepted' && item.admin_status !== 'approved' && !item.sender_answers))) || (!isSender && (item.sender_answers_pending_moderation || (item.status === 'accepted' && item.admin_status !== 'approved' && item.has_sender_answers)))) && (
+                {(item.sender_intro || item.sender_questions || item.receiver_intro || item.receiver_answers || item.receiver_questions || item.sender_answers || (isSender && (item.receiver_response_pending_moderation || (item.status === 'accepted' && item.admin_status !== 'approved'))) || (!isSender && (item.sender_answers_pending_moderation || (item.status === 'accepted' && item.admin_status !== 'approved' && item.has_sender_answers)))) && (
                   <View style={styles.communicationThread}>
                     <View style={styles.threadHeaderRow}>
                       <Ionicons name="chatbubbles-outline" size={14} color={Colors.magenta[400]} />
@@ -680,7 +680,7 @@ export default function ProposalsScreen({ navigation }) {
                     ) : null}
 
                     {/* Moderation Pending Review Notice for Sender */}
-                    {isSender && (item.receiver_response_pending_moderation || (item.status === 'accepted' && item.admin_status !== 'approved' && !item.sender_answers)) ? (
+                    {isSender && (item.receiver_response_pending_moderation || (item.status === 'accepted' && item.admin_status !== 'approved')) ? (
                       <View style={[styles.reviewNoticeBox, item.admin_status === 'needs_revision' ? { borderColor: 'rgba(244, 63, 94, 0.4)' } : {}]}>
                         <Ionicons
                           name={item.admin_status === 'needs_revision' ? 'alert-circle-outline' : 'time-outline'}

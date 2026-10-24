@@ -67,27 +67,25 @@ class RishtaRequestResource extends JsonResource
         $receiverQuestions = $this->receiver_questions;
         $senderAnswers = $this->sender_answers;
 
-        $isAdmin = (bool) $request->user()?->isAdmin();
-
-        if (!$isAdmin) {
-            if ($isSender) {
-                // If receiver's response has not been approved by admin, hide receiver's response from sender
-                if ($isReceiverResponsePendingModeration) {
-                    $receiverIntro = null;
-                    $receiverAnswers = null;
-                    $receiverQuestions = null;
-                }
-            } else {
-                // Current user is receiver
-                // If initial proposal is not yet approved, hide sender's intro and questions
-                if ($isInitialProposalPendingModeration) {
-                    $senderIntro = null;
-                    $senderQuestions = null;
-                }
-                // If sender's answers to counter-questions are not yet approved, hide sender_answers from receiver
-                if ($isSenderAnswersPendingModeration) {
-                    $senderAnswers = null;
-                }
+        // Strict Moderation Privacy:
+        // Even if the logged-in user is an admin testing in the user app, candidate proposal screens must NEVER leak unapproved messages!
+        if ($isSender) {
+            // SENDER VIEW: If receiver's response has not been approved by admin, completely hide all receiver response fields
+            if (!$isApproved) {
+                $receiverIntro = null;
+                $receiverAnswers = null;
+                $receiverQuestions = null;
+            }
+        } else {
+            // RECEIVER VIEW:
+            // 1. If sender's initial proposal is not approved yet, hide sender intro and questions
+            if ($this->status === \App\Models\RishtaRequest::STATUS_PENDING && !$isApproved) {
+                $senderIntro = null;
+                $senderQuestions = null;
+            }
+            // 2. If sender's reply to counter-questions is not approved yet, hide sender answers
+            if ($isSenderAnswersPendingModeration) {
+                $senderAnswers = null;
             }
         }
 
