@@ -27,9 +27,10 @@ import Button from '../../components/common/Button';
 import { requestsApi } from '../../api/requests';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { Config } from '../../constants/config';
 
 export default function ProposalsScreen({ navigation }) {
-  const { isIdentityVerified } = useAuth();
+  const { isIdentityVerified, user, token } = useAuth();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -75,6 +76,18 @@ export default function ProposalsScreen({ navigation }) {
   const [otpStep, setOtpStep] = useState('input_phone');
   const [sendingOtp, setSendingOtp] = useState(false);
   const [verifyingOtp, setVerifyingOtp] = useState(false);
+
+  // Private Photo States
+  const [photoTarget, setPhotoTarget] = useState(null);
+  const [photoModalOpen, setPhotoModalOpen] = useState(false);
+  const [photoModalMode, setPhotoModalMode] = useState('upload'); // 'upload' | 'fee'
+  const [viewerModalOpen, setViewerModalOpen] = useState(false);
+  const [isHoldingPhoto, setIsHoldingPhoto] = useState(false);
+  const [uploadPhotoAsset, setUploadPhotoAsset] = useState(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [photoTid, setPhotoTid] = useState('');
+  const [photoReceiptAsset, setPhotoReceiptAsset] = useState(null);
+  const [submittingPhotoFee, setSubmittingPhotoFee] = useState(false);
 
   const fetchCounts = useCallback(async () => {
     try {
@@ -340,6 +353,135 @@ export default function ProposalsScreen({ navigation }) {
         },
       ]
     );
+  };
+
+  const handleOpenPhotoViewer = (proposal) => {
+    setPhotoTarget(proposal);
+    setIsHoldingPhoto(false);
+    setViewerModalOpen(true);
+  };
+
+  const handleOpenPhotoUpload = (proposal) => {
+    setPhotoTarget(proposal);
+    setPhotoModalMode('upload');
+    setUploadPhotoAsset(null);
+    setPhotoModalOpen(true);
+  };
+
+  const handleOpenPhotoFeeModal = (proposal) => {
+    setPhotoTarget(proposal);
+    setPhotoModalMode('fee');
+    setPhotoTid('');
+    setPhotoReceiptAsset(null);
+    setPhotoModalOpen(true);
+  };
+
+  const handlePickUploadPhoto = async () => {
+    Alert.alert(
+      'Select Photo / تصویر منتخب کریں',
+      'Choose image source:',
+      [
+        {
+          text: 'Gallery / گیلری',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Media library permission is required.');
+              return;
+            }
+            const result = await ImagePicker.launchImageLibraryAsync({
+              quality: 0.8,
+              allowsEditing: true,
+            });
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+              setUploadPhotoAsset(result.assets[0]);
+            }
+          },
+        },
+        {
+          text: 'Camera / کیمرہ',
+          onPress: async () => {
+            const { status } = await ImagePicker.requestCameraPermissionsAsync();
+            if (status !== 'granted') {
+              Alert.alert('Permission Denied', 'Camera permission is required.');
+              return;
+            }
+            const result = await ImagePicker.launchCameraAsync({
+              quality: 0.8,
+              allowsEditing: true,
+            });
+            if (!result.canceled && result.assets && result.assets.length > 0) {
+              setUploadPhotoAsset(result.assets[0]);
+            }
+          },
+        },
+        { text: 'Cancel', style: 'cancel' },
+      ]
+    );
+  };
+
+  const handleSubmitUploadPhoto = async () => {
+    if (!photoTarget || !uploadPhotoAsset) {
+      Alert.alert('Photo Required', 'Please select a photo to upload.');
+      return;
+    }
+    setUploadingPhoto(true);
+    try {
+      const formData = new FormData();
+      formData.append('photo', {
+        uri: uploadPhotoAsset.uri,
+        name: uploadPhotoAsset.fileName || 'proposal_photo.jpg',
+        type: uploadPhotoAsset.mimeType || 'image/jpeg',
+      });
+      await requestsApi.uploadProposalPhoto(photoTarget.request_code || photoTarget.id, formData);
+      setPhotoModalOpen(false);
+      setUploadPhotoAsset(null);
+      fetchRequests(typeTab, statusFilter);
+      Alert.alert(
+        'Photo Uploaded / تصویر جمع ہو گئی',
+        'Your photo has been uploaded and submitted for administrator quality review. Once approved, candidate will be able to view it.'
+      );
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to upload photo.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleSubmitPhotoFee = async () => {
+    if (!photoTarget) return;
+    const cleanTid = photoTid.trim();
+    if (cleanTid.length < 6) {
+      Alert.alert('Required', 'Please enter a valid Transaction Reference / TID (minimum 6 characters).');
+      return;
+    }
+    if (!photoReceiptAsset) {
+      Alert.alert('Required', 'Please select payment screenshot or receipt.');
+      return;
+    }
+    setSubmittingPhotoFee(true);
+    try {
+      const formData = new FormData();
+      formData.append('transaction_reference', cleanTid);
+      formData.append('receipt', {
+        uri: photoReceiptAsset.uri,
+        name: photoReceiptAsset.fileName || 'photo_fee_receipt.jpg',
+        type: photoReceiptAsset.mimeType || 'image/jpeg',
+      });
+      await requestsApi.submitManualPhotoProof(photoTarget.request_code || photoTarget.id, formData);
+      setPhotoModalOpen(false);
+      setPhotoReceiptAsset(null);
+      setPhotoTid('');
+      fetchRequests(typeTab, statusFilter);
+      Alert.alert(
+        'Payment Proof Submitted / رسید جمع ہو گئی',
+        'Photo fee proof submitted! Administrator will verify it shortly to unlock the candidate photo.'
+      );
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to submit payment proof.');
+    } finally {
+      setSubmittingPhotoFee(false);
+    }
   };
 
   // 7. Contact Unlock & Details Modal Handlers
@@ -1067,14 +1209,45 @@ export default function ProposalsScreen({ navigation }) {
                         <View style={styles.mutualActionsRow}>
                           {/* Photo Exchange Action */}
                           {item.candidate_photo_shared ? (
-                            <View style={styles.photoSharedBadge}>
-                              <Ionicons name="image" size={14} color={Colors.cyan[300]} />
-                              <Text style={styles.photoSharedBadgeText}>Photo Shared ✅</Text>
-                            </View>
+                            item.can_view_candidate_photo || (item.photo_moderation_status === 'approved' && item.photo_paid) ? (
+                              <TouchableOpacity
+                                style={styles.photoViewBtn}
+                                onPress={() => handleOpenPhotoViewer(item)}
+                              >
+                                <Ionicons name="eye" size={14} color={Colors.white} />
+                                <Text style={styles.photoViewBtnText}>Hold to View Photo / تصویر دیکھیں</Text>
+                              </TouchableOpacity>
+                            ) : item.photo_payment_pending ? (
+                              <View style={styles.photoPendingBadge}>
+                                <Ionicons name="time-outline" size={14} color={Colors.gold[400]} />
+                                <Text style={styles.photoPendingBadgeText}>Photo Fee Under Review</Text>
+                              </View>
+                            ) : item.photo_moderation_status === 'approved' ? (
+                              <TouchableOpacity
+                                style={styles.photoPayBtn}
+                                onPress={() => handleOpenPhotoFeeModal(item)}
+                              >
+                                <Ionicons name="card-outline" size={14} color={Colors.white} />
+                                <Text style={styles.photoPayBtnText}>Unlock Photo (Rs. 300)</Text>
+                              </TouchableOpacity>
+                            ) : (
+                              <View style={styles.photoPendingBadge}>
+                                <Ionicons name="time-outline" size={14} color={Colors.gold[400]} />
+                                <Text style={styles.photoPendingBadgeText}>Candidate Photo In Review</Text>
+                              </View>
+                            )
+                          ) : item.photo_requested_by_candidate && !item.my_photo_shared ? (
+                            <TouchableOpacity
+                              style={styles.photoUploadReqBtn}
+                              onPress={() => handleOpenPhotoUpload(item)}
+                            >
+                              <Ionicons name="camera" size={14} color={Colors.white} />
+                              <Text style={styles.photoUploadReqBtnText}>Candidate Asked for Photo (Upload)</Text>
+                            </TouchableOpacity>
                           ) : item.photo_requested_by_me ? (
                             <View style={styles.photoPendingBadge}>
                               <Ionicons name="time-outline" size={14} color={Colors.gold[400]} />
-                              <Text style={styles.photoPendingBadgeText}>Photo Requested</Text>
+                              <Text style={styles.photoPendingBadgeText}>Photo Requested (Awaiting Candidate)</Text>
                             </View>
                           ) : (
                             <TouchableOpacity
@@ -1085,6 +1258,24 @@ export default function ProposalsScreen({ navigation }) {
                               <Text style={styles.photoReqBtnText}>Request Photo</Text>
                             </TouchableOpacity>
                           )}
+
+                          {/* My Photo Upload / Status */}
+                          {!item.my_photo_shared && !item.photo_requested_by_candidate ? (
+                            <TouchableOpacity
+                              style={styles.photoShareBtn}
+                              onPress={() => handleOpenPhotoUpload(item)}
+                            >
+                              <Ionicons name="cloud-upload-outline" size={13} color={Colors.magenta[300]} />
+                              <Text style={styles.photoShareBtnText}>Share My Photo</Text>
+                            </TouchableOpacity>
+                          ) : item.my_photo_shared ? (
+                            <View style={styles.photoMySharedBadge}>
+                              <Ionicons name="checkmark-circle" size={13} color={Colors.emerald[400]} />
+                              <Text style={styles.photoMySharedBadgeText}>
+                                {item.my_photo_moderation_status === 'approved' ? 'My Photo Approved ✅' : 'My Photo In Review'}
+                              </Text>
+                            </View>
+                          ) : null}
 
                           {/* CNIC Verified Status Badge */}
                           {item.candidate_nic_shared || item.candidate_is_identity_verified ? (
@@ -1790,6 +1981,302 @@ export default function ProposalsScreen({ navigation }) {
               variant="secondary"
               onPress={() => setContactModalOpen(false)}
               style={{ marginTop: 16 }}
+            />
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* 5. Secure Photo Viewer Modal (Hold to View) */}
+      <Modal
+        visible={viewerModalOpen}
+        animationType="fade"
+        transparent={false}
+        onRequestClose={() => setViewerModalOpen(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              onPress={() => setViewerModalOpen(false)}
+              style={styles.modalCloseBtn}
+            >
+              <Ionicons name="close" size={24} color={Colors.white} />
+            </TouchableOpacity>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.modalTitle}>Protected Photo Viewer</Text>
+              <Text style={styles.modalUrduTitle}>محفوظ تصویر • دیکھنے کے لیے انگلی دبا کر رکھیں</Text>
+            </View>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.viewerScroll}>
+            {/* Security Warning Notice */}
+            <View style={styles.securityWarningCard}>
+              <Ionicons name="shield-checkmark" size={18} color={Colors.cyan[400]} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.securityWarningTitle}>Anti-Screenshot & Watermark Active</Text>
+                <Text style={styles.securityWarningText}>
+                  تصویر پر آپ کی شناختی معلومات بطور واٹر مارک درج ہیں۔ سکرین شاٹ لینے یا محفوظ کرنے کی سخت ممانعت ہے۔
+                </Text>
+              </View>
+            </View>
+
+            {/* Hold to View Canvas Container */}
+            <TouchableOpacity
+              activeOpacity={1}
+              onPressIn={() => setIsHoldingPhoto(true)}
+              onPressOut={() => setIsHoldingPhoto(false)}
+              style={styles.photoViewerContainer}
+            >
+              {photoTarget && (
+                <Image
+                  source={{
+                    uri: `${Config.API_BASE_URL}/requests/${photoTarget.request_code || photoTarget.id}/view-photo`,
+                    headers: {
+                      Authorization: `Bearer ${token}`,
+                      Accept: 'image/*',
+                    },
+                  }}
+                  style={[
+                    styles.viewerImage,
+                    isHoldingPhoto ? styles.viewerImageSharp : styles.viewerImageBlur,
+                  ]}
+                  blurRadius={isHoldingPhoto ? 0 : 30}
+                  resizeMode="contain"
+                />
+              )}
+
+              {/* Watermark Diagonal Overlay (Always visible across the image for protection) */}
+              <View style={styles.watermarkOverlay} pointerEvents="none">
+                {[-20, 5, 30, 55, 80].map((topPct, idx) => (
+                  <Text key={idx} style={[styles.watermarkLine, { top: `${topPct}%` }]}>
+                    {user?.profile?.profile_code || 'MEMBER'} • {user?.phone || 'CONFIDENTIAL'} • RISHTA PROTECTED
+                  </Text>
+                ))}
+              </View>
+
+              {/* Blur / Cover Overlay when NOT holding */}
+              {!isHoldingPhoto && (
+                <View style={styles.coverOverlay} pointerEvents="none">
+                  <View style={styles.coverIconWrap}>
+                    <Ionicons name="eye-outline" size={40} color={Colors.cyan[400]} />
+                  </View>
+                  <Text style={styles.coverTitle}>Hold to View / دیکھنے کے لیے دبا کر رکھیں</Text>
+                  <Text style={styles.coverSubtitle}>
+                    تصویر دیکھنے کے لیے نیچے دیئے گئے بٹن یا تصویر پر انگلی دبا کر رکھیں۔ انگلی اٹھانے پر تصویر فوری طور پر دھندلی ہو جائے گی۔
+                  </Text>
+                </View>
+              )}
+
+              {/* Active Viewing Top Badge */}
+              {isHoldingPhoto && (
+                <View style={styles.activeViewingPill} pointerEvents="none">
+                  <Ionicons name="eye" size={13} color={Colors.cyan[300]} />
+                  <Text style={styles.activeViewingPillText}>Viewing Active • Release to Blur</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Big Touch & Hold Action Button */}
+            <TouchableOpacity
+              activeOpacity={0.85}
+              onPressIn={() => setIsHoldingPhoto(true)}
+              onPressOut={() => setIsHoldingPhoto(false)}
+              style={[styles.holdButton, isHoldingPhoto && styles.holdButtonActive]}
+            >
+              <Ionicons
+                name={isHoldingPhoto ? 'eye' : 'finger-print'}
+                size={30}
+                color={Colors.white}
+              />
+              <View style={{ alignItems: 'center' }}>
+                <Text style={styles.holdButtonTitle}>
+                  {isHoldingPhoto ? 'Viewing Photo / تصویر کھل چکی ہے' : 'Press & Hold with Finger / انگلی دبا کر رکھیں'}
+                </Text>
+                <Text style={styles.holdButtonSubtitle}>
+                  {isHoldingPhoto ? 'Release finger to blur / انگلی اٹھانے پر چھپ جائے گی' : 'Keep finger pressed down to reveal photo'}
+                </Text>
+              </View>
+            </TouchableOpacity>
+
+            <Button
+              title="Done / بند کریں"
+              variant="secondary"
+              onPress={() => setViewerModalOpen(false)}
+              style={{ marginTop: 16 }}
+            />
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* 6. Photo Upload & Fee Modal */}
+      <Modal
+        visible={photoModalOpen}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setPhotoModalOpen(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              onPress={() => setPhotoModalOpen(false)}
+              style={styles.modalCloseBtn}
+            >
+              <Ionicons name="close" size={24} color={Colors.white} />
+            </TouchableOpacity>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.modalTitle}>
+                {photoModalMode === 'upload' ? 'Upload Proposal Photo' : 'Unlock Candidate Photo'}
+              </Text>
+              <Text style={styles.modalUrduTitle}>
+                {photoModalMode === 'upload' ? 'تصویر برائے ایڈمن ریویو' : 'تصویر دیکھنے کی فیس (Rs. 300)'}
+              </Text>
+            </View>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.modalScroll}>
+            {photoModalMode === 'upload' ? (
+              <View style={{ gap: 14 }}>
+                <View style={styles.securityWarningCard}>
+                  <Ionicons name="shield-checkmark" size={18} color={Colors.cyan[400]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.securityWarningTitle}>100% Privacy & Admin Moderation</Text>
+                    <Text style={styles.securityWarningText}>
+                      تمام تصاویر پہلے ایڈمن سے منظور ہوتی ہیں اور دیکھنے والے کے شناختی واٹر مارک کے ساتھ کھلتی ہیں۔
+                    </Text>
+                  </View>
+                </View>
+
+                <Text style={styles.fieldLabel}>Select Clear Facial Photo / واضح تصویر منتخب کریں:</Text>
+                {uploadPhotoAsset ? (
+                  <View style={styles.receiptPreviewBox}>
+                    <Image source={{ uri: uploadPhotoAsset.uri }} style={styles.receiptPreviewImg} />
+                    <TouchableOpacity
+                      style={{ position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.6)', padding: 4, borderRadius: 12 }}
+                      onPress={() => setUploadPhotoAsset(null)}
+                    >
+                      <Ionicons name="close" size={16} color={Colors.white} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity style={styles.receiptSelectBtn} onPress={handlePickUploadPhoto}>
+                    <Ionicons name="camera-outline" size={22} color={Colors.magenta[400]} />
+                    <Text style={styles.receiptSelectText}>Choose Photo from Gallery / کیمرہ</Text>
+                  </TouchableOpacity>
+                )}
+
+                <Button
+                  title="Upload for Admin Review / جمع کروائیں"
+                  variant="primary"
+                  isLoading={uploadingPhoto}
+                  onPress={handleSubmitUploadPhoto}
+                  style={{ marginTop: 10, backgroundColor: Colors.magenta[600] }}
+                />
+              </View>
+            ) : (
+              <View style={{ gap: 12 }}>
+                <View style={styles.securityWarningCard}>
+                  <Ionicons name="lock-closed" size={18} color={Colors.gold[400]} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.securityWarningTitle, { color: Colors.gold[400] }]}>Photo Viewing Fee (Rs. 300 PKR)</Text>
+                    <Text style={styles.securityWarningText}>
+                      امیدوار کی تصویر ایڈمن سے منظور شدہ ہے۔ واٹر مارک کے ساتھ محفوظ تصویر دیکھنے کے لیے Rs. 300 فیس کی رسید جمع کروائیں۔
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.bankDetailsCard}>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Exact Fee / فیس:</Text>
+                    <Text style={[styles.bankDetailVal, { color: Colors.gold[400], fontSize: 14 }]}>Rs. 300 PKR</Text>
+                  </View>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Account Title / نام:</Text>
+                    <Text style={styles.bankDetailVal}>muhammad shop</Text>
+                  </View>
+                  <View style={styles.bankDetailRow}>
+                    <Text style={styles.bankDetailLabel}>Bank / بینک:</Text>
+                    <Text style={styles.bankDetailVal}>Mobilink Microfinance Bank (JazzCash)</Text>
+                  </View>
+                  <View style={styles.bankDetailRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.bankDetailLabel}>Till ID (JazzCash App):</Text>
+                      <Text style={[styles.bankDetailVal, { color: Colors.gold[400] }]}>984453113</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.copyBtn, copiedTill && styles.copyBtnCopied]}
+                      onPress={() => handleCopyText('984453113', 'till')}
+                    >
+                      <Text style={styles.copyBtnText}>{copiedTill ? 'Copied' : 'Copy'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <View style={styles.bankDetailRow}>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.bankDetailLabel}>IBAN (Any Bank):</Text>
+                      <Text style={[styles.bankDetailVal, { fontSize: 11, color: Colors.cyan[300] }]}>PK74JCMA1009921032404609</Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.copyBtn, copiedIban && styles.copyBtnCopied]}
+                      onPress={() => handleCopyText('PK74JCMA1009921032404609', 'iban')}
+                    >
+                      <Text style={styles.copyBtnText}>{copiedIban ? 'Copied' : 'Copy'}</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                <Text style={styles.fieldLabel}>Transaction Reference / TID Number:</Text>
+                <TextInput
+                  style={[styles.textArea, { minHeight: 44 }]}
+                  value={photoTid}
+                  onChangeText={setPhotoTid}
+                  placeholder="e.g. 10987654321"
+                  placeholderTextColor={Colors.slate[500]}
+                />
+
+                <Text style={[styles.fieldLabel, { marginTop: 4 }]}>Payment Screenshot / رسید کی تصویر:</Text>
+                {photoReceiptAsset ? (
+                  <View style={styles.receiptPreviewBox}>
+                    <Image source={{ uri: photoReceiptAsset.uri }} style={styles.receiptPreviewImg} />
+                    <TouchableOpacity
+                      style={{ position: 'absolute', top: 6, right: 6, backgroundColor: 'rgba(0,0,0,0.6)', padding: 4, borderRadius: 12 }}
+                      onPress={() => setPhotoReceiptAsset(null)}
+                    >
+                      <Ionicons name="close" size={16} color={Colors.white} />
+                    </TouchableOpacity>
+                  </View>
+                ) : (
+                  <TouchableOpacity
+                    style={styles.receiptSelectBtn}
+                    onPress={async () => {
+                      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+                      if (status === 'granted') {
+                        const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8, allowsEditing: true });
+                        if (!result.canceled && result.assets && result.assets.length > 0) {
+                          setPhotoReceiptAsset(result.assets[0]);
+                        }
+                      }
+                    }}
+                  >
+                    <Ionicons name="camera-outline" size={20} color={Colors.magenta[400]} />
+                    <Text style={styles.receiptSelectText}>Upload Screenshot / رسید منتخب کریں</Text>
+                  </TouchableOpacity>
+                )}
+
+                <Button
+                  title="Submit Rs. 300 Payment Proof / جمع کریں"
+                  variant="primary"
+                  isLoading={submittingPhotoFee}
+                  onPress={handleSubmitPhotoFee}
+                  style={{ marginTop: 10, backgroundColor: Colors.emerald[600] }}
+                />
+              </View>
+            )}
+
+            <Button
+              title="Cancel / بند کریں"
+              variant="secondary"
+              onPress={() => setPhotoModalOpen(false)}
+              style={{ marginTop: 14 }}
             />
           </ScrollView>
         </SafeAreaView>
@@ -2571,5 +3058,236 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: Colors.magenta[400],
+  },
+  photoViewBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderRadius: 8,
+    backgroundColor: Colors.cyan[600],
+    borderWidth: 1,
+    borderColor: Colors.cyan[400],
+    shadowColor: Colors.cyan[500],
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  photoViewBtnText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  photoPayBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: Colors.emerald[600],
+    borderWidth: 1,
+    borderColor: Colors.emerald[400],
+  },
+  photoPayBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  photoUploadReqBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: Colors.magenta[600],
+    borderWidth: 1,
+    borderColor: Colors.magenta[400],
+  },
+  photoUploadReqBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  photoShareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 9,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(225, 29, 116, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(225, 29, 116, 0.35)',
+  },
+  photoShareBtnText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.magenta[300],
+  },
+  photoMySharedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 5,
+    borderRadius: 8,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.35)',
+  },
+  photoMySharedBadgeText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: Colors.emerald[400],
+  },
+  viewerScroll: {
+    padding: 16,
+    paddingBottom: 40,
+    gap: 14,
+  },
+  securityWarningCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    padding: 12,
+    borderRadius: 12,
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.3)',
+  },
+  securityWarningTitle: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: Colors.cyan[300],
+    marginBottom: 2,
+  },
+  securityWarningText: {
+    fontSize: 11,
+    color: Colors.slate[300],
+    lineHeight: 16,
+  },
+  photoViewerContainer: {
+    position: 'relative',
+    width: '100%',
+    height: 380,
+    borderRadius: 16,
+    backgroundColor: Colors.navy[950],
+    borderWidth: 1,
+    borderColor: Colors.navy[750],
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  viewerImage: {
+    width: '100%',
+    height: '100%',
+  },
+  viewerImageSharp: {
+    opacity: 1,
+  },
+  viewerImageBlur: {
+    opacity: 0.15,
+  },
+  watermarkOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    overflow: 'hidden',
+  },
+  watermarkLine: {
+    position: 'absolute',
+    left: -60,
+    right: -60,
+    textAlign: 'center',
+    fontSize: 12,
+    fontWeight: '800',
+    color: 'rgba(255, 255, 255, 0.28)',
+    transform: [{ rotate: '-25deg' }],
+    letterSpacing: 2,
+  },
+  coverOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(10, 15, 30, 0.85)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
+    gap: 8,
+  },
+  coverIconWrap: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+    backgroundColor: 'rgba(6, 182, 212, 0.15)',
+    borderWidth: 2,
+    borderColor: Colors.cyan[400],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
+  },
+  coverTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.white,
+    textAlign: 'center',
+  },
+  coverSubtitle: {
+    fontSize: 11,
+    color: Colors.cyan[200],
+    textAlign: 'center',
+    lineHeight: 16,
+    maxWidth: 260,
+  },
+  activeViewingPill: {
+    position: 'absolute',
+    top: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 12,
+    paddingVertical: 5,
+    borderRadius: 20,
+    backgroundColor: 'rgba(10, 15, 30, 0.85)',
+    borderWidth: 1,
+    borderColor: Colors.cyan[400],
+  },
+  activeViewingPillText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.cyan[300],
+  },
+  holdButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 20,
+    borderRadius: 14,
+    backgroundColor: Colors.cyan[600],
+    borderWidth: 2,
+    borderColor: Colors.cyan[400],
+    shadowColor: Colors.cyan[500],
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 6,
+    marginTop: 4,
+  },
+  holdButtonActive: {
+    backgroundColor: Colors.emerald[600],
+    borderColor: Colors.emerald[400],
+    shadowColor: Colors.emerald[500],
+  },
+  holdButtonTitle: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+  holdButtonSubtitle: {
+    fontSize: 11,
+    color: Colors.slate[200],
+    marginTop: 2,
   },
 });

@@ -101,6 +101,13 @@ export const requestsApi = {
     return res.data;
   },
 
+  submitManualPhotoProof: async (requestCode, formData) => {
+    const res = await apiClient.post(`/requests/${requestCode}/photo/payment/submit-proof`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+    return res.data;
+  },
+
   // Phase 5: Mutual OTP verification & Contact details unlock
   getUnlockStatus: async (requestCode) => {
     const res = await apiClient.get(`/requests/${requestCode}/unlock/status`);
