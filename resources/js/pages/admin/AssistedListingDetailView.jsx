@@ -43,15 +43,17 @@ export default function AssistedListingDetailView({ listing, onClose, onUpdated 
   };
 
   const [interestsData, setInterestsData] = useState(null);
+  const [interestFilter, setInterestFilter] = useState('all'); // 'all' | 'awaiting_reply'
 
   const fetchInterests = useCallback(async () => {
     try {
-      const res = await axios.get(`/api/admin/listings/${listing.id}/interests`);
+      const params = interestFilter === 'awaiting_reply' ? { awaiting_admin: 1 } : {};
+      const res = await axios.get(`/api/admin/listings/${listing.id}/interests`, { params });
       setInterestsData(res.data);
     } catch (err) {
       console.error(err);
     }
-  }, [listing.id]);
+  }, [listing.id, interestFilter]);
 
   useEffect(() => {
     fetchInterests();
@@ -294,11 +296,36 @@ export default function AssistedListingDetailView({ listing, onClose, onUpdated 
         {/* Right Column: Interests */}
         <div className="lg:col-span-2">
           <div className="bg-navy-800/50 rounded-2xl border border-white/5 h-full flex flex-col overflow-hidden">
-            <div className="p-5 border-b border-white/5 flex items-center justify-between bg-navy-900/50">
+            <div className="p-4 sm:p-5 border-b border-white/5 flex items-center justify-between bg-navy-900/50 flex-wrap gap-2">
               <h3 className="text-sm font-bold text-white flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-slate-400" />
                 Submitted Interests
               </h3>
+              <div className="flex items-center gap-1.5 bg-navy-950 p-1 rounded-lg border border-white/5">
+                <button
+                  type="button"
+                  onClick={() => setInterestFilter('all')}
+                  className={`px-2.5 py-1 rounded text-xs font-bold transition ${
+                    interestFilter === 'all' 
+                      ? 'bg-navy-800 text-white shadow' 
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setInterestFilter('awaiting_reply')}
+                  className={`px-2.5 py-1 rounded text-xs font-bold transition flex items-center gap-1.5 ${
+                    interestFilter === 'awaiting_reply' 
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow' 
+                      : 'text-slate-400 hover:text-emerald-400'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  User Replied
+                </button>
+              </div>
             </div>
             
             <div className="flex-1 overflow-y-auto p-5 custom-scrollbar">

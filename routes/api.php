@@ -124,6 +124,8 @@ Route::middleware('auth:sanctum')->prefix('shortlists')->group(function () {
 Route::middleware('auth:sanctum')->prefix('requests')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'index']);
     Route::get('/counts', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'counts']);
+    Route::get('/assisted-inquiries', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'myInquiries']);
+    Route::post('/assisted-inquiries/{id}/reply', [\App\Http\Controllers\Api\Listings\AssistedListingController::class, 'replyInquiry']);
     Route::post('/', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'store'])->middleware('throttle:10,1');
     Route::get('/sent', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'sent']);
     Route::get('/received', [\App\Http\Controllers\Api\Requests\RishtaRequestController::class, 'received']);
@@ -266,10 +268,12 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/{assistedListing}/convert', [\App\Http\Controllers\Api\Admin\AdminAssistedListingController::class, 'convert']);
 
         // Listing Interests
+        Route::get('/interests/awaiting-replies-count', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'awaitingRepliesCount']);
         Route::get('/{assistedListing}/interests', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'index']);
         Route::get('/{assistedListing}/interests/{interest}', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'show']);
         Route::post('/{assistedListing}/interests/{interest}/status', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'updateStatus']);
         Route::post('/{assistedListing}/interests/{interest}/notes', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'addNotes']);
+        Route::post('/{assistedListing}/interests/{interest}/message', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'sendMessage']);
         Route::delete('/{assistedListing}/interests/{interest}', [\App\Http\Controllers\Api\Admin\AdminListingInterestController::class, 'destroy']);
     });
 

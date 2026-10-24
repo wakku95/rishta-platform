@@ -18,13 +18,26 @@ class AssistedListingInterest extends Model
         'message',
         'status',
         'admin_notes',
+        'admin_message',
+        'last_sender',
+        'conversation',
+        'admin_messaged_at',
+        'user_replied_at',
         'reviewed_by',
         'reviewed_at',
     ];
 
     protected $casts = [
         'reviewed_at' => 'datetime',
+        'admin_messaged_at' => 'datetime',
+        'user_replied_at' => 'datetime',
+        'conversation' => 'array',
     ];
+
+    public function canUserReply(): bool
+    {
+        return $this->last_sender === 'admin' && !empty($this->admin_message);
+    }
 
     // Status Constants
     public const STATUS_NEW = 'new';

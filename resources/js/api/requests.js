@@ -274,7 +274,19 @@ export const getRequestCounts = async () => {
  * @returns {Promise<Object>}
  */
 export const getMyAssistedInquiries = async (params = {}) => {
-  const response = await api.get('/listings/my-inquiries', { params });
+  const response = await api.get('/requests/assisted-inquiries', { params });
+  return response.data;
+};
+
+/**
+ * Submit user single reply to an assisted profile inquiry.
+ *
+ * @param {number|string} inquiryId
+ * @param {string} message
+ * @returns {Promise<Object>}
+ */
+export const replyAssistedInquiry = async (inquiryId, message) => {
+  const response = await api.post(`/requests/assisted-inquiries/${inquiryId}/reply`, { message });
   return response.data;
 };
 

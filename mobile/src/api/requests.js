@@ -32,7 +32,12 @@ export const requestsApi = {
   },
 
   getMyAssistedInquiries: async (params = {}) => {
-    const res = await apiClient.get('/listings/my-inquiries', { params });
+    const res = await apiClient.get('/requests/assisted-inquiries', { params });
+    return res.data;
+  },
+
+  replyAssistedInquiry: async (inquiryId, message) => {
+    const res = await apiClient.post(`/requests/assisted-inquiries/${inquiryId}/reply`, { message });
     return res.data;
   },
 

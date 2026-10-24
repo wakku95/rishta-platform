@@ -134,6 +134,9 @@ class AdminDashboardController extends Controller
         $newAssistedInterests = AssistedListingInterest::where('status', AssistedListingInterest::STATUS_NEW)
             ->whereHas('assistedListing')
             ->count();
+        $awaitingAssistedReplies = AssistedListingInterest::where('last_sender', 'user')
+            ->whereHas('assistedListing')
+            ->count();
 
         $totalPendingActions = $pendingBioApprovals 
             + $pendingDirectInquiries 
@@ -141,7 +144,8 @@ class AdminDashboardController extends Controller
             + $totalPendingRequests 
             + $pendingFinancialUnlocks 
             + $pendingAssistedSubmissions 
-            + $newAssistedInterests;
+            + $newAssistedInterests
+            + $awaitingAssistedReplies;
 
         return $this->successResponse([
             'pending_actions' => [
@@ -161,6 +165,7 @@ class AdminDashboardController extends Controller
                 'financial_unlocks' => $pendingFinancialUnlocks,
                 'assisted_submissions' => $pendingAssistedSubmissions,
                 'assisted_interests' => $newAssistedInterests,
+                'assisted_user_replies' => $awaitingAssistedReplies,
             ],
             'users' => [
                 'total' => $totalUsers,

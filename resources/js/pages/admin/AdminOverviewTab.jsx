@@ -73,6 +73,7 @@ export default function AdminOverviewTab({ onNavigateTab }) {
     financial_unlocks: 0,
     assisted_submissions: 0,
     assisted_interests: 0,
+    assisted_user_replies: 0,
   };
 
   const actionCards = [
@@ -139,11 +140,13 @@ export default function AdminOverviewTab({ onNavigateTab }) {
     {
       id: 'assisted_interests',
       title: 'Listing Interests',
-      description: 'New assisted leads',
-      count: pendingActions.assisted_interests || 0,
+      description: pendingActions.assisted_user_replies > 0
+        ? `${pendingActions.assisted_user_replies} user replies waiting`
+        : 'New assisted leads',
+      count: (pendingActions.assisted_interests || 0) + (pendingActions.assisted_user_replies || 0),
       tab: 'listings',
       icon: HeartHandshake,
-      accent: 'pink',
+      accent: pendingActions.assisted_user_replies > 0 ? 'emerald' : 'pink',
     },
   ];
 

@@ -38,7 +38,11 @@ class AdminAssistedListingController extends Controller
                 $query->where('listing_status', $status);
             })
             ->when($request->interest_filter, function ($query, $filter) {
-                if ($filter === 'has_new') {
+                if ($filter === 'awaiting_reply') {
+                    $query->whereHas('interests', function ($q) {
+                        $q->where('last_sender', 'user');
+                    });
+                } elseif ($filter === 'has_new') {
                     $query->whereHas('interests', function ($q) {
                         $q->where('status', 'new');
                     });

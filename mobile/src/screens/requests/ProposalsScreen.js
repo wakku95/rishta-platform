@@ -96,6 +96,12 @@ export default function ProposalsScreen({ navigation }) {
   const [photoReceiptAsset, setPhotoReceiptAsset] = useState(null);
   const [submittingPhotoFee, setSubmittingPhotoFee] = useState(false);
 
+  // Assisted Inquiry Reply States
+  const [assistedReplyModalOpen, setAssistedReplyModalOpen] = useState(false);
+  const [selectedAssistedInquiry, setSelectedAssistedInquiry] = useState(null);
+  const [assistedReplyText, setAssistedReplyText] = useState('');
+  const [submittingAssistedReply, setSubmittingAssistedReply] = useState(false);
+
   const fetchCounts = useCallback(async () => {
     try {
       const res = await requestsApi.getRequestCounts();
@@ -406,6 +412,32 @@ export default function ProposalsScreen({ navigation }) {
     setPhotoTid('');
     setPhotoReceiptAsset(null);
     setPhotoModalOpen(true);
+  };
+
+  const handleOpenAssistedReplyModal = (inquiry) => {
+    setSelectedAssistedInquiry(inquiry);
+    setAssistedReplyText('');
+    setAssistedReplyModalOpen(true);
+  };
+
+  const handleSubmitAssistedReply = async () => {
+    if (!assistedReplyText.trim()) {
+      Alert.alert('Message Required', 'Please enter your reply message for the matchmaker coordinator.');
+      return;
+    }
+
+    setSubmittingAssistedReply(true);
+    try {
+      const res = await requestsApi.replyAssistedInquiry(selectedAssistedInquiry.id, assistedReplyText.trim());
+      Alert.alert('Reply Sent', res?.message || 'Your reply has been delivered to the matchmaker coordinator.');
+      setAssistedReplyModalOpen(false);
+      setAssistedReplyText('');
+      fetchRequests(typeTab, statusFilter);
+    } catch (err) {
+      Alert.alert('Failed to Send', err?.response?.data?.message || 'Could not send reply. Please try again.');
+    } finally {
+      setSubmittingAssistedReply(false);
+    }
   };
 
   const handlePickUploadPhoto = async () => {
@@ -914,12 +946,53 @@ export default function ProposalsScreen({ navigation }) {
 
                   {item.message ? (
                     <View style={styles.messageBox}>
-                      <Text style={styles.messageLabel}>Your Inquiry Note:</Text>
+                      <Text style={styles.messageLabel}>Your Initial Inquiry Note:</Text>
                       <Text style={styles.messageText}>"{item.message}"</Text>
                     </View>
                   ) : null}
 
-                  {item.admin_notes ? (
+                  {/* Matchmaker Conversation Thread */}
+                  {(item.conversation?.length > 0 || item.admin_message) ? (
+                    <View style={styles.assistedThreadBox}>
+                      <View style={styles.assistedThreadHeader}>
+                        <Ionicons name="chatbubbles-outline" size={14} color={Colors.cyan[400]} />
+                        <Text style={styles.assistedThreadTitle}>
+                          Matchmaker Communication / رابطہ کا ریکارڈ:
+                        </Text>
+                      </View>
+                      {item.conversation?.length > 0 ? (
+                        item.conversation.map((msg, idx) => {
+                          const isAdmin = msg.sender === 'admin';
+                          return (
+                            <View
+                              key={idx}
+                              style={[
+                                styles.assistedMsgBubble,
+                                isAdmin ? styles.assistedAdminBubble : styles.assistedUserBubble,
+                              ]}
+                            >
+                              <View style={styles.assistedMsgSenderRow}>
+                                <Text style={isAdmin ? styles.assistedAdminSender : styles.assistedUserSender}>
+                                  {isAdmin ? '🛡️ Matchmaker Coordinator' : '👤 You / آپ'}
+                                </Text>
+                                <Text style={styles.assistedMsgTime}>
+                                  {msg.created_at ? new Date(msg.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                                </Text>
+                              </View>
+                              <Text style={styles.assistedMsgText}>{msg.message}</Text>
+                            </View>
+                          );
+                        })
+                      ) : item.admin_message ? (
+                        <View style={[styles.assistedMsgBubble, styles.assistedAdminBubble]}>
+                          <View style={styles.assistedMsgSenderRow}>
+                            <Text style={styles.assistedAdminSender}>🛡️ Matchmaker Coordinator</Text>
+                          </View>
+                          <Text style={styles.assistedMsgText}>{item.admin_message}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                  ) : item.admin_notes ? (
                     <View style={styles.coordinatorNoteBox}>
                       <Ionicons name="sparkles" size={14} color={Colors.gold[400]} />
                       <View style={{ flex: 1 }}>
@@ -931,17 +1004,35 @@ export default function ProposalsScreen({ navigation }) {
                     </View>
                   ) : null}
 
-                  {listingCode ? (
-                    <View style={styles.profileActionRow}>
+                  {/* Assisted Actions & Status */}
+                  <View style={styles.profileActionRow}>
+                    {item.can_reply ? (
                       <Button
-                        title="View Assisted Listing / مکمل تفصیل دیکھیں"
+                        title="Reply to Matchmaker / جواب دیں"
+                        variant="primary"
+                        size="sm"
+                        onPress={() => handleOpenAssistedReplyModal(item)}
+                        style={{ backgroundColor: Colors.cyan[600], flex: 1 }}
+                      />
+                    ) : item.last_sender === 'user' ? (
+                      <View style={styles.assistedAwaitingBadge}>
+                        <Ionicons name="time-outline" size={13} color="#f59e0b" style={{ marginRight: 4 }} />
+                        <Text style={styles.assistedAwaitingText}>
+                          Awaiting Matchmaker Response / ایڈمن کے اگلے جواب کا انتظار کریں
+                        </Text>
+                      </View>
+                    ) : null}
+
+                    {listingCode ? (
+                      <Button
+                        title="View Listing / مکمل تفصیل"
                         variant="secondary"
                         size="sm"
                         onPress={() => navigation.navigate('AssistedDetail', { listingCode })}
-                        style={styles.viewProfileBtn}
+                        style={[styles.viewProfileBtn, item.can_reply ? { flex: 1 } : null]}
                       />
-                    </View>
-                  ) : null}
+                    ) : null}
+                  </View>
                 </Card>
               );
             }
@@ -2403,6 +2494,108 @@ export default function ProposalsScreen({ navigation }) {
           </ScrollView>
         </SafeAreaView>
       </Modal>
+
+      {/* 6. Assisted Inquiry Reply Modal */}
+      <Modal
+        visible={assistedReplyModalOpen}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setAssistedReplyModalOpen(false)}
+      >
+        <SafeAreaView style={styles.modalContainer}>
+          <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
+
+          <View style={styles.modalHeader}>
+            <TouchableOpacity
+              onPress={() => setAssistedReplyModalOpen(false)}
+              style={styles.modalCloseBtn}
+            >
+              <Ionicons name="close" size={24} color={Colors.white} />
+            </TouchableOpacity>
+            <View style={{ flex: 1, marginLeft: 10 }}>
+              <Text style={styles.modalTitle}>Reply to Matchmaker</Text>
+              <Text style={styles.modalUrduTitle}>اسسٹنٹ کوآرڈینیٹر کو جواب دیں</Text>
+            </View>
+          </View>
+
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={{ flex: 1 }}
+          >
+            <ScrollView contentContainerStyle={styles.modalScroll}>
+              {selectedAssistedInquiry?.listing && (
+                <View style={[styles.receivedQuestionsCard, { borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
+                  <Text style={[styles.receivedQuestionsHeader, { color: Colors.cyan[400] }]}>
+                    Assisted Listing #{selectedAssistedInquiry.listing.listing_code}:
+                  </Text>
+                  <Text style={styles.receivedItemText}>
+                    {[
+                      selectedAssistedInquiry.listing.age ? `${selectedAssistedInquiry.listing.age} yrs` : null,
+                      selectedAssistedInquiry.listing.gender,
+                      selectedAssistedInquiry.listing.city,
+                      selectedAssistedInquiry.listing.profession,
+                    ].filter(Boolean).join(' • ')}
+                  </Text>
+                </View>
+              )}
+
+              {selectedAssistedInquiry?.admin_message && (
+                <View style={[styles.receivedQuestionsCard, { borderColor: 'rgba(168, 85, 247, 0.35)', backgroundColor: 'rgba(88, 28, 135, 0.2)' }]}>
+                  <Text style={[styles.receivedQuestionsHeader, { color: Colors.purple[300] || '#d8b4fe' }]}>
+                    Matchmaker Message / کوآرڈینیٹر کا پیغام:
+                  </Text>
+                  <Text style={[styles.receivedItemText, { color: Colors.purple[100] || '#f3e8ff' }]}>
+                    "{selectedAssistedInquiry.admin_message}"
+                  </Text>
+                </View>
+              )}
+
+              <View style={styles.fieldSection}>
+                <View style={styles.fieldLabelRow}>
+                  <Ionicons name="chatbubbles" size={16} color={Colors.cyan?.[400] || '#22d3ee'} />
+                  <Text style={styles.fieldLabel}>Your Response / آپ کا جواب:</Text>
+                </View>
+                <TextInput
+                  style={[styles.textArea, { minHeight: 120 }]}
+                  multiline
+                  numberOfLines={5}
+                  value={assistedReplyText}
+                  onChangeText={setAssistedReplyText}
+                  placeholder="Type your reply to the matchmaker coordinator regarding this proposal..."
+                  placeholderTextColor={Colors.slate[500]}
+                  textAlignVertical="top"
+                  maxLength={2000}
+                />
+                <Text style={{ fontSize: 11, color: Colors.slate[400], textAlign: 'right', marginTop: 4 }}>
+                  {assistedReplyText.length} / 2000
+                </Text>
+              </View>
+
+              <View style={{ backgroundColor: 'rgba(6, 182, 212, 0.1)', borderColor: 'rgba(6, 182, 212, 0.25)', borderWidth: 1, borderRadius: 10, padding: 12, marginBottom: 16 }}>
+                <Text style={{ fontSize: 11, color: Colors.cyan[200], lineHeight: 16 }}>
+                  💡 <Text style={{ fontWeight: 'bold' }}>Turn-based Communication:</Text> آپ اس وقت ایک ہی جواب جمع کروا سکتے ہیں۔ جمع کروانے کے بعد کوآرڈینیٹر کے اگلے جوابی میسج تک مزید جوابات لاک رہیں گے۔
+                </Text>
+              </View>
+
+              <View style={styles.modalActionButtons}>
+                <Button
+                  title={submittingAssistedReply ? 'Sending...' : 'Send Reply / جواب ارسال کریں'}
+                  variant="primary"
+                  loading={submittingAssistedReply}
+                  onPress={handleSubmitAssistedReply}
+                  style={{ backgroundColor: Colors.cyan?.[600] || '#0891b2' }}
+                />
+                <Button
+                  title="Cancel / منسوخ"
+                  variant="secondary"
+                  onPress={() => setAssistedReplyModalOpen(false)}
+                  style={{ marginTop: 8 }}
+                />
+              </View>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -3531,5 +3724,85 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: '700',
     color: Colors.white,
+  },
+  assistedThreadBox: {
+    backgroundColor: 'rgba(15, 23, 42, 0.65)',
+    borderRadius: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    gap: 8,
+    marginTop: 8,
+  },
+  assistedThreadHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 4,
+  },
+  assistedThreadTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.cyan[300],
+    letterSpacing: 0.5,
+  },
+  assistedMsgBubble: {
+    borderRadius: 10,
+    padding: 10,
+    gap: 4,
+  },
+  assistedAdminBubble: {
+    backgroundColor: 'rgba(88, 28, 135, 0.35)',
+    borderWidth: 1,
+    borderColor: 'rgba(168, 85, 247, 0.3)',
+  },
+  assistedUserBubble: {
+    backgroundColor: 'rgba(6, 78, 59, 0.35)',
+    borderWidth: 1,
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    marginLeft: 12,
+  },
+  assistedMsgSenderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  assistedAdminSender: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.purple[300] || '#d8b4fe',
+  },
+  assistedUserSender: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.emerald[300] || '#6ee7b7',
+  },
+  assistedMsgTime: {
+    fontSize: 9,
+    color: Colors.slate[400],
+  },
+  assistedMsgText: {
+    fontSize: 12,
+    color: Colors.slate[200],
+    lineHeight: 18,
+    fontStyle: 'italic',
+  },
+  assistedAwaitingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(245, 158, 11, 0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(245, 158, 11, 0.3)',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    flex: 1,
+  },
+  assistedAwaitingText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#fbbf24',
+    flex: 1,
+    lineHeight: 15,
   },
 });

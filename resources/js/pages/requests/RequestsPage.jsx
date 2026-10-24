@@ -41,6 +41,7 @@ import AcceptProposalModal from '../../components/requests/AcceptProposalModal';
 import ReplyProposalModal from '../../components/requests/ReplyProposalModal';
 import EditProposalModal from '../../components/requests/EditProposalModal';
 import PhotoExchangeModal from '../../components/requests/PhotoExchangeModal';
+import AssistedReplyModal from '../../components/requests/AssistedReplyModal';
 import IdentityVerificationGateModal from '../../components/verification/IdentityVerificationGateModal';
 import useAuth from '../../hooks/useAuth';
 
@@ -69,6 +70,8 @@ export default function RequestsPage() {
   const [unlockModalOpen, setUnlockModalOpen] = useState(false);
   const [unlockRequest, setUnlockRequest] = useState(null);
   const [identityGateOpen, setIdentityGateOpen] = useState(false);
+  const [assistedReplyModalOpen, setAssistedReplyModalOpen] = useState(false);
+  const [selectedAssistedInquiry, setSelectedAssistedInquiry] = useState(null);
 
   useEffect(() => {
     fetchRequests(activeTab, page, statusFilter);
@@ -528,6 +531,25 @@ export default function RequestsPage() {
 
                     {/* Right: Actions */}
                     <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end pt-2 md:pt-0 border-t md:border-t-0 border-slate-750/70">
+                      {inq.can_reply ? (
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={MessageSquare}
+                          className="font-bold bg-cyan-600 hover:bg-cyan-500 shadow-md shadow-cyan-900/30"
+                          onClick={() => {
+                            setSelectedAssistedInquiry(inq);
+                            setAssistedReplyModalOpen(true);
+                          }}
+                        >
+                          Reply to Matchmaker / جواب دیں
+                        </Button>
+                      ) : inq.last_sender === 'user' ? (
+                        <span className="px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500/10 border border-amber-500/25 text-amber-300 flex items-center gap-1.5">
+                          <span>⏳ Awaiting Matchmaker Reply / ایڈمن کے اگلے جواب کا انتظار کریں</span>
+                        </span>
+                      ) : null}
+
                       {listing && (
                         <Link to={`/assisted-listings/${listing.listing_code}`}>
                           <Button variant="secondary" size="sm" icon={Eye} className="font-bold">
@@ -538,20 +560,65 @@ export default function RequestsPage() {
                     </div>
                   </div>
 
-                  {/* User Submitted Message */}
+                  {/* User Submitted Initial Message */}
                   {inq.message && (
                     <div className="w-full pt-3 border-t border-slate-750/70">
                       <div className="bg-navy-900/80 p-3 rounded-xl border border-slate-750/80 text-xs">
                         <span className="font-bold text-slate-400 block text-[10px] uppercase mb-1">
-                          Your Submitted Message / آپ کا پیغام:
+                          Your Initial Inquiry Note / آپ کا ابتدائی پیغام:
                         </span>
                         <p className="text-slate-200 italic leading-relaxed">"{inq.message}"</p>
                       </div>
                     </div>
                   )}
 
-                  {/* Admin Coordinator Notes */}
-                  {inq.admin_notes && (
+                  {/* Matchmaker Conversation Thread (Admin Updates & User Replies) */}
+                  {(inq.conversation?.length > 0 || inq.admin_message) && (
+                    <div className="w-full pt-3 border-t border-slate-750/70 space-y-2">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block flex items-center gap-1.5">
+                        <MessageSquare className="w-3.5 h-3.5 text-cyan-400" />
+                        Matchmaker Communication Record / رابطہ کا ریکارڈ:
+                      </span>
+                      <div className="space-y-2">
+                        {inq.conversation?.length > 0 ? (
+                          inq.conversation.map((msg, idx) => {
+                            const isAdmin = msg.sender === 'admin';
+                            return (
+                              <div
+                                key={idx}
+                                className={`p-3 rounded-xl text-xs leading-relaxed ${
+                                  isAdmin
+                                    ? 'bg-purple-950/40 border border-purple-500/30 text-purple-100'
+                                    : 'bg-emerald-950/40 border border-emerald-500/30 text-emerald-100 ml-4'
+                                }`}
+                              >
+                                <div className="flex items-center justify-between text-[10px] font-bold mb-1 opacity-80">
+                                  <span className={isAdmin ? 'text-purple-300' : 'text-emerald-300'}>
+                                    {isAdmin ? '🛡️ Matchmaker Coordinator / ایڈمن کا پیغام' : '👤 You / آپ کا جواب'}
+                                  </span>
+                                  <span className="text-slate-400 font-normal">
+                                    {msg.created_at ? new Date(msg.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''}
+                                  </span>
+                                </div>
+                                <p className="italic">{msg.message}</p>
+                              </div>
+                            );
+                          })
+                        ) : inq.admin_message ? (
+                          <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-xs space-y-1">
+                            <div className="flex items-center gap-1.5 font-bold text-purple-300 uppercase text-[10px]">
+                              <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
+                              <span>Matchmaker Update / اسسٹنٹ کوآرڈینیٹر کا پیغام:</span>
+                            </div>
+                            <p className="leading-relaxed pl-5 italic text-purple-100">{inq.admin_message}</p>
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Admin Internal/Public Notes fallback */}
+                  {inq.admin_notes && !inq.admin_message && (!inq.conversation || inq.conversation.length === 0) && (
                     <div className="w-full p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl text-xs space-y-1">
                       <div className="flex items-center gap-1.5 font-bold text-purple-300 uppercase text-[10px]">
                         <Sparkles className="w-3.5 h-3.5 text-purple-400 shrink-0" />
@@ -1146,6 +1213,15 @@ export default function RequestsPage() {
             }
             fetchRequests(activeTab, page, statusFilter);
           }}
+        />
+      )}
+
+      {assistedReplyModalOpen && selectedAssistedInquiry && (
+        <AssistedReplyModal
+          isOpen={assistedReplyModalOpen}
+          onClose={() => setAssistedReplyModalOpen(false)}
+          inquiry={selectedAssistedInquiry}
+          onSuccess={() => fetchRequests(activeTab, page, statusFilter)}
         />
       )}
     </div>

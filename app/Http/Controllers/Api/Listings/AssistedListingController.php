@@ -122,6 +122,12 @@ class AssistedListingController extends Controller
                 'submitter_name' => $interest->submitter_name,
                 'submitter_contact' => $interest->submitter_contact,
                 'admin_notes' => $interest->admin_notes,
+                'admin_message' => $interest->admin_message,
+                'last_sender' => $interest->last_sender,
+                'can_reply' => $interest->canUserReply(),
+                'conversation' => $interest->conversation ?? [],
+                'admin_messaged_at' => $interest->admin_messaged_at ? $interest->admin_messaged_at->toISOString() : null,
+                'user_replied_at' => $interest->user_replied_at ? $interest->user_replied_at->toISOString() : null,
                 'created_at' => $interest->created_at ? $interest->created_at->toISOString() : null,
                 'listing' => $listing ? [
                     'id' => $listing->id,
@@ -149,6 +155,62 @@ class AssistedListingController extends Controller
                 'last_page' => $inquiries->lastPage(),
                 'per_page' => $inquiries->perPage(),
                 'total' => $inquiries->total(),
+            ],
+        ]);
+    }
+
+    /**
+     * User submits a turn-based single reply to the admin's message.
+     */
+    public function replyInquiry(Request $request, $id)
+    {
+        $user = $request->user();
+        $interest = AssistedListingInterest::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$interest) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Assisted inquiry not found.',
+            ], 404);
+        }
+
+        if (!$interest->canUserReply()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'You cannot reply right now. You can only send one reply after an admin message, and must await the coordinator\'s next response.',
+            ], 422);
+        }
+
+        $validated = $request->validate([
+            'message' => ['required', 'string', 'min:2', 'max:2000'],
+        ]);
+
+        $replyText = trim($validated['message']);
+        $conversation = is_array($interest->conversation) ? $interest->conversation : [];
+        $conversation[] = [
+            'sender' => 'user',
+            'sender_name' => $interest->submitter_name ?: ($user->profile?->profile_code ? "Member #{$user->profile->profile_code}" : $user->name),
+            'message' => $replyText,
+            'created_at' => now()->toISOString(),
+        ];
+
+        $interest->update([
+            'conversation' => $conversation,
+            'last_sender' => 'user',
+            'user_replied_at' => now(),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Your reply has been sent to the matchmaker. You will be notified when they respond.',
+            'data' => [
+                'id' => $interest->id,
+                'last_sender' => $interest->last_sender,
+                'can_reply' => false,
+                'conversation' => $interest->conversation,
+                'user_replied_at' => $interest->user_replied_at->toISOString(),
             ],
         ]);
     }

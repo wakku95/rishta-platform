@@ -141,6 +141,7 @@ export default function AdminAssistedListingsTab() {
               className="pl-9 pr-8 py-2 bg-navy-900 border border-white/10 rounded-xl text-sm text-white focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/50 appearance-none transition"
             >
               <option value="">All Inquiries</option>
+              <option value="awaiting_reply">💬 User Replied (Awaiting Action)</option>
               <option value="has_new">⚡ Needs Action (New)</option>
               <option value="in_progress">📞 In Progress / Contacted</option>
               <option value="introduced">🤝 Introduced / Matched</option>
