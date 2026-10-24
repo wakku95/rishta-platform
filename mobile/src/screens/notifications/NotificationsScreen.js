@@ -84,6 +84,33 @@ export default function NotificationsScreen({ navigation }) {
         )}
       </View>
 
+      {/* Prominent Top Direct Chat Bar */}
+      <View style={styles.topSupportBar}>
+        <View style={styles.topSupportHeader}>
+          <Ionicons name="headset" size={13} color={Colors.cyan[400]} />
+          <Text style={styles.topSupportTitle}>Live Matchmaker Support / رابطہ و رہنمائی:</Text>
+        </View>
+        <View style={styles.topSupportButtons}>
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[styles.topSupportButton, styles.instagramButton]}
+            onPress={() => Linking.openURL(Config.INSTAGRAM_CHAT_URL).catch(() => Linking.openURL(`https://instagram.com/${Config.INSTAGRAM_HANDLE}`))}
+          >
+            <Ionicons name="logo-instagram" size={15} color="#F43F8E" />
+            <Text style={styles.instagramButtonText}>Instagram DM</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            activeOpacity={0.8}
+            style={[styles.topSupportButton, styles.facebookButton]}
+            onPress={() => Linking.openURL(Config.FACEBOOK_CHAT_URL).catch(() => Linking.openURL(Config.FACEBOOK_PAGE_URL))}
+          >
+            <Ionicons name="logo-facebook" size={15} color="#3B82F6" />
+            <Text style={styles.facebookButtonText}>Facebook Chat</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.magenta[500]} />
@@ -134,29 +161,6 @@ export default function NotificationsScreen({ navigation }) {
               </TouchableOpacity>
             );
           }}
-          ListFooterComponent={
-            <View style={styles.helpFooter}>
-              <Text style={styles.helpFooterTitle}>Need Help or Matchmaking Assistance?</Text>
-              <Text style={styles.helpFooterSubtitle}>ہماری ٹیم سے رابطہ کرنے کے لیے منتخب کریں:</Text>
-              <View style={styles.helpButtonsRow}>
-                <TouchableOpacity
-                  style={[styles.socialPill, { borderColor: 'rgba(244, 63, 142, 0.4)', backgroundColor: 'rgba(244, 63, 142, 0.1)' }]}
-                  onPress={() => Linking.openURL(Config.INSTAGRAM_CHAT_URL).catch(() => Linking.openURL(`https://instagram.com/${Config.INSTAGRAM_HANDLE}`))}
-                >
-                  <Ionicons name="logo-instagram" size={14} color="#F43F8E" />
-                  <Text style={[styles.socialPillText, { color: '#F43F8E' }]}>Instagram DM</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.socialPill, { borderColor: 'rgba(59, 130, 246, 0.4)', backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}
-                  onPress={() => Linking.openURL(Config.FACEBOOK_CHAT_URL).catch(() => Linking.openURL(Config.FACEBOOK_PAGE_URL))}
-                >
-                  <Ionicons name="logo-facebook" size={14} color="#3B82F6" />
-                  <Text style={[styles.socialPillText, { color: '#60A5FA' }]}>Facebook Chat</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="notifications-off-outline" size={44} color={Colors.slate[500]} />
@@ -286,43 +290,56 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
   },
-  helpFooter: {
-    marginTop: 20,
-    marginBottom: 10,
-    padding: 16,
-    borderRadius: 12,
-    backgroundColor: Colors.navy[850] || 'rgba(15, 23, 42, 0.6)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.08)',
+  topSupportBar: {
+    backgroundColor: 'rgba(15, 23, 42, 0.75)',
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 8,
+  },
+  topSupportHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  helpFooterTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.white,
-  },
-  helpFooterSubtitle: {
+  topSupportTitle: {
     fontSize: 11,
-    color: Colors.slate[400],
-    marginBottom: 4,
+    fontWeight: '700',
+    color: Colors.slate[300],
+    letterSpacing: 0.2,
   },
-  helpButtonsRow: {
+  topSupportButtons: {
     flexDirection: 'row',
     gap: 10,
-    marginTop: 4,
   },
-  socialPill: {
+  topSupportButton: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    paddingVertical: 7,
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 9,
     paddingHorizontal: 12,
-    borderRadius: 20,
+    borderRadius: 10,
     borderWidth: 1,
   },
-  socialPillText: {
-    fontSize: 11,
+  instagramButton: {
+    backgroundColor: 'rgba(244, 63, 142, 0.12)',
+    borderColor: 'rgba(244, 63, 142, 0.35)',
+  },
+  instagramButtonText: {
+    fontSize: 12,
     fontWeight: '700',
+    color: '#F43F8E',
+  },
+  facebookButton: {
+    backgroundColor: 'rgba(59, 130, 246, 0.12)',
+    borderColor: 'rgba(59, 130, 246, 0.35)',
+  },
+  facebookButtonText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: '#60A5FA',
   },
 });
