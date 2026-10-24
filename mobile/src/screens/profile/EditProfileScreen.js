@@ -452,9 +452,32 @@ export default function EditProfileScreen({ navigation }) {
             </View>
           </View>
 
-          {/* About Candidate */}
+          {/* About Candidate / Bio */}
           <View style={styles.fieldRow}>
-            <Text style={styles.fieldLabel}>About Candidate / اپنے بارے میں تعارف</Text>
+            <View style={styles.labelRow}>
+              <Text style={styles.fieldLabel}>About Me / Bio (اپنے بارے میں تعارف)</Text>
+              <View style={styles.publicBadge}>
+                <Ionicons name="globe-outline" size={11} color={Colors.cyan[400]} />
+                <Text style={styles.publicBadgeText}>Public / عوامی</Text>
+              </View>
+            </View>
+
+            {/* Public Display Warning Banner */}
+            <View style={styles.publicNoticeCard}>
+              <Ionicons name="information-circle" size={16} color={Colors.cyan[400]} style={{ marginTop: 1 }} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.publicNoticeTitle}>
+                  📢 Public Display Notice / عوامی نمائش کا نوٹس:
+                </Text>
+                <Text style={styles.publicNoticeText}>
+                  یہ معلومات (Bio) آپ کے پروفائل کارڈ پر عوامی طور پر تمام رشتہ تلاش کرنے والوں کو دکھائی جائے گی تاکہ وہ آپ کے بارے میں جان سکیں۔ اس میں کوئی ذاتی فون نمبر یا پتہ مت لکھیں۔
+                </Text>
+                <Text style={styles.publicNoticeSubText}>
+                  This info is displayed publicly on your profile card to all matching candidates and families. Do not write contact numbers here.
+                </Text>
+              </View>
+            </View>
+
             <TextInput
               style={[styles.textArea, { minHeight: 90 }]}
               multiline
@@ -629,6 +652,50 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
+  },
+  publicBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: 'rgba(6, 182, 212, 0.15)',
+    paddingHorizontal: 7,
+    paddingVertical: 2,
+    borderRadius: 6,
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.35)',
+  },
+  publicBadgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: Colors.cyan[400],
+  },
+  publicNoticeCard: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(6, 182, 212, 0.08)',
+    borderColor: 'rgba(6, 182, 212, 0.3)',
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 10,
+    gap: 8,
+    marginBottom: 4,
+  },
+  publicNoticeTitle: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.cyan[300],
+  },
+  publicNoticeText: {
+    fontSize: 11,
+    color: Colors.slate[200],
+    lineHeight: 16,
+    marginTop: 2,
+  },
+  publicNoticeSubText: {
+    fontSize: 10,
+    color: Colors.slate[400],
+    lineHeight: 14,
+    marginTop: 3,
   },
   input: {
     backgroundColor: Colors.navy[950],

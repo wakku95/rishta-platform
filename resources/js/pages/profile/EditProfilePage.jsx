@@ -465,7 +465,7 @@ export default function EditProfilePage() {
 
           <div className="space-y-4">
             <Textarea
-              label="About Candidate (Optional)"
+              label="About Candidate / Bio (Publicly Displayed / عوامی تعارف)"
               name="about"
               rows={4}
               maxLength={2000}
@@ -473,7 +473,7 @@ export default function EditProfilePage() {
               onChange={handleChange}
               error={errors.about?.[0]}
               placeholder="Describe personality, hobbies, life outlook, values, and religious practice..."
-              helperText="Reviewed and approved by Admin before public display. Optional for profile activation. Max 2,000 characters."
+              helperText="📢 یہ معلومات (About Candidate) آپ کے پروفائل کارڈ پر عوامی طور پر تمام رشتہ تلاش کرنے والوں کو نظر آئے گی۔ ذاتی فون نمبر، پتہ یا سوشل میڈیا لنک یہاں مت لکھیں۔ (Max 2,000 characters)."
             />
 
             <Textarea
