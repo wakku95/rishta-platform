@@ -57,6 +57,16 @@ export default function WelcomeScreen({ navigation }) {
           size="lg"
           style={styles.secondaryButton}
         />
+        <TouchableOpacity
+          style={styles.exploreGuestButton}
+          onPress={() => navigation.navigate('GuestMatches')}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="search-outline" size={16} color={Colors.cyan[400]} />
+          <Text style={styles.exploreGuestText}>
+            Browse Rishta Profiles / رشتے دیکھیں
+          </Text>
+        </TouchableOpacity>
       </View>
     </SafeAreaView>
   );
@@ -159,5 +169,22 @@ const styles = StyleSheet.create({
   secondaryButton: {
     borderWidth: 1,
     borderColor: Colors.slate[700],
+  },
+  exploreGuestButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: 'rgba(6, 182, 212, 0.08)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.3)',
+    marginTop: 2,
+  },
+  exploreGuestText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: Colors.cyan[300],
   },
 });

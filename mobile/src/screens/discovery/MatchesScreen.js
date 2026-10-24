@@ -23,8 +23,10 @@ import HiddenProfilesModal from '../../components/discovery/HiddenProfilesModal'
 import { profilesApi } from '../../api/profiles';
 import { Ionicons } from '@expo/vector-icons';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MatchesScreen({ navigation }) {
+  const { authenticated } = useAuth();
   const [candidates, setCandidates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -156,6 +158,20 @@ export default function MatchesScreen({ navigation }) {
 
   const handleToggleShortlist = async (targetCode, isAssisted = false) => {
     if (!targetCode) return;
+
+    if (!authenticated) {
+      Alert.alert(
+        'Account Required / اکاؤنٹ درکار ہے',
+        'Please register or sign in to save profiles to your shortlist for family discussion.\n\nرشتے شارٹ لسٹ کرنے کے لیے اپنا اکاؤنٹ بنائیں یا لاگ ان کریں۔',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In / لاگ ان', onPress: () => navigation.navigate('Login') },
+          { text: 'Register Free / رجسٹریشن', onPress: () => navigation.navigate('Register') },
+        ]
+      );
+      return;
+    }
+
     const isCurrentlyShortlisted = shortlistedCodes.has(targetCode);
     const isActuallyAssisted =
       isAssisted || String(targetCode).startsWith('AL');
@@ -217,6 +233,19 @@ export default function MatchesScreen({ navigation }) {
   const handleIgnore = (candidate) => {
     const code = candidate.profile_code || candidate.listing_code;
     if (!code) return;
+
+    if (!authenticated) {
+      Alert.alert(
+        'Account Required / اکاؤنٹ درکار ہے',
+        'Please register or sign in to customize and hide profiles in your feed.\n\nرشتے اگنور کرنے کے لیے لاگ ان یا رجسٹریشن درکار ہے۔',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In / لاگ ان', onPress: () => navigation.navigate('Login') },
+          { text: 'Register Free / رجسٹریشن', onPress: () => navigation.navigate('Register') },
+        ]
+      );
+      return;
+    }
 
     Alert.alert(
       'Ignore Candidate / نظر انداز کریں',
@@ -346,6 +375,15 @@ export default function MatchesScreen({ navigation }) {
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
+            {navigation.canGoBack() && (
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={{ padding: 4, marginRight: 2 }}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Ionicons name="arrow-back" size={22} color={Colors.white} />
+              </TouchableOpacity>
+            )}
             <Image
               source={require('../../../assets/raabtanow-icon.png')}
               style={{ width: 36, height: 36, borderRadius: 8 }}
@@ -356,27 +394,38 @@ export default function MatchesScreen({ navigation }) {
                 Raabta<Text style={{ color: Colors.magenta[400] }}>Now</Text>
               </Text>
               <Text style={styles.headerSubtitle} numberOfLines={1}>
-                Privacy Protected
+                {!authenticated ? 'Guest Discovery' : 'Privacy Protected'}
               </Text>
             </View>
           </View>
 
           {/* Action Buttons: Hidden & Filters */}
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            <TouchableOpacity
-              style={[styles.hiddenButton, hiddenList.length > 0 && styles.hiddenButtonActive]}
-              onPress={handleOpenHiddenModal}
-              activeOpacity={0.8}
-            >
-              <Ionicons
-                name="eye-off-outline"
-                size={16}
-                color={hiddenList.length > 0 ? Colors.white : Colors.slate[400]}
-              />
-              <Text style={[styles.hiddenButtonText, hiddenList.length > 0 && styles.hiddenButtonTextActive]}>
-                Hidden {hiddenList.length > 0 ? `(${hiddenList.length})` : ''}
-              </Text>
-            </TouchableOpacity>
+            {!authenticated ? (
+              <TouchableOpacity
+                style={styles.guestSignInBtn}
+                onPress={() => navigation.navigate('Login')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="log-in-outline" size={15} color={Colors.white} />
+                <Text style={styles.guestSignInBtnText}>Sign In</Text>
+              </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                style={[styles.hiddenButton, hiddenList.length > 0 && styles.hiddenButtonActive]}
+                onPress={handleOpenHiddenModal}
+                activeOpacity={0.8}
+              >
+                <Ionicons
+                  name="eye-off-outline"
+                  size={16}
+                  color={hiddenList.length > 0 ? Colors.white : Colors.slate[400]}
+                />
+                <Text style={[styles.hiddenButtonText, hiddenList.length > 0 && styles.hiddenButtonTextActive]}>
+                  Hidden {hiddenList.length > 0 ? `(${hiddenList.length})` : ''}
+                </Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={[styles.filterButton, activeFilterCount > 0 && styles.filterButtonActive]}
@@ -481,7 +530,25 @@ export default function MatchesScreen({ navigation }) {
 
       {/* Candidate Feed */}
       <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
-        <OnboardingBanner />
+        {!authenticated ? (
+          <View style={styles.guestBanner}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
+              <Ionicons name="sparkles" size={16} color={Colors.cyan[400]} />
+              <Text style={styles.guestBannerText} numberOfLines={2}>
+                Browsing verified profiles as Guest. Register free to connect.
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.guestBannerAction}
+              onPress={() => navigation.navigate('Register')}
+              activeOpacity={0.8}
+            >
+              <Text style={styles.guestBannerActionText}>Register Free</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <OnboardingBanner />
+        )}
       </View>
 
       {loading ? (
@@ -768,5 +835,48 @@ const styles = StyleSheet.create({
   footerLoaderText: {
     fontSize: 12,
     color: Colors.slate[400],
+  },
+  guestSignInBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    backgroundColor: Colors.magenta[600],
+  },
+  guestSignInBtnText: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  guestBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 10,
+    backgroundColor: 'rgba(6, 182, 212, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(6, 182, 212, 0.3)',
+    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    marginBottom: 6,
+  },
+  guestBannerText: {
+    fontSize: 12,
+    color: Colors.cyan[200],
+    fontWeight: '500',
+  },
+  guestBannerAction: {
+    backgroundColor: Colors.cyan[500],
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+  },
+  guestBannerActionText: {
+    color: Colors.navy[950],
+    fontSize: 11,
+    fontWeight: '800',
   },
 });

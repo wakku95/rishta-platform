@@ -29,7 +29,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function CandidateDetailScreen({ route, navigation }) {
   const { profileCode } = route.params;
-  const { isIdentityVerified, refreshUser, emailVerified, hasProfile, profileStatus } = useAuth();
+  const { authenticated, isIdentityVerified, refreshUser, emailVerified, hasProfile, profileStatus } = useAuth();
   const [candidate, setCandidate] = useState(null);
   const [activeRequest, setActiveRequest] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -74,6 +74,19 @@ export default function CandidateDetailScreen({ route, navigation }) {
   }, [profileCode]);
 
   const handleToggleShortlist = async () => {
+    if (!authenticated) {
+      Alert.alert(
+        'Account Required / اکاؤنٹ درکار ہے',
+        'Please register or sign in to save profiles to your shortlist for family discussion.\n\nرشتے شارٹ لسٹ کرنے کے لیے اپنا اکاؤنٹ بنائیں یا لاگ ان کریں۔',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In / لاگ ان', onPress: () => navigation.navigate('Login') },
+          { text: 'Register Free / رجسٹریشن', onPress: () => navigation.navigate('Register') },
+        ]
+      );
+      return;
+    }
+
     const nextState = !isShortlisted;
     setIsShortlisted(nextState);
 
@@ -139,6 +152,27 @@ export default function CandidateDetailScreen({ route, navigation }) {
   };
 
   const handleOpenProposalModal = async () => {
+    // 0. Guest Check: Must register or login
+    if (!authenticated) {
+      Alert.alert(
+        'Create Free Profile / رجسٹریشن درکار ہے',
+        `Register a free profile or sign in to send a formal halal Rishta proposal to candidate #${profileCode}.\n\nاس امیدوار کو رشتہ بھیجنے کے لیے اپنا مفت اکاؤنٹ بنائیں یا لاگ ان کریں۔`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Sign In / لاگ ان',
+            onPress: () => navigation.navigate('Login'),
+          },
+          {
+            text: 'Register Free / رجسٹریشن',
+            style: 'default',
+            onPress: () => navigation.navigate('Register'),
+          },
+        ]
+      );
+      return;
+    }
+
     // 1. Guard against duplicate proposal attempts
     if (activeRequest) {
       if (!activeRequest.is_sender) {

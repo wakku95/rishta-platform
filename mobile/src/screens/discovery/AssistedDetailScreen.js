@@ -25,7 +25,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function AssistedDetailScreen({ route, navigation }) {
   const { listingCode } = route.params;
-  const { isIdentityVerified, user, refreshUser } = useAuth();
+  const { authenticated, isIdentityVerified, user, refreshUser } = useAuth();
   const [listing, setListing] = useState(null);
   const [loading, setLoading] = useState(true);
   const [interestModalOpen, setInterestModalOpen] = useState(false);
@@ -61,6 +61,19 @@ export default function AssistedDetailScreen({ route, navigation }) {
   }, [listingCode]);
 
   const handleToggleShortlist = async () => {
+    if (!authenticated) {
+      Alert.alert(
+        'Account Required / اکاؤنٹ درکار ہے',
+        'Please register or sign in to save profiles to your shortlist for family discussion.\n\nرشتے شارٹ لسٹ کرنے کے لیے اپنا اکاؤنٹ بنائیں یا لاگ ان کریں۔',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In / لاگ ان', onPress: () => navigation.navigate('Login') },
+          { text: 'Register Free / رجسٹریشن', onPress: () => navigation.navigate('Register') },
+        ]
+      );
+      return;
+    }
+
     const nextState = !isShortlisted;
     setIsShortlisted(nextState);
 
@@ -104,6 +117,22 @@ export default function AssistedDetailScreen({ route, navigation }) {
 
     fetchListing();
   }, [listingCode]);
+
+  const handleOpenInquiry = () => {
+    if (!authenticated) {
+      Alert.alert(
+        'Account Required / اکاؤنٹ درکار ہے',
+        'Register a free profile or sign in to inquire about assisted rishta listings.\n\nرشتے کے بارے میں تفصیلات اور رابطے کے لیے اپنا اکاؤنٹ بنائیں یا لاگ ان کریں۔',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Sign In / لاگ ان', onPress: () => navigation.navigate('Login') },
+          { text: 'Register Free / رجسٹریشن', onPress: () => navigation.navigate('Register') },
+        ]
+      );
+      return;
+    }
+    setInterestModalOpen(true);
+  };
 
   const handleSubmitInterest = async () => {
     // 1. Mandatory Identity Verification Gate (Matches our Backend & Web implementation)
@@ -294,7 +323,7 @@ export default function AssistedDetailScreen({ route, navigation }) {
       <View style={styles.bottomBar}>
         <Button
           title="Inquire via Matchmaker (ایجنٹ رابطہ)"
-          onPress={() => setInterestModalOpen(true)}
+          onPress={handleOpenInquiry}
           variant="gold"
           size="lg"
           icon={() => <Ionicons name="chatbubbles" size={18} color={Colors.navy[950]} />}
