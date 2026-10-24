@@ -2541,10 +2541,10 @@ export default function ProposalsScreen({ navigation }) {
 
               {selectedAssistedInquiry?.admin_message && (
                 <View style={[styles.receivedQuestionsCard, { borderColor: 'rgba(168, 85, 247, 0.35)', backgroundColor: 'rgba(88, 28, 135, 0.2)' }]}>
-                  <Text style={[styles.receivedQuestionsHeader, { color: Colors.purple[300] || '#d8b4fe' }]}>
+                  <Text style={[styles.receivedQuestionsHeader, { color: Colors.purple?.[300] || '#d8b4fe' }]}>
                     Matchmaker Message / کوآرڈینیٹر کا پیغام:
                   </Text>
-                  <Text style={[styles.receivedItemText, { color: Colors.purple[100] || '#f3e8ff' }]}>
+                  <Text style={[styles.receivedItemText, { color: Colors.purple?.[100] || '#f3e8ff' }]}>
                     "{selectedAssistedInquiry.admin_message}"
                   </Text>
                 </View>
@@ -3770,12 +3770,12 @@ const styles = StyleSheet.create({
   assistedAdminSender: {
     fontSize: 10,
     fontWeight: '800',
-    color: Colors.purple[300] || '#d8b4fe',
+    color: Colors.purple?.[300] || '#d8b4fe',
   },
   assistedUserSender: {
     fontSize: 10,
     fontWeight: '800',
-    color: Colors.emerald[300] || '#6ee7b7',
+    color: Colors.emerald?.[300] || '#6ee7b7',
   },
   assistedMsgTime: {
     fontSize: 9,

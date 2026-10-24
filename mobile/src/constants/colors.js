@@ -15,11 +15,30 @@ export const Colors = {
 
   // Primary Brand Accent (Magenta)
   magenta: {
+    900: '#831843',
+    800: '#9D174D',
+    700: '#BE185D',
     600: '#BE185D',
     500: '#E11D74',
     400: '#F43F8E',
     300: '#F472B6',
+    200: '#FBCFE8',
+    100: '#FCE7F3',
     50: '#FDF2F8',
+  },
+
+  // Purple / Violet Accent (Coordinator / Admin thread)
+  purple: {
+    900: '#581C87',
+    800: '#6B21A8',
+    700: '#7E22CE',
+    600: '#9333EA',
+    500: '#A855F7',
+    400: '#C084FC',
+    300: '#D8B4FE',
+    200: '#E9D5FF',
+    100: '#F3E8FF',
+    50: '#FAF5FF',
   },
 
   // Trust / Gold Accent (Halal & Assisted)
@@ -55,6 +74,8 @@ export const Colors = {
     600: '#059669',
     500: '#10B981',
     400: '#34D399',
+    300: '#6EE7B7',
+    200: '#A7F3D0',
     100: '#D1FAE5',
   },
 
