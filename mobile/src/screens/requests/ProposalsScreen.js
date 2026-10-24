@@ -31,6 +31,8 @@ import { Config } from '../../constants/config';
 
 export default function ProposalsScreen({ navigation }) {
   const { isIdentityVerified, user, token } = useAuth();
+  const viewerProfileCode = user?.profile?.profile_code || user?.profile_code || user?.code || 'MEMBER';
+  const viewerPhone = user?.phone || user?.profile?.phone || 'CONFIDENTIAL';
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -2110,11 +2112,37 @@ export default function ProposalsScreen({ navigation }) {
 
                 {/* Watermark Diagonal Overlay (Always visible across the image for protection) */}
                 <View style={styles.watermarkOverlay} pointerEvents="none">
-                  {[-20, 5, 30, 55, 80].map((topPct, idx) => (
-                    <Text key={idx} style={[styles.watermarkLine, { top: `${topPct}%` }]}>
-                      {user?.profile?.profile_code || 'MEMBER'} • {user?.phone || 'CONFIDENTIAL'} • RISHTA PROTECTED
+                  {[-12, 1, 14, 27, 40, 53, 66, 79, 92, 105].map((topPct, idx) => (
+                    <Text
+                      key={idx}
+                      style={[
+                        styles.watermarkLine,
+                        {
+                          top: `${topPct}%`,
+                          marginLeft: idx % 2 === 0 ? -40 : 20,
+                        },
+                      ]}
+                      numberOfLines={1}
+                    >
+                      {viewerProfileCode} • {viewerPhone} • RISHTA SECURE • {viewerProfileCode}
                     </Text>
                   ))}
+
+                  {/* Top Security Strip */}
+                  <View style={styles.watermarkTopStrip}>
+                    <Ionicons name="shield-checkmark" size={13} color="#f59e0b" style={{ marginRight: 6 }} />
+                    <Text style={styles.watermarkTopText}>
+                      CONFIDENTIAL MATRIMONIAL VIEWER • ANTI-SCREENSHOT
+                    </Text>
+                  </View>
+
+                  {/* Bottom Security Strip */}
+                  <View style={styles.watermarkBottomStrip}>
+                    <Ionicons name="lock-closed" size={12} color={Colors.cyan[300]} style={{ marginRight: 6 }} />
+                    <Text style={styles.watermarkBottomText} numberOfLines={1}>
+                      Screen Monitored • ID: {viewerProfileCode} • {viewerPhone}
+                    </Text>
+                  </View>
                 </View>
 
                 {/* Blur / Cover Overlay when NOT holding */}
@@ -3258,18 +3286,68 @@ const styles = StyleSheet.create({
   },
   watermarkOverlay: {
     ...StyleSheet.absoluteFillObject,
+    zIndex: 25,
+    elevation: 25,
     overflow: 'hidden',
   },
   watermarkLine: {
     position: 'absolute',
-    left: -60,
-    right: -60,
+    left: -120,
+    right: -120,
     textAlign: 'center',
-    fontSize: 12,
-    fontWeight: '800',
-    color: 'rgba(255, 255, 255, 0.28)',
+    fontSize: 13,
+    fontWeight: '900',
+    color: 'rgba(255, 255, 255, 0.65)',
+    textShadowColor: 'rgba(0, 0, 0, 0.95)',
+    textShadowOffset: { width: 1.5, height: 1.5 },
+    textShadowRadius: 3,
     transform: [{ rotate: '-25deg' }],
     letterSpacing: 2,
+  },
+  watermarkTopStrip: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 30,
+    backgroundColor: 'rgba(15, 23, 42, 0.90)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(245, 158, 11, 0.4)',
+    zIndex: 30,
+    elevation: 30,
+  },
+  watermarkTopText: {
+    color: '#fbbf24',
+    fontSize: 10.5,
+    fontWeight: '800',
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  watermarkBottomStrip: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    height: 32,
+    backgroundColor: 'rgba(15, 23, 42, 0.92)',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 12,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(56, 189, 248, 0.4)',
+    zIndex: 30,
+    elevation: 30,
+  },
+  watermarkBottomText: {
+    color: Colors.cyan[300],
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.5,
   },
   coverOverlay: {
     ...StyleSheet.absoluteFillObject,
