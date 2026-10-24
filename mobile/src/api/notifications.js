@@ -12,7 +12,7 @@ export const notificationsApi = {
   },
 
   markAllAsRead: async () => {
-    const res = await apiClient.post('/notifications/mark-all-read');
+    const res = await apiClient.post('/notifications/read-all');
     return res.data;
   },
 };

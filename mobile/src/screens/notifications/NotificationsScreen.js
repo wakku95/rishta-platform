@@ -45,22 +45,23 @@ export default function NotificationsScreen({ navigation }) {
   }, []);
 
   const handleMarkAsRead = async (id) => {
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
+    );
     try {
       await notificationsApi.markAsRead(id);
-      setNotifications((prev) =>
-        prev.map((n) => (n.id === id ? { ...n, is_read: true } : n))
-      );
     } catch (e) {
-      // Ignore
+      console.warn('Failed to mark notification as read:', e);
     }
   };
 
   const handleMarkAllRead = async () => {
+    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     try {
       await notificationsApi.markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     } catch (e) {
-      // Ignore
+      console.warn('Failed to mark all notifications as read:', e);
+      fetchNotifications();
     }
   };
 

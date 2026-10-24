@@ -186,6 +186,7 @@ Route::middleware('auth:sanctum')->prefix('verifications')->group(function () {
 Route::middleware('auth:sanctum')->prefix('notifications')->group(function () {
     Route::get('/', [\App\Http\Controllers\Api\Notification\NotificationController::class, 'index']);
     Route::post('/read-all', [\App\Http\Controllers\Api\Notification\NotificationController::class, 'markAllAsRead']);
+    Route::post('/mark-all-read', [\App\Http\Controllers\Api\Notification\NotificationController::class, 'markAllAsRead']);
     Route::post('/{announcement}/read', [\App\Http\Controllers\Api\Notification\NotificationController::class, 'markAsRead']);
 });
 
