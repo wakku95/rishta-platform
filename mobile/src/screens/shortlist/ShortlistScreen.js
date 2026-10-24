@@ -16,6 +16,7 @@ import { Colors } from '../../constants/colors';
 import CandidateCard from '../../components/candidate/CandidateCard';
 import { profilesApi } from '../../api/profiles';
 import { Ionicons } from '@expo/vector-icons';
+import OnboardingBanner from '../../components/common/OnboardingBanner';
 
 export default function ShortlistScreen({ navigation }) {
   const [shortlist, setShortlist] = useState([]);
@@ -182,6 +183,10 @@ export default function ShortlistScreen({ navigation }) {
       <View style={styles.header}>
         <Text style={styles.title}>Shortlisted Rishtay</Text>
         <Text style={styles.subtitle}>Profiles saved for family discussion</Text>
+      </View>
+
+      <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
+        <OnboardingBanner />
       </View>
 
       {loading ? (

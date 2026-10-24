@@ -28,6 +28,7 @@ import { requestsApi } from '../../api/requests';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { Config } from '../../constants/config';
+import OnboardingBanner from '../../components/common/OnboardingBanner';
 
 export default function ProposalsScreen({ navigation }) {
   const { isIdentityVerified, user, token } = useAuth();
@@ -777,6 +778,8 @@ export default function ProposalsScreen({ navigation }) {
       <View style={styles.header}>
         <Text style={styles.title}>Rishta Proposals</Text>
         <Text style={styles.subtitle}>Mutual inquiries and proposal lifecycle</Text>
+
+        <OnboardingBanner />
 
         {/* Tab Switcher */}
         <View style={styles.tabPillContainer}>

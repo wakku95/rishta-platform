@@ -22,6 +22,7 @@ import FilterModal from '../../components/discovery/FilterModal';
 import HiddenProfilesModal from '../../components/discovery/HiddenProfilesModal';
 import { profilesApi } from '../../api/profiles';
 import { Ionicons } from '@expo/vector-icons';
+import OnboardingBanner from '../../components/common/OnboardingBanner';
 
 export default function MatchesScreen({ navigation }) {
   const [candidates, setCandidates] = useState([]);
@@ -479,6 +480,10 @@ export default function MatchesScreen({ navigation }) {
       </View>
 
       {/* Candidate Feed */}
+      <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
+        <OnboardingBanner />
+      </View>
+
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.magenta[500]} />

@@ -18,6 +18,7 @@ import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import { notificationsApi } from '../../api/notifications';
 import { Ionicons } from '@expo/vector-icons';
+import OnboardingBanner from '../../components/common/OnboardingBanner';
 
 export default function NotificationsScreen({ navigation }) {
   const [notifications, setNotifications] = useState([]);
@@ -109,6 +110,10 @@ export default function NotificationsScreen({ navigation }) {
             <Text style={styles.facebookButtonText}>Facebook Chat</Text>
           </TouchableOpacity>
         </View>
+      </View>
+
+      <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
+        <OnboardingBanner />
       </View>
 
       {loading ? (

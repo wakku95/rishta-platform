@@ -11,10 +11,10 @@ import {
   Alert,
   Image,
   Platform,
+  TextInput,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
 import Card from '../../components/common/Card';
-import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
 import { verificationApi } from '../../api/verification';
 import { useAuth } from '../../contexts/AuthContext';
@@ -23,15 +23,20 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function VerificationScreen({ navigation }) {
   const { refreshUser, logout } = useAuth();
+  const [activeTab, setActiveTab] = useState('identity'); // 'identity' | 'education'
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [sessionExpired, setSessionExpired] = useState(false);
 
-  // Selected files
+  // Identity files
   const [frontImage, setFrontImage] = useState(null);
   const [backImage, setBackImage] = useState(null);
   const [selfieImage, setSelfieImage] = useState(null);
+
+  // Education state
+  const [eduDoc, setEduDoc] = useState(null);
+  const [eduLabel, setEduLabel] = useState('');
 
   const fetchStatus = async () => {
     try {
@@ -39,7 +44,12 @@ export default function VerificationScreen({ navigation }) {
       const statusData = res.data || res;
       setData(statusData);
       setSessionExpired(false);
-      if (statusData?.identity?.status === 'approved' || statusData?.summary?.identity_verified) {
+      if (
+        statusData?.identity?.status === 'approved' ||
+        statusData?.education?.status === 'approved' ||
+        statusData?.summary?.identity_verified ||
+        statusData?.summary?.education_verified
+      ) {
         await refreshUser();
       }
     } catch (err) {
@@ -60,7 +70,7 @@ export default function VerificationScreen({ navigation }) {
     fetchStatus();
   }, []);
 
-  const pickImage = async (setter, title = 'CNIC Document') => {
+  const pickImage = async (setter, title = 'Document') => {
     Alert.alert(
       `Upload ${title}`,
       'Choose a clear photo from your gallery or take a new photo with camera:',
@@ -105,7 +115,7 @@ export default function VerificationScreen({ navigation }) {
     );
   };
 
-  // Directly launches the camera with front-facing selfie mode (no gallery option allowed)
+  // Live selfie camera capture only
   const takeLiveSelfie = async () => {
     try {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -131,7 +141,7 @@ export default function VerificationScreen({ navigation }) {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleIdentitySubmit = async () => {
     if (!selfieImage) {
       Alert.alert('Photo Required', 'Please capture your live selfie or select a recent face photo to complete identity verification.');
       return;
@@ -171,49 +181,98 @@ export default function VerificationScreen({ navigation }) {
       await refreshUser();
       Alert.alert(
         'Submission Received / دستاویزات موصول ہوگئیں',
-        'Your identity documents have been submitted and are in the admin audit queue. Once approved, the Green Verified Trust Badge will be active on your account.'
+        'Your CNIC documents have been submitted and are in the admin audit queue. Once approved, the Green Verified Trust Badge will be active on your account.'
       );
       setFrontImage(null);
       setBackImage(null);
       setSelfieImage(null);
       fetchStatus();
     } catch (err) {
-      console.warn('Upload error details:', err.response?.data || err.message);
-      const isUnauth =
-        err.response?.status === 401 ||
-        err.message?.includes('401') ||
-        err.message?.toLowerCase().includes('unauthenticated') ||
-        err.response?.data?.error_code === 'UNAUTHENTICATED';
-
-      if (isUnauth) {
-        setSessionExpired(true);
-        Alert.alert(
-          'Session Expired / سیشن ختم ہوگیا',
-          'Your login session is expired or invalid. Please sign in with your email and password to upload your verification documents.',
-          [
-            {
-              text: 'Sign In Again / دوبارہ لاگ ان کریں',
-              onPress: async () => {
-                await logout();
-                navigation.navigate('Login');
-              },
-            },
-          ]
-        );
-        return;
-      }
-
-      const errors = err.response?.data?.errors;
-      const firstError = errors ? Object.values(errors).flat()[0] : null;
-      const msg =
-        firstError ||
-        err.response?.data?.message ||
-        err.message ||
-        'Failed to upload verification documents.';
-      Alert.alert('Upload Error / اپ لوڈ خرابی', msg);
+      handleApiError(err);
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEducationSubmit = async () => {
+    if (!eduDoc) {
+      Alert.alert('Document Required', 'Please select a photo or scan of your degree, diploma, or transcript.');
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      const formData = new FormData();
+      let uri = eduDoc.uri;
+      let name = eduDoc.fileName || 'degree.jpg';
+      if (!name.match(/\.(jpe?g|png|webp|pdf)$/i)) {
+        name = `${name}.jpg`;
+      }
+      let type = eduDoc.mimeType || 'image/jpeg';
+      if (type.startsWith('image/') && !type.includes('jpeg') && !type.includes('png') && !type.includes('webp')) {
+        type = 'image/jpeg';
+      }
+
+      formData.append('document', {
+        uri,
+        name,
+        type,
+      });
+
+      if (eduLabel.trim()) {
+        formData.append('label', eduLabel.trim());
+      }
+
+      await verificationApi.submitEducation(formData);
+      await refreshUser();
+      Alert.alert(
+        'Degree Submitted / تعلیمی ڈگری موصول ہوگئی',
+        'Your educational credential has been submitted for admin verification. Once verified, the Education badge will be visible on your profile.'
+      );
+      setEduDoc(null);
+      setEduLabel('');
+      fetchStatus();
+    } catch (err) {
+      handleApiError(err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const handleApiError = (err) => {
+    console.warn('Upload error details:', err.response?.data || err.message);
+    const isUnauth =
+      err.response?.status === 401 ||
+      err.message?.includes('401') ||
+      err.message?.toLowerCase().includes('unauthenticated') ||
+      err.response?.data?.error_code === 'UNAUTHENTICATED';
+
+    if (isUnauth) {
+      setSessionExpired(true);
+      Alert.alert(
+        'Session Expired / سیشن ختم ہوگیا',
+        'Your login session is expired or invalid. Please sign in with your email and password to upload your verification documents.',
+        [
+          {
+            text: 'Sign In Again / دوبارہ لاگ ان کریں',
+            onPress: async () => {
+              await logout();
+              navigation.navigate('Login');
+            },
+          },
+        ]
+      );
+      return;
+    }
+
+    const errors = err.response?.data?.errors;
+    const firstError = errors ? Object.values(errors).flat()[0] : null;
+    const msg =
+      firstError ||
+      err.response?.data?.message ||
+      err.message ||
+      'Failed to upload verification documents.';
+    Alert.alert('Upload Error / اپ لوڈ خرابی', msg);
   };
 
   if (loading) {
@@ -225,9 +284,14 @@ export default function VerificationScreen({ navigation }) {
   }
 
   const identity = data?.identity;
-  const isApproved = identity?.status === 'approved';
-  const isPending = identity?.status === 'pending';
-  const isRejected = identity?.status === 'rejected';
+  const isIdApproved = identity?.status === 'approved' || data?.summary?.identity_verified;
+  const isIdPending = identity?.status === 'pending';
+  const isIdRejected = identity?.status === 'rejected';
+
+  const education = data?.education;
+  const isEduApproved = education?.status === 'approved' || data?.summary?.education_verified;
+  const isEduPending = education?.status === 'pending';
+  const isEduRejected = education?.status === 'rejected';
 
   return (
     <SafeAreaView style={styles.container}>
@@ -237,44 +301,48 @@ export default function VerificationScreen({ navigation }) {
         <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={22} color={Colors.white} />
         </TouchableOpacity>
-        <Text style={styles.topBarTitle}>Identity Verification</Text>
+        <Text style={styles.topBarTitle}>Trust & Verification / تصدیق</Text>
         <View style={{ width: 22 }} />
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        {/* Status Card */}
-        <Card style={styles.statusCard}>
-          <View style={styles.statusHeader}>
-            <View style={styles.iconCircle}>
-              <Ionicons
-                name={isApproved ? 'shield-checkmark' : isPending ? 'time' : 'shield-outline'}
-                size={26}
-                color={isApproved ? Colors.emerald[400] : isPending ? Colors.gold[400] : Colors.magenta[400]}
-              />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.statusTitle}>
-                {isApproved
-                  ? 'Identity Verified Account'
-                  : isPending
-                  ? 'Verification Under Review'
-                  : isRejected
-                  ? 'Verification Needs Re-submission'
-                  : 'Submit CNIC & Live Selfie'}
-              </Text>
-              <Text style={styles.statusSubtitle}>
-                {isApproved
-                  ? 'Your account holds the Green Trust Badge.'
-                  : isPending
-                  ? 'Admin is auditing your documents (usually 2-24 hours).'
-                  : isRejected
-                  ? `Reason: ${identity?.rejection_reason || 'Document unclear'}. Please re-upload.`
-                  : 'Required before sending proposals or inquiring on assisted rishtay.'}
-              </Text>
-            </View>
-          </View>
-        </Card>
+      {/* Tabs */}
+      <View style={styles.tabBar}>
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'identity' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('identity')}
+        >
+          <Ionicons
+            name={isIdApproved ? 'shield-checkmark' : 'card-outline'}
+            size={16}
+            color={activeTab === 'identity' ? Colors.magenta[400] : Colors.slate[400]}
+          />
+          <Text style={[styles.tabText, activeTab === 'identity' && styles.tabTextActive]}>
+            CNIC Identity
+          </Text>
+          {isIdApproved && (
+            <View style={styles.verifiedDot} />
+          )}
+        </TouchableOpacity>
 
+        <TouchableOpacity
+          style={[styles.tabButton, activeTab === 'education' && styles.tabButtonActive]}
+          onPress={() => setActiveTab('education')}
+        >
+          <Ionicons
+            name={isEduApproved ? 'school' : 'school-outline'}
+            size={16}
+            color={activeTab === 'education' ? Colors.magenta[400] : Colors.slate[400]}
+          />
+          <Text style={[styles.tabText, activeTab === 'education' && styles.tabTextActive]}>
+            Education Degree
+          </Text>
+          {isEduApproved && (
+            <View style={styles.verifiedDot} />
+          )}
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView contentContainerStyle={styles.scrollContent}>
         {/* Session Expired Re-auth Prompt */}
         {sessionExpired && (
           <Card style={styles.sessionExpiredCard}>
@@ -300,61 +368,176 @@ export default function VerificationScreen({ navigation }) {
           </Card>
         )}
 
-        {/* If not approved or rejected, show upload form */}
-        {(!isApproved && !isPending) || isRejected ? (
-          <View style={styles.uploadSection}>
-            <Text style={styles.sectionTitle}>Document Uploads / دستاویزات</Text>
+        {/* IDENTITY TAB CONTENT */}
+        {activeTab === 'identity' && (
+          <View>
+            {/* Status Card */}
+            <Card style={styles.statusCard}>
+              <View style={styles.statusHeader}>
+                <View style={styles.iconCircle}>
+                  <Ionicons
+                    name={isIdApproved ? 'shield-checkmark' : isIdPending ? 'time' : 'shield-outline'}
+                    size={26}
+                    color={isIdApproved ? Colors.emerald[400] : isIdPending ? Colors.gold[400] : Colors.magenta[400]}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.statusTitle}>
+                    {isIdApproved
+                      ? 'Identity Verified Account'
+                      : isIdPending
+                      ? 'Verification Under Review'
+                      : isIdRejected
+                      ? 'Verification Needs Re-submission'
+                      : 'Submit CNIC & Live Selfie'}
+                  </Text>
+                  <Text style={styles.statusSubtitle}>
+                    {isIdApproved
+                      ? 'Your account holds the Green Trust Badge. Your date of birth and marital status are securely locked.'
+                      : isIdPending
+                      ? 'Admin is auditing your CNIC and live selfie (usually within a few hours).'
+                      : isIdRejected
+                      ? `Reason: ${identity?.rejection_reason || 'Document unclear'}. Please re-upload clear photos.`
+                      : 'CNIC verification gives you verified credibility and lets you send proposals.'}
+                  </Text>
+                </View>
+              </View>
+            </Card>
 
-            {/* 1. CNIC Front */}
-            <DocumentUploadBox
-              label="1. CNIC Front / شناختی کارڈ کا سامنے کا رخ *"
-              hint="Select a clear photo from gallery or camera"
-              icon="card-outline"
-              buttonText="Select CNIC Front (Gallery / Camera)"
-              image={frontImage}
-              onPress={() => pickImage(setFrontImage, 'CNIC Front')}
-              onRemove={() => setFrontImage(null)}
-            />
+            {/* If not approved and not pending, or rejected, show upload form */}
+            {(!isIdApproved && !isIdPending) || isIdRejected ? (
+              <View style={styles.uploadSection}>
+                <Text style={styles.sectionTitle}>CNIC Documents / شناختی کارڈ</Text>
 
-            {/* 2. CNIC Back */}
-            <DocumentUploadBox
-              label="2. CNIC Back / شناختی کارڈ کی پشت *"
-              hint="Select a clear photo from gallery or camera"
-              icon="card-outline"
-              buttonText="Select CNIC Back (Gallery / Camera)"
-              image={backImage}
-              onPress={() => pickImage(setBackImage, 'CNIC Back')}
-              onRemove={() => setBackImage(null)}
-            />
+                {/* 1. CNIC Front */}
+                <DocumentUploadBox
+                  label="1. CNIC Front / شناختی کارڈ کا سامنے کا رخ *"
+                  hint="Select a clear photo from gallery or camera"
+                  icon="card-outline"
+                  buttonText="Select CNIC Front (Gallery / Camera)"
+                  image={frontImage}
+                  onPress={() => pickImage(setFrontImage, 'CNIC Front')}
+                  onRemove={() => setFrontImage(null)}
+                />
 
-            {/* 3. Live Selfie */}
-            <DocumentUploadBox
-              label="3. Live Selfie / لائیو سیلفی (Clear Face) *"
-              hint="Direct camera capture only. Gallery selection is disabled to ensure identity authenticity."
-              icon="camera"
-              buttonText="Open Camera & Take Live Selfie"
-              isLiveCamera
-              image={selfieImage}
-              onPress={takeLiveSelfie}
-              onRemove={() => setSelfieImage(null)}
-            />
+                {/* 2. CNIC Back */}
+                <DocumentUploadBox
+                  label="2. CNIC Back / شناختی کارڈ کی پشت *"
+                  hint="Select a clear photo from gallery or camera"
+                  icon="card-outline"
+                  buttonText="Select CNIC Back (Gallery / Camera)"
+                  image={backImage}
+                  onPress={() => pickImage(setBackImage, 'CNIC Back')}
+                  onRemove={() => setBackImage(null)}
+                />
 
-            <Button
-              title="Submit Documents for Audit"
-              variant="gold"
-              size="lg"
-              loading={submitting}
-              onPress={handleSubmit}
-              style={{ marginTop: 16 }}
-            />
+                {/* 3. Live Selfie */}
+                <DocumentUploadBox
+                  label="3. Live Selfie / لائیو سیلفی (Clear Face) *"
+                  hint="Direct camera capture only. To guarantee identity safety and prevent duplicate accounts."
+                  icon="camera"
+                  buttonText="Open Camera & Take Live Selfie"
+                  isLiveCamera
+                  image={selfieImage}
+                  onPress={takeLiveSelfie}
+                  onRemove={() => setSelfieImage(null)}
+                />
+
+                <Button
+                  title="Submit CNIC for Audit"
+                  variant="gold"
+                  size="lg"
+                  loading={submitting}
+                  onPress={handleIdentitySubmit}
+                  style={{ marginTop: 16 }}
+                />
+              </View>
+            ) : null}
           </View>
-        ) : null}
+        )}
+
+        {/* EDUCATION TAB CONTENT */}
+        {activeTab === 'education' && (
+          <View>
+            {/* Status Card */}
+            <Card style={styles.statusCard}>
+              <View style={styles.statusHeader}>
+                <View style={styles.iconCircle}>
+                  <Ionicons
+                    name={isEduApproved ? 'school' : isEduPending ? 'time' : 'school-outline'}
+                    size={26}
+                    color={isEduApproved ? Colors.emerald[400] : isEduPending ? Colors.gold[400] : Colors.magenta[400]}
+                  />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.statusTitle}>
+                    {isEduApproved
+                      ? 'Education Verified Badge Active'
+                      : isEduPending
+                      ? 'Education Under Review'
+                      : isEduRejected
+                      ? 'Degree Needs Re-submission'
+                      : 'Verify Your Degree / تعلیمی سند'}
+                  </Text>
+                  <Text style={styles.statusSubtitle}>
+                    {isEduApproved
+                      ? `Degree verified: ${education?.label || 'Degree/Diploma'}. Your education status is locked and authentic.`
+                      : isEduPending
+                      ? 'Admin is auditing your educational degree/transcript.'
+                      : isEduRejected
+                      ? `Reason: ${education?.rejection_reason || 'Document unreadable'}. Please re-upload.`
+                      : 'Upload your highest degree, diploma, or transcript to earn the verified education badge.'}
+                  </Text>
+                </View>
+              </View>
+            </Card>
+
+            {(!isEduApproved && !isEduPending) || isEduRejected ? (
+              <View style={styles.uploadSection}>
+                <Text style={styles.sectionTitle}>Degree / Certificate Upload</Text>
+
+                {/* Degree Label Input */}
+                <Card style={[styles.docBox, { padding: 14 }]}>
+                  <Text style={styles.docLabel}>Degree Title / تعلیمی ڈگری کا نام (Optional)</Text>
+                  <Text style={styles.docHint}>e.g. BS Computer Science, MBBS, MBA, ACCA, Intermediate</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    value={eduLabel}
+                    onChangeText={setEduLabel}
+                    placeholder="Enter degree or qualification title"
+                    placeholderTextColor={Colors.slate[500]}
+                  />
+                </Card>
+
+                {/* Degree Document Picker */}
+                <DocumentUploadBox
+                  label="Degree / Transcript Document / تعلیمی دستاویز *"
+                  hint="Select a clear photo or scan of your degree, diploma, or marksheet."
+                  icon="document-attach-outline"
+                  buttonText="Select Degree Document (Gallery / Camera)"
+                  image={eduDoc}
+                  onPress={() => pickImage(setEduDoc, 'Education Document')}
+                  onRemove={() => setEduDoc(null)}
+                />
+
+                <Button
+                  title="Submit Degree for Verification"
+                  variant="magenta"
+                  size="lg"
+                  loading={submitting}
+                  onPress={handleEducationSubmit}
+                  style={{ marginTop: 16 }}
+                />
+              </View>
+            ) : null}
+          </View>
+        )}
 
         {/* Privacy Assurance */}
         <View style={styles.privacyNote}>
           <Ionicons name="lock-closed" size={16} color={Colors.slate[400]} />
           <Text style={styles.privacyText}>
-            Privacy Guaranteed: Your CNIC and selfies are strictly accessible only to vetted administration for identity authentication. They are never shared publicly or displayed to other users.
+            Privacy Guaranteed: Your CNIC, live selfie, and education certificates are strictly accessible only to vetted administration for identity authentication. They are never shared publicly or displayed to other users.
           </Text>
         </View>
       </ScrollView>
@@ -454,6 +637,48 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.white,
   },
+  tabBar: {
+    flexDirection: 'row',
+    backgroundColor: Colors.navy[950],
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    gap: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.navy[800],
+  },
+  tabButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    borderRadius: 10,
+    gap: 6,
+    position: 'relative',
+  },
+  tabButtonActive: {
+    backgroundColor: Colors.navy[850],
+    borderWidth: 1,
+    borderColor: Colors.magenta[500],
+  },
+  tabText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: Colors.slate[400],
+  },
+  tabTextActive: {
+    color: Colors.white,
+    fontWeight: '700',
+  },
+  verifiedDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.emerald[400],
+    position: 'absolute',
+    top: 6,
+    right: 8,
+  },
   scrollContent: {
     padding: 16,
     paddingBottom: 40,
@@ -539,6 +764,17 @@ const styles = StyleSheet.create({
     color: Colors.slate[400],
     marginBottom: 10,
     lineHeight: 15,
+  },
+  textInput: {
+    backgroundColor: Colors.navy[900],
+    borderWidth: 1,
+    borderColor: Colors.navy[750],
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 13,
+    color: Colors.white,
+    marginTop: 4,
   },
   liveCameraBadge: {
     flexDirection: 'row',

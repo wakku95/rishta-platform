@@ -66,13 +66,43 @@ export const profilesApi = {
     return res.data;
   },
 
+  getProfileOptions: async () => {
+    const res = await apiClient.get('/profile/options');
+    return res.data;
+  },
+
+  saveProfile: async (data) => {
+    const res = await apiClient.post('/profile', data);
+    return res.data;
+  },
+
   updateProfile: async (data) => {
     const res = await apiClient.put('/profile', data);
     return res.data;
   },
 
+  getPreferences: async () => {
+    const res = await apiClient.get('/profile/preferences');
+    return res.data;
+  },
+
   updatePreferences: async (data) => {
     const res = await apiClient.put('/profile/preferences', data);
+    return res.data;
+  },
+
+  activateSelfProfile: async () => {
+    const res = await apiClient.post('/profile/activate');
+    return res.data;
+  },
+
+  hideSelfProfile: async () => {
+    const res = await apiClient.post('/profile/hide');
+    return res.data;
+  },
+
+  getProfilePreview: async () => {
+    const res = await apiClient.get('/profile/preview');
     return res.data;
   },
 };
