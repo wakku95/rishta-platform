@@ -10,8 +10,10 @@ import {
   RefreshControl,
   TouchableOpacity,
   Platform,
+  Linking,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
+import { Config } from '../../constants/config';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import { notificationsApi } from '../../api/notifications';
@@ -132,6 +134,29 @@ export default function NotificationsScreen({ navigation }) {
               </TouchableOpacity>
             );
           }}
+          ListFooterComponent={
+            <View style={styles.helpFooter}>
+              <Text style={styles.helpFooterTitle}>Need Help or Matchmaking Assistance?</Text>
+              <Text style={styles.helpFooterSubtitle}>ہماری ٹیم سے رابطہ کرنے کے لیے منتخب کریں:</Text>
+              <View style={styles.helpButtonsRow}>
+                <TouchableOpacity
+                  style={[styles.socialPill, { borderColor: 'rgba(244, 63, 142, 0.4)', backgroundColor: 'rgba(244, 63, 142, 0.1)' }]}
+                  onPress={() => Linking.openURL(Config.INSTAGRAM_CHAT_URL).catch(() => Linking.openURL(`https://instagram.com/${Config.INSTAGRAM_HANDLE}`))}
+                >
+                  <Ionicons name="logo-instagram" size={14} color="#F43F8E" />
+                  <Text style={[styles.socialPillText, { color: '#F43F8E' }]}>Instagram DM</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[styles.socialPill, { borderColor: 'rgba(59, 130, 246, 0.4)', backgroundColor: 'rgba(59, 130, 246, 0.1)' }]}
+                  onPress={() => Linking.openURL(Config.FACEBOOK_CHAT_URL).catch(() => Linking.openURL(Config.FACEBOOK_PAGE_URL))}
+                >
+                  <Ionicons name="logo-facebook" size={14} color="#3B82F6" />
+                  <Text style={[styles.socialPillText, { color: '#60A5FA' }]}>Facebook Chat</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <Ionicons name="notifications-off-outline" size={44} color={Colors.slate[500]} />
@@ -260,5 +285,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 18,
+  },
+  helpFooter: {
+    marginTop: 20,
+    marginBottom: 10,
+    padding: 16,
+    borderRadius: 12,
+    backgroundColor: Colors.navy[850] || 'rgba(15, 23, 42, 0.6)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.08)',
+    alignItems: 'center',
+    gap: 6,
+  },
+  helpFooterTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.white,
+  },
+  helpFooterSubtitle: {
+    fontSize: 11,
+    color: Colors.slate[400],
+    marginBottom: 4,
+  },
+  helpButtonsRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 4,
+  },
+  socialPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingVertical: 7,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+  },
+  socialPillText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
 });

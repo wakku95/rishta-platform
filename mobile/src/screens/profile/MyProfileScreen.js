@@ -9,8 +9,10 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  Linking,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
+import { Config } from '../../constants/config';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import Button from '../../components/common/Button';
@@ -122,7 +124,7 @@ export default function MyProfileScreen({ navigation }) {
         </Card>
 
         {/* Support & Logout Section */}
-        <Text style={styles.sectionTitle}>Account & Assistance</Text>
+        <Text style={styles.sectionTitle}>Account & Assistance / مدد اور اکاؤنٹ</Text>
         <Card style={styles.settingsCard}>
           <TouchableOpacity
             style={styles.menuRow}
@@ -133,6 +135,48 @@ export default function MyProfileScreen({ navigation }) {
               <Text style={styles.menuLabel}>Document Verification</Text>
             </View>
             <Ionicons name="chevron-forward" size={16} color={Colors.slate[500]} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => Linking.openURL(Config.INSTAGRAM_CHAT_URL).catch(() => Linking.openURL(`https://instagram.com/${Config.INSTAGRAM_HANDLE}`))}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="logo-instagram" size={18} color="#F43F8E" />
+              <View style={{ marginLeft: 4 }}>
+                <Text style={styles.menuLabel}>Chat on Instagram</Text>
+                <Text style={{ fontSize: 10, color: Colors.slate[400] }}>@raabtanow • Direct Message</Text>
+              </View>
+            </View>
+            <Ionicons name="open-outline" size={15} color={Colors.slate[500]} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => Linking.openURL(Config.FACEBOOK_CHAT_URL).catch(() => Linking.openURL(Config.FACEBOOK_PAGE_URL))}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="logo-facebook" size={18} color="#3B82F6" />
+              <View style={{ marginLeft: 4 }}>
+                <Text style={styles.menuLabel}>Message on Facebook</Text>
+                <Text style={{ fontSize: 10, color: Colors.slate[400] }}>Official RaabtaNow Page</Text>
+              </View>
+            </View>
+            <Ionicons name="open-outline" size={15} color={Colors.slate[500]} />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => Linking.openURL(`mailto:${Config.SUPPORT_EMAIL}?subject=RaabtaNow Support Inquiry`)}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="mail-outline" size={18} color={Colors.cyan[400]} />
+              <View style={{ marginLeft: 4 }}>
+                <Text style={styles.menuLabel}>Email Support</Text>
+                <Text style={{ fontSize: 10, color: Colors.slate[400] }}>{Config.SUPPORT_EMAIL}</Text>
+              </View>
+            </View>
+            <Ionicons name="open-outline" size={15} color={Colors.slate[500]} />
           </TouchableOpacity>
 
           <TouchableOpacity style={[styles.menuRow, { borderBottomWidth: 0 }]} onPress={handleLogout}>
