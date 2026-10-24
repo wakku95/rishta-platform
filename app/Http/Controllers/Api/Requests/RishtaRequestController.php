@@ -785,6 +785,14 @@ class RishtaRequestController extends Controller
             storage_path('app/' . $photoPath),
         ];
 
+        $watermarkLevel = $isSender
+            ? ($rishtaRequest->receiver_photo_watermark_level ?: ($rishtaRequest->photo_watermark_level ?? 'medium'))
+            : ($rishtaRequest->sender_photo_watermark_level ?: ($rishtaRequest->photo_watermark_level ?? 'medium'));
+
+        $watermarkText = $isSender
+            ? ($rishtaRequest->receiver_photo_watermark_text ?: $rishtaRequest->photo_watermark_text)
+            : ($rishtaRequest->sender_photo_watermark_text ?: $rishtaRequest->photo_watermark_text);
+
         // Format base64 support for mobile React Native clients
         if ($request->query('format') === 'base64') {
             $bytes = null;
@@ -806,6 +814,8 @@ class RishtaRequestController extends Controller
                     'success' => true,
                     'mime_type' => $mime,
                     'base64' => 'data:' . $mime . ';base64,' . base64_encode($bytes),
+                    'watermark_level' => $watermarkLevel ?: 'medium',
+                    'watermark_text' => $watermarkText,
                 ]);
             }
             abort(404, 'Candidate photo file not found.');

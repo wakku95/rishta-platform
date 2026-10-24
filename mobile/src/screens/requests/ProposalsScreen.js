@@ -87,6 +87,8 @@ export default function ProposalsScreen({ navigation }) {
   const [viewerLoading, setViewerLoading] = useState(false);
   const [viewerError, setViewerError] = useState(null);
   const [viewerPhotoBase64, setViewerPhotoBase64] = useState(null);
+  const [viewerWatermarkText, setViewerWatermarkText] = useState(null);
+  const [viewerWatermarkLevel, setViewerWatermarkLevel] = useState('medium');
   const [isHoldingPhoto, setIsHoldingPhoto] = useState(false);
   const [uploadPhotoAsset, setUploadPhotoAsset] = useState(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
@@ -366,12 +368,20 @@ export default function ProposalsScreen({ navigation }) {
     setViewerPhotoBase64(null);
     setViewerError(null);
     setViewerLoading(true);
+    setViewerWatermarkText(proposal?.photo_watermark_text || null);
+    setViewerWatermarkLevel(proposal?.photo_watermark_level || 'medium');
     setViewerModalOpen(true);
 
     try {
       const res = await requestsApi.getProposalPhotoBase64(proposal.request_code || proposal.id);
       if (res?.base64) {
         setViewerPhotoBase64(res.base64);
+        if (res.watermark_text !== undefined) {
+          setViewerWatermarkText(res.watermark_text);
+        }
+        if (res.watermark_level) {
+          setViewerWatermarkLevel(res.watermark_level);
+        }
       } else {
         setViewerError('Could not load candidate photo data.');
       }
@@ -2111,39 +2121,59 @@ export default function ProposalsScreen({ navigation }) {
                 ) : null}
 
                 {/* Watermark Diagonal Overlay (Always visible across the image for protection) */}
-                <View style={styles.watermarkOverlay} pointerEvents="none">
-                  {/* Rotated Grid Container - Android & iOS Safe */}
-                  <View style={styles.watermarkRotatedContainer}>
-                    {Array.from({ length: 15 }).map((_, idx) => (
-                      <Text
-                        key={idx}
-                        style={[
-                          styles.watermarkRowText,
-                          { marginLeft: idx % 2 === 0 ? -30 : 30 },
-                        ]}
-                        numberOfLines={1}
-                      >
-                        {viewerProfileCode} • {viewerPhone} • RISHTA SECURE • {viewerProfileCode} • {viewerPhone}
-                      </Text>
-                    ))}
-                  </View>
+                {(() => {
+                  const hasCustomAdminText = Boolean(viewerWatermarkText && viewerWatermarkText.trim());
+                  const activeWatermark = hasCustomAdminText
+                    ? `${viewerWatermarkText.trim()} • ${viewerProfileCode}`
+                    : `${viewerProfileCode} • ${viewerPhone} • RISHTA SECURE`;
 
-                  {/* Top Security Strip */}
-                  <View style={styles.watermarkTopStrip}>
-                    <Ionicons name="shield-checkmark" size={13} color="#f59e0b" style={{ marginRight: 6 }} />
-                    <Text style={styles.watermarkTopText}>
-                      CONFIDENTIAL MATRIMONIAL VIEWER • ANTI-SCREENSHOT
-                    </Text>
-                  </View>
+                  const isDark = viewerWatermarkLevel === 'dark';
+                  const isStandard = viewerWatermarkLevel === 'standard';
+                  const levelOpacity = isDark ? 0.90 : isStandard ? 0.45 : 0.70;
+                  const levelFontSize = isDark ? 13.5 : isStandard ? 11.5 : 12.5;
 
-                  {/* Bottom Security Strip */}
-                  <View style={styles.watermarkBottomStrip}>
-                    <Ionicons name="lock-closed" size={12} color={Colors.cyan[300]} style={{ marginRight: 6 }} />
-                    <Text style={styles.watermarkBottomText} numberOfLines={1}>
-                      Screen Monitored • ID: {viewerProfileCode} • {viewerPhone}
-                    </Text>
-                  </View>
-                </View>
+                  return (
+                    <View style={styles.watermarkOverlay} pointerEvents="none">
+                      {/* Rotated Grid Container - Android & iOS Safe */}
+                      <View style={styles.watermarkRotatedContainer}>
+                        {Array.from({ length: 15 }).map((_, idx) => (
+                          <Text
+                            key={idx}
+                            style={[
+                              styles.watermarkRowText,
+                              {
+                                opacity: levelOpacity,
+                                fontSize: levelFontSize,
+                                marginLeft: idx % 2 === 0 ? -30 : 30,
+                              },
+                            ]}
+                            numberOfLines={1}
+                          >
+                            {activeWatermark} • {activeWatermark}
+                          </Text>
+                        ))}
+                      </View>
+
+                      {/* Top Security Strip */}
+                      <View style={styles.watermarkTopStrip}>
+                        <Ionicons name="shield-checkmark" size={13} color="#f59e0b" style={{ marginRight: 6 }} />
+                        <Text style={styles.watermarkTopText} numberOfLines={1}>
+                          {hasCustomAdminText
+                            ? viewerWatermarkText.trim()
+                            : 'CONFIDENTIAL MATRIMONIAL VIEWER • ANTI-SCREENSHOT'}
+                        </Text>
+                      </View>
+
+                      {/* Bottom Security Strip */}
+                      <View style={styles.watermarkBottomStrip}>
+                        <Ionicons name="lock-closed" size={12} color={Colors.cyan[300]} style={{ marginRight: 6 }} />
+                        <Text style={styles.watermarkBottomText} numberOfLines={1}>
+                          Screen Monitored • ID: {viewerProfileCode} • {viewerPhone}
+                        </Text>
+                      </View>
+                    </View>
+                  );
+                })()}
 
                 {/* Blur / Cover Overlay when NOT holding */}
                 {!isHoldingPhoto && (
