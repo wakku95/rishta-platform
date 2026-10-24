@@ -29,6 +29,17 @@ class RishtaRequestController extends Controller
     public function store(CreateRishtaRequestRequest $request): JsonResponse
     {
         $sender = $request->user();
+
+        // 0. Email verification check
+        if (!$sender->hasVerifiedEmail()) {
+            return $this->errorResponse(
+                'Your email address must be verified before sending a Rishta request.',
+                ['email' => ['Email verification is required before sending connection requests.']],
+                Response::HTTP_FORBIDDEN,
+                'EMAIL_NOT_VERIFIED'
+            );
+        }
+
         $senderProfile = $sender->profile;
 
         // 1. Sender must have an active profile

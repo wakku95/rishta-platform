@@ -23,25 +23,14 @@ class DiscoveryController extends Controller
     {
         $user = $request->user('sanctum');
 
-        // 1. If authenticated, enforce email verification and active status
-        if ($user) {
-            if (!$user->hasVerifiedEmail()) {
-                return $this->errorResponse(
-                    'Your email address must be verified before accessing profile discovery.',
-                    ['email' => ['Email verification is required to discover candidate profiles.']],
-                    Response::HTTP_FORBIDDEN,
-                    'EMAIL_NOT_VERIFIED'
-                );
-            }
-
-            if ($user->status === 'suspended') {
-                return $this->errorResponse(
-                    'Your account has been suspended.',
-                    [],
-                    Response::HTTP_FORBIDDEN,
-                    'ACCOUNT_SUSPENDED'
-                );
-            }
+        // 1. If authenticated, enforce account suspension check
+        if ($user && $user->status === 'suspended') {
+            return $this->errorResponse(
+                'Your account has been suspended.',
+                [],
+                Response::HTTP_FORBIDDEN,
+                'ACCOUNT_SUSPENDED'
+            );
         }
 
         // 2. Base Query: Active profiles, excluding suspended/unverified users
@@ -157,25 +146,14 @@ class DiscoveryController extends Controller
     {
         $user = $request->user('sanctum');
 
-        // 1. If authenticated, enforce email verification and account status
-        if ($user) {
-            if (!$user->hasVerifiedEmail()) {
-                return $this->errorResponse(
-                    'Your email address must be verified before accessing profile details.',
-                    ['email' => ['Email verification is required to view candidate profiles.']],
-                    Response::HTTP_FORBIDDEN,
-                    'EMAIL_NOT_VERIFIED'
-                );
-            }
-
-            if ($user->status === 'suspended') {
-                return $this->errorResponse(
-                    'Your account has been suspended.',
-                    [],
-                    Response::HTTP_FORBIDDEN,
-                    'ACCOUNT_SUSPENDED'
-                );
-            }
+        // 1. If authenticated, enforce account suspension check
+        if ($user && $user->status === 'suspended') {
+            return $this->errorResponse(
+                'Your account has been suspended.',
+                [],
+                Response::HTTP_FORBIDDEN,
+                'ACCOUNT_SUSPENDED'
+            );
         }
 
         // 2. Retrieve active profile

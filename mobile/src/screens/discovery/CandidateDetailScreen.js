@@ -29,7 +29,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 export default function CandidateDetailScreen({ route, navigation }) {
   const { profileCode } = route.params;
-  const { isIdentityVerified, refreshUser } = useAuth();
+  const { isIdentityVerified, refreshUser, emailVerified, hasProfile, profileStatus } = useAuth();
   const [candidate, setCandidate] = useState(null);
   const [activeRequest, setActiveRequest] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -171,6 +171,32 @@ export default function CandidateDetailScreen({ route, navigation }) {
       return;
     }
 
+    // 2. Email verification check
+    if (!emailVerified) {
+      Alert.alert(
+        'Email Verification Required / ای میل تصدیق درکار ہے',
+        'Please verify your email address before sending a formal Rishta proposal.\n\nرشتہ کی درخواست بھیجنے سے پہلے اپنا ای میل تصدیق کریں۔'
+      );
+      return;
+    }
+
+    // 3. Active profile check
+    if (!hasProfile || profileStatus !== 'active') {
+      Alert.alert(
+        'Active Profile Required / فعال پروفائل درکار ہے',
+        'You must complete and activate your matrimonial profile before sending a Rishta proposal.\n\nرشتہ کی درخواست بھیجنے سے پہلے اپنا پروفائل مکمل اور ایکٹیویٹ کریں۔',
+        [
+          { text: 'Later', style: 'cancel' },
+          {
+            text: 'Go to Profile / پروفائل پر جائیں',
+            onPress: () => navigation.navigate('MainTabs', { screen: 'MyProfile' }),
+          },
+        ]
+      );
+      return;
+    }
+
+    // 4. CNIC Identity verification check
     let verified = isIdentityVerified;
     if (!verified && refreshUser) {
       const fresh = await refreshUser();

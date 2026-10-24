@@ -91,16 +91,16 @@ class DiscoveryTest extends TestCase
             ]);
     }
 
-    public function test_unverified_user_cannot_search_profiles(): void
+    public function test_unverified_user_can_search_profiles(): void
     {
+        $this->createCandidate();
         $user = User::factory()->unverified()->create();
 
         $response = $this->actingAs($user)->getJson('/api/discovery/profiles');
 
-        $response->assertStatus(403)
+        $response->assertStatus(200)
             ->assertJson([
-                'success' => false,
-                'error_code' => 'EMAIL_NOT_VERIFIED',
+                'success' => true,
             ]);
     }
 
@@ -470,16 +470,15 @@ class DiscoveryTest extends TestCase
             ]);
     }
 
-    public function test_unverified_user_cannot_view_public_detail(): void
+    public function test_unverified_user_can_view_public_detail(): void
     {
         $user = User::factory()->unverified()->create();
         $candidate = $this->createCandidate();
 
         $response = $this->actingAs($user)->getJson('/api/discovery/profiles/' . $candidate->profile_code);
-        $response->assertStatus(403)
+        $response->assertStatus(200)
             ->assertJson([
-                'success' => false,
-                'error_code' => 'EMAIL_NOT_VERIFIED',
+                'success' => true,
             ]);
     }
 
