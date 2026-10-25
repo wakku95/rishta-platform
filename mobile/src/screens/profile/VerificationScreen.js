@@ -84,7 +84,8 @@ export default function VerificationScreen({ navigation }) {
               return;
             }
             const result = await ImagePicker.launchImageLibraryAsync({
-              quality: 0.7,
+              mediaTypes: ['images'],
+              quality: 0.8,
               allowsEditing: true,
             });
             if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -101,8 +102,9 @@ export default function VerificationScreen({ navigation }) {
               return;
             }
             const result = await ImagePicker.launchCameraAsync({
+              mediaTypes: ['images'],
               cameraType: ImagePicker.CameraType?.back || 'back',
-              quality: 0.7,
+              quality: 0.8,
               allowsEditing: true,
             });
             if (!result.canceled && result.assets && result.assets.length > 0) {
@@ -127,8 +129,9 @@ export default function VerificationScreen({ navigation }) {
         return;
       }
       const result = await ImagePicker.launchCameraAsync({
+        mediaTypes: ['images'],
         cameraType: ImagePicker.CameraType?.front || 'front',
-        quality: 0.7,
+        quality: 0.8,
         allowsEditing: true,
         aspect: [1, 1],
       });
@@ -157,12 +160,15 @@ export default function VerificationScreen({ navigation }) {
 
       const appendFile = (form, key, asset, defaultFileName) => {
         let uri = asset.uri;
+        if (uri && uri.includes('?')) {
+          uri = uri.split('?')[0];
+        }
         let name = asset.fileName || defaultFileName;
         if (!name.match(/\.(jpe?g|png|webp|pdf|heic|heif)$/i)) {
           name = `${name}.jpg`;
         }
         let type = asset.mimeType || 'image/jpeg';
-        if (type.startsWith('image/') && !type.includes('jpeg') && !type.includes('png') && !type.includes('webp') && !type.includes('heic') && !type.includes('heif')) {
+        if (!type || type.includes('octet-stream') || type.includes('heic') || type.includes('heif')) {
           type = 'image/jpeg';
         }
 

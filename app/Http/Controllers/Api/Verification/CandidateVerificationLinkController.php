@@ -402,9 +402,9 @@ class CandidateVerificationLinkController extends Controller
         }
 
         $validated = $request->validate([
-            'front_image' => 'required|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
-            'back_image'  => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:10240',
-            'live_selfie' => 'nullable|file|mimes:jpeg,jpg,png,webp|max:10240',
+            'front_image' => 'required|file|mimes:jpeg,jpg,png,webp,pdf,heic,heif|max:10240',
+            'back_image'  => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf,heic,heif|max:10240',
+            'live_selfie' => 'nullable|file|mimes:jpeg,jpg,png,webp,heic,heif|max:10240',
             'notes'       => 'nullable|string|max:500',
         ]);
 
