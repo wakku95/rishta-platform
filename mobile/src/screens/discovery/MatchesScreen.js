@@ -121,6 +121,16 @@ export default function MatchesScreen({ navigation }) {
 
   const fetchMatchesForTab = useCallback(
     async (tab, pageToFetch = 1, shouldAppend = false, isPullRefresh = false) => {
+      setTabData((prev) => ({
+        ...prev,
+        [tab]: {
+          ...(prev[tab] || {}),
+          loading: !shouldAppend && !isPullRefresh,
+          loadingMore: shouldAppend,
+          refreshing: isPullRefresh,
+        },
+      }));
+
       try {
         const params = {
           page: pageToFetch,
@@ -196,11 +206,20 @@ export default function MatchesScreen({ navigation }) {
     [filters, getCacheKey, queryClient]
   );
 
-  // Track filter changes to reset tabs and fetch freshly when filters alter
-  const prevFiltersRef = useRef(filters);
+  // Keep a ref to latest tabData to inspect loaded state without triggering re-render loops
+  const tabDataRef = useRef(tabData);
   useEffect(() => {
-    if (JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters)) {
-      prevFiltersRef.current = filters;
+    tabDataRef.current = tabData;
+  }, [tabData]);
+
+  // Unified effect: Handles filter changes and tab switches safely without re-render loop
+  const prevFiltersJson = useRef(JSON.stringify(filters));
+  useEffect(() => {
+    const filtersJson = JSON.stringify(filters);
+    const filtersChanged = prevFiltersJson.current !== filtersJson;
+
+    if (filtersChanged) {
+      prevFiltersJson.current = filtersJson;
       // Reset tab data for new filter criteria
       setTabData({
         all: {
@@ -209,7 +228,7 @@ export default function MatchesScreen({ navigation }) {
           hasMore: true,
           totalCount: null,
           loaded: false,
-          loading: true,
+          loading: activeTab === 'all',
           loadingMore: false,
           refreshing: false,
         },
@@ -219,21 +238,17 @@ export default function MatchesScreen({ navigation }) {
           hasMore: true,
           totalCount: null,
           loaded: false,
-          loading: false,
+          loading: activeTab === 'assisted',
           loadingMore: false,
           refreshing: false,
         },
       });
-      fetchMatchesForTab('all', 1, false);
+      fetchMatchesForTab(activeTab, 1, false);
       return;
     }
-  }, [filters, fetchMatchesForTab]);
 
-  // Handle activeTab switching with instant cache restoration
-  useEffect(() => {
-    const currentTabState = tabData[activeTab];
-
-    // If current tab is already loaded with current filters, render instantly without network reload
+    // Check if this tab is already loaded with current filters
+    const currentTabState = tabDataRef.current[activeTab];
     if (currentTabState?.loaded) {
       return;
     }
@@ -249,12 +264,8 @@ export default function MatchesScreen({ navigation }) {
     }
 
     // Otherwise, fetch initial page for this tab
-    setTabData((prev) => ({
-      ...prev,
-      [activeTab]: { ...(prev[activeTab] || {}), loading: true },
-    }));
     fetchMatchesForTab(activeTab, 1, false);
-  }, [activeTab, filters, getCacheKey, queryClient, fetchMatchesForTab, tabData]);
+  }, [activeTab, filters, getCacheKey, queryClient, fetchMatchesForTab]);
 
   const onRefresh = useCallback(() => {
     setTabData((prev) => ({
