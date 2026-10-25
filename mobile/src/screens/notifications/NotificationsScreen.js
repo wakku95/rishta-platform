@@ -51,26 +51,6 @@ export default function NotificationsScreen({ navigation }) {
     }
   };
 
-  const [testingPush, setTestingPush] = useState(false);
-
-  const handleTestPush = async () => {
-    try {
-      setTestingPush(true);
-      await notificationsApi.sendTestPush();
-      Alert.alert(
-        'Push Dispatched! 🔔',
-        'A test push notification has been sent via Expo. If your phone has push permission enabled, you should see it appear momentarily!'
-      );
-    } catch (err) {
-      Alert.alert(
-        'Push Notification Notice',
-        err.response?.data?.message || 'Push token not yet registered or notifications not permitted on this device.'
-      );
-    } finally {
-      setTestingPush(false);
-    }
-  };
-
   const handleMarkAllRead = async () => {
     queryClient.setQueryData(['notifications'], (prev) =>
       (prev || []).map((n) => ({ ...n, is_read: true }))
@@ -93,29 +73,11 @@ export default function NotificationsScreen({ navigation }) {
           <Text style={styles.subtitle}>Activity updates and platform announcements</Text>
         </View>
 
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <TouchableOpacity
-            onPress={handleTestPush}
-            disabled={testingPush}
-            style={styles.testPushButton}
-            activeOpacity={0.7}
-          >
-            {testingPush ? (
-              <ActivityIndicator size="small" color={Colors.magenta[400]} />
-            ) : (
-              <>
-                <Ionicons name="notifications-circle-outline" size={15} color={Colors.magenta[400]} />
-                <Text style={styles.testPushText}>Test Push</Text>
-              </>
-            )}
+        {notifications.some((n) => !n.is_read) && (
+          <TouchableOpacity onPress={handleMarkAllRead} style={styles.markAllButton}>
+            <Text style={styles.markAllText}>Mark read</Text>
           </TouchableOpacity>
-
-          {notifications.some((n) => !n.is_read) && (
-            <TouchableOpacity onPress={handleMarkAllRead} style={styles.markAllButton}>
-              <Text style={styles.markAllText}>Mark read</Text>
-            </TouchableOpacity>
-          )}
-        </View>
+        )}
       </View>
 
       <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
@@ -221,22 +183,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.navy[800],
   },
   markAllText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.magenta[400],
-  },
-  testPushButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: Colors.navy[800],
-    borderWidth: 1,
-    borderColor: 'rgba(225, 29, 116, 0.3)',
-  },
-  testPushText: {
     fontSize: 11,
     fontWeight: '700',
     color: Colors.magenta[400],
