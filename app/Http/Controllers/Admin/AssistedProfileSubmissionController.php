@@ -51,6 +51,9 @@ class AssistedProfileSubmissionController extends Controller
                 'listing_status' => 'published',
                 'created_by_admin_id' => $request->user()->id,
                 'consent_given_at' => $submission->terms_accepted_at,
+                'admin_notes' => !empty($submission->public_biodata['social_handle'])
+                    ? 'Social Handle/Link: ' . $submission->public_biodata['social_handle']
+                    : null,
             ]);
 
             // Update submission status

@@ -23,7 +23,8 @@ export default function AssistedProfileSubmissionPage() {
       profession: '',
       height: '',
       managed_by: '',
-      public_about: ''
+      public_about: '',
+      social_handle: '',
     },
     terms_accepted: false,
     social_publication_consent: false,
@@ -109,6 +110,37 @@ export default function AssistedProfileSubmissionPage() {
               ہماری ٹیم آپ کی فراہم کردہ معلومات کا جائزہ لے گی اور درخواست کو approve یا reject کرے گی۔<br/>
               جائزہ اور منظوری سے پہلے آپ کا profile public طور پر publish نہیں کیا جائے گا۔
             </p>
+          </div>
+
+          {/* Social Follow-up Prompt Card */}
+          <div className="p-6 bg-gradient-to-r from-magenta-950/40 via-navy-900 to-purple-950/40 border border-magenta-500/30 rounded-2xl text-center space-y-3 shadow-xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-magenta-500/20 text-magenta-300 text-xs font-semibold mb-1">
+              💬 Direct Matchmaker Follow-up / براہ راست رابطہ
+            </div>
+            <h3 className="text-white font-bold text-lg">
+              Hamen Facebook ya Instagram par "Hi" bhej dein
+            </h3>
+            <p className="font-urdu text-base text-pink-200" dir="rtl">
+              فوری رہنمائی اور اپ ڈیٹس کے لیے ہمارے فیس بک میسنجر یا انسٹاگرام پر ابھی میسج کریں:
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+              <a
+                href="https://m.me/61594211561148"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#0084FF] hover:bg-blue-600 text-white font-medium text-sm transition-all shadow-lg shadow-blue-500/20"
+              >
+                Chat on Facebook Messenger
+              </a>
+              <a
+                href="https://ig.me/m/raabtanow"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-medium text-sm transition-all shadow-lg shadow-pink-500/20"
+              >
+                Chat on Instagram DM
+              </a>
+            </div>
           </div>
 
           <div className="mt-12 text-left">
@@ -214,6 +246,26 @@ export default function AssistedProfileSubmissionPage() {
                     <label className="block text-xs font-semibold text-slate-300 mb-1">Contact Number (WhatsApp) <span className="text-rose-500">*</span></label>
                     <input type="text" name="submitter_contact" placeholder="03XXXXXXXXX" required value={formData.submitter_contact} onChange={handleChange} className="w-full bg-navy-950 border border-white/10 rounded-lg px-3 py-2 text-white focus:border-amber-500 focus:outline-none" />
                   </div>
+                </div>
+
+                <div className="p-4 bg-navy-950/70 border border-white/10 rounded-xl space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+                    <label className="block text-xs font-semibold text-slate-200">
+                      Facebook / Instagram Profile or Handle <span className="text-slate-400 font-normal">(Optional / اختیاری)</span>
+                    </label>
+                    <span className="text-[11px] text-pink-400 font-medium">💬 Quick Support via DM</span>
+                  </div>
+                  <input
+                    type="text"
+                    name="public_biodata.social_handle"
+                    placeholder="e.g. @your_username ya fb.com/yourname"
+                    value={formData.public_biodata.social_handle || ''}
+                    onChange={handleChange}
+                    className="w-full bg-navy-900 border border-white/10 rounded-lg px-3 py-2 text-white placeholder-slate-500 focus:border-pink-500 focus:outline-none text-sm"
+                  />
+                  <p className="text-[11px] text-slate-400">
+                    اگر آپ ہمیں فیس بک یا انسٹاگرام پر بھی میسج کرنا چاہتے ہیں تو اپنی آئی ڈی یہاں درج کر دیں تاکہ ہم آپ کا رابطہ محفوظ رکھ سکیں۔
+                  </p>
                 </div>
               </div>
             </div>

@@ -54,6 +54,7 @@ class StoreAssistedProfileSubmissionRequest extends FormRequest
             'public_biodata.height' => ['required', 'integer', 'min:120', 'max:250'],
             'public_biodata.public_about' => ['nullable', 'string', 'max:2000'],
             'public_biodata.managed_by' => ['required', 'string', \Illuminate\Validation\Rule::in(array_keys(\App\Constants\ProfileOptions::MANAGED_BY))],
+            'public_biodata.social_handle' => ['nullable', 'string', 'max:255'],
 
             // Consent
             'terms_accepted' => ['required', 'accepted'],
