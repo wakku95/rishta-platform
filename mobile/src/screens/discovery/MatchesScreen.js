@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import {
   View,
   Text,
@@ -15,6 +15,7 @@ import {
   Alert,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
+import { useQueryClient } from '@tanstack/react-query';
 import * as SecureStore from 'expo-secure-store';
 import { Colors } from '../../constants/colors';
 import CandidateCard from '../../components/candidate/CandidateCard';
@@ -27,17 +28,12 @@ import { useAuth } from '../../contexts/AuthContext';
 
 export default function MatchesScreen({ navigation }) {
   const { authenticated } = useAuth();
-  const [candidates, setCandidates] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [loadingMore, setLoadingMore] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
+  const queryClient = useQueryClient();
+
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'assisted'
   const [shortlistedCodes, setShortlistedCodes] = useState(new Set());
 
-  // Pagination & Filtering state
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
-  const [totalCount, setTotalCount] = useState(null);
+  // Filtering state
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [filters, setFilters] = useState({});
 
@@ -48,21 +44,55 @@ export default function MatchesScreen({ navigation }) {
 
   const activeFilterCount = Object.keys(filters).filter((k) => !!filters[k]).length;
 
+  const getCacheKey = useCallback((tab, appliedFilters) => {
+    return ['matches_feed', tab, JSON.stringify(appliedFilters || {})];
+  }, []);
+
+  // Dual-tab cached state: preserves loaded profiles, pagination, and status per tab
+  const [tabData, setTabData] = useState(() => {
+    const initialAll = queryClient.getQueryData(getCacheKey('all', {}));
+    const initialAssisted = queryClient.getQueryData(getCacheKey('assisted', {}));
+
+    return {
+      all: initialAll || {
+        candidates: [],
+        currentPage: 1,
+        hasMore: true,
+        totalCount: null,
+        loaded: false,
+        loading: true,
+        loadingMore: false,
+        refreshing: false,
+      },
+      assisted: initialAssisted || {
+        candidates: [],
+        currentPage: 1,
+        hasMore: true,
+        totalCount: null,
+        loaded: false,
+        loading: false,
+        loadingMore: false,
+        refreshing: false,
+      },
+    };
+  });
+
   // Sync shortlists and hidden profile state whenever the screen gains focus
   const syncStorageState = useCallback(async () => {
     try {
-      // 1. Load shortlists from server + local storage
       let combinedShortlists = [];
-      try {
-        const res = await profilesApi.getShortlist();
-        const regularList = Array.isArray(res.data)
-          ? res.data
-          : Array.isArray(res)
-          ? res
-          : [];
-        combinedShortlists = regularList.map((p) => p.profile_code).filter(Boolean);
-      } catch (e) {
-        // Ignore
+      if (authenticated) {
+        try {
+          const res = await profilesApi.getShortlist();
+          const regularList = Array.isArray(res.data)
+            ? res.data
+            : Array.isArray(res)
+            ? res
+            : [];
+          combinedShortlists = regularList.map((p) => p.profile_code).filter(Boolean);
+        } catch (e) {
+          // Ignore
+        }
       }
 
       const savedAllShortlists = await SecureStore.getItemAsync('rn_all_shortlists');
@@ -81,7 +111,7 @@ export default function MatchesScreen({ navigation }) {
     } catch (e) {
       console.warn('Storage sync notice:', e.message);
     }
-  }, []);
+  }, [authenticated]);
 
   useFocusEffect(
     useCallback(() => {
@@ -89,70 +119,164 @@ export default function MatchesScreen({ navigation }) {
     }, [syncStorageState])
   );
 
-  const fetchMatches = async (pageToFetch = 1, shouldAppend = false) => {
-    try {
-      const params = {
-        page: pageToFetch,
-        per_page: 20,
-        ...filters,
-      };
+  const fetchMatchesForTab = useCallback(
+    async (tab, pageToFetch = 1, shouldAppend = false, isPullRefresh = false) => {
+      try {
+        const params = {
+          page: pageToFetch,
+          per_page: 20,
+          ...filters,
+        };
 
-      let res;
-      if (activeTab === 'assisted') {
-        res = await profilesApi.getAssistedListings(params);
-      } else {
-        res = await profilesApi.search(params);
+        let res;
+        if (tab === 'assisted') {
+          res = await profilesApi.getAssistedListings(params);
+        } else {
+          res = await profilesApi.search(params);
+        }
+
+        const items = Array.isArray(res.data)
+          ? res.data
+          : (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
+
+        const meta = res.meta || res.data?.meta || null;
+        let newTotalCount = null;
+        let newHasMore = false;
+        let newPage = pageToFetch;
+
+        if (meta) {
+          newTotalCount = meta.total;
+          newHasMore = meta.current_page < meta.last_page;
+          newPage = meta.current_page;
+        } else {
+          newHasMore = items.length >= 20;
+          newPage = pageToFetch;
+        }
+
+        setTabData((prev) => {
+          const prevTab = prev[tab] || {};
+          const updatedCandidates = shouldAppend ? [...(prevTab.candidates || []), ...items] : items;
+          const updatedState = {
+            candidates: updatedCandidates,
+            currentPage: newPage,
+            hasMore: newHasMore,
+            totalCount: newTotalCount ?? prevTab.totalCount,
+            loaded: true,
+            loading: false,
+            loadingMore: false,
+            refreshing: false,
+          };
+
+          // Cache in TanStack Query client for instant re-use across navigation
+          queryClient.setQueryData(getCacheKey(tab, filters), updatedState);
+
+          return {
+            ...prev,
+            [tab]: updatedState,
+          };
+        });
+      } catch (err) {
+        console.warn(`Failed to fetch ${tab} candidates:`, err);
+        setTabData((prev) => {
+          const prevTab = prev[tab] || {};
+          return {
+            ...prev,
+            [tab]: {
+              ...prevTab,
+              loading: false,
+              loadingMore: false,
+              refreshing: false,
+              loaded: true,
+              candidates: shouldAppend ? prevTab.candidates || [] : [],
+            },
+          };
+        });
       }
+    },
+    [filters, getCacheKey, queryClient]
+  );
 
-      // Handle Laravel paginated collection formats: { data: [...], meta: { ... } }
-      const items = Array.isArray(res.data)
-        ? res.data
-        : (Array.isArray(res.data?.data) ? res.data.data : (Array.isArray(res) ? res : []));
-
-      const meta = res.meta || res.data?.meta || null;
-      if (meta) {
-        setTotalCount(meta.total);
-        setHasMore(meta.current_page < meta.last_page);
-        setCurrentPage(meta.current_page);
-      } else {
-        // Fallback for non-paginated arrays
-        setHasMore(items.length >= 20);
-        setCurrentPage(pageToFetch);
-      }
-
-      if (shouldAppend) {
-        setCandidates((prev) => [...prev, ...items]);
-      } else {
-        setCandidates(items);
-      }
-    } catch (err) {
-      console.warn('Failed to fetch candidates:', err);
-      if (!shouldAppend) setCandidates([]);
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-      setRefreshing(false);
-    }
-  };
-
-  // Re-fetch when tab or applied filters change
+  // Track filter changes to reset tabs and fetch freshly when filters alter
+  const prevFiltersRef = useRef(filters);
   useEffect(() => {
-    setLoading(true);
-    setCurrentPage(1);
-    setHasMore(true);
-    fetchMatches(1, false);
-  }, [activeTab, filters]);
+    if (JSON.stringify(prevFiltersRef.current) !== JSON.stringify(filters)) {
+      prevFiltersRef.current = filters;
+      // Reset tab data for new filter criteria
+      setTabData({
+        all: {
+          candidates: [],
+          currentPage: 1,
+          hasMore: true,
+          totalCount: null,
+          loaded: false,
+          loading: true,
+          loadingMore: false,
+          refreshing: false,
+        },
+        assisted: {
+          candidates: [],
+          currentPage: 1,
+          hasMore: true,
+          totalCount: null,
+          loaded: false,
+          loading: false,
+          loadingMore: false,
+          refreshing: false,
+        },
+      });
+      fetchMatchesForTab('all', 1, false);
+      return;
+    }
+  }, [filters, fetchMatchesForTab]);
+
+  // Handle activeTab switching with instant cache restoration
+  useEffect(() => {
+    const currentTabState = tabData[activeTab];
+
+    // If current tab is already loaded with current filters, render instantly without network reload
+    if (currentTabState?.loaded) {
+      return;
+    }
+
+    // Check if TanStack Query already has it cached
+    const cached = queryClient.getQueryData(getCacheKey(activeTab, filters));
+    if (cached && cached.loaded) {
+      setTabData((prev) => ({
+        ...prev,
+        [activeTab]: cached,
+      }));
+      return;
+    }
+
+    // Otherwise, fetch initial page for this tab
+    setTabData((prev) => ({
+      ...prev,
+      [activeTab]: { ...(prev[activeTab] || {}), loading: true },
+    }));
+    fetchMatchesForTab(activeTab, 1, false);
+  }, [activeTab, filters, getCacheKey, queryClient, fetchMatchesForTab, tabData]);
 
   const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    setCurrentPage(1);
-    fetchMatches(1, false);
-  }, [activeTab, filters]);
+    setTabData((prev) => ({
+      ...prev,
+      [activeTab]: { ...(prev[activeTab] || {}), refreshing: true },
+    }));
+    fetchMatchesForTab(activeTab, 1, false, true);
+  }, [activeTab, fetchMatchesForTab]);
 
   const handleLoadMore = () => {
-    if (!loading && !loadingMore && hasMore) {
-      setLoadingMore(true);
-      fetchMatches(currentPage + 1, true);
+    const currentTabState = tabData[activeTab];
+    if (
+      currentTabState &&
+      !currentTabState.loading &&
+      !currentTabState.loadingMore &&
+      currentTabState.hasMore
+    ) {
+      setTabData((prev) => ({
+        ...prev,
+        [activeTab]: { ...prev[activeTab], loadingMore: true },
+      }));
+      fetchMatchesForTab(activeTab, currentTabState.currentPage + 1, true);
     }
   };
 
@@ -216,12 +340,9 @@ export default function MatchesScreen({ navigation }) {
         }
       }
     } catch (err) {
-      // If server returns 401 (e.g. backend zip not yet updated on live server),
-      // we gracefully keep it in local storage without disturbing the user
       if (err.response?.status === 401) {
         console.log('Shortlist saved locally in secure storage.');
       } else if (err.response?.data?.error_code === 'CANNOT_SHORTLIST_SELF') {
-        // Revert only if attempting to shortlist own profile
         setShortlistedCodes(shortlistedCodes);
         Alert.alert('Notice', 'You cannot shortlist your own profile.');
       } else {
@@ -257,10 +378,22 @@ export default function MatchesScreen({ navigation }) {
           style: 'destructive',
           onPress: async () => {
             // 1. Optimistic removal from feed
-            setCandidates((prev) =>
-              prev.filter((c) => (c.profile_code || c.listing_code) !== code)
-            );
-            setTotalCount((prev) => (prev ? prev - 1 : prev));
+            setTabData((prev) => {
+              const prevTab = prev[activeTab] || {};
+              const updatedCandidates = (prevTab.candidates || []).filter(
+                (c) => (c.profile_code || c.listing_code) !== code
+              );
+              const updatedTab = {
+                ...prevTab,
+                candidates: updatedCandidates,
+                totalCount: prevTab.totalCount ? prevTab.totalCount - 1 : prevTab.totalCount,
+              };
+              queryClient.setQueryData(getCacheKey(activeTab, filters), updatedTab);
+              return {
+                ...prev,
+                [activeTab]: updatedTab,
+              };
+            });
 
             // 2. Save in local hidden profiles for instant restoration
             const hiddenItem = {
@@ -302,11 +435,9 @@ export default function MatchesScreen({ navigation }) {
     setHiddenLoading(true);
 
     try {
-      // Read local hidden profiles
       const savedHiddenStr = await SecureStore.getItemAsync('rn_local_hidden_profiles');
       let combined = savedHiddenStr ? JSON.parse(savedHiddenStr) : [];
 
-      // Also merge any server-side exclusions
       try {
         const res = await profilesApi.getHiddenProfiles();
         const serverHidden = Array.isArray(res.data) ? res.data : (Array.isArray(res) ? res : []);
@@ -347,8 +478,8 @@ export default function MatchesScreen({ navigation }) {
       console.warn('Unhide server sync notice:', e.message);
     }
 
-    // 3. Restore to feed and notify
-    fetchMatches(1, false);
+    // 3. Refresh active tab and notify
+    fetchMatchesForTab(activeTab, 1, false);
     Alert.alert(
       'Restored / بحال کر دیا گیا',
       `Candidate #${code} has been restored to your discovery feed.`
@@ -367,6 +498,19 @@ export default function MatchesScreen({ navigation }) {
     setFilters({});
   };
 
+  // Derive current tab's active values
+  const currentTabState = tabData[activeTab] || {
+    candidates: [],
+    currentPage: 1,
+    hasMore: true,
+    totalCount: null,
+    loaded: false,
+    loading: true,
+    loadingMore: false,
+    refreshing: false,
+  };
+  const { candidates, loading, loadingMore, refreshing, totalCount } = currentTabState;
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
@@ -374,22 +518,22 @@ export default function MatchesScreen({ navigation }) {
       {/* Top Header */}
       <View style={styles.header}>
         <View style={styles.headerTopRow}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexShrink: 1 }}>
+          <View style={styles.headerBrandContainer}>
             {navigation.canGoBack() && (
               <TouchableOpacity
                 onPress={() => navigation.goBack()}
-                style={{ padding: 4, marginRight: 2 }}
-                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                style={styles.backButton}
+                hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
               >
                 <Ionicons name="arrow-back" size={22} color={Colors.white} />
               </TouchableOpacity>
             )}
             <Image
               source={require('../../../assets/raabtanow-icon.png')}
-              style={{ width: 36, height: 36, borderRadius: 8 }}
+              style={styles.brandLogo}
               resizeMode="contain"
             />
-            <View>
+            <View style={styles.brandTitleContainer}>
               <Text style={styles.brandTitle}>
                 Raabta<Text style={{ color: Colors.magenta[400] }}>Now</Text>
               </Text>
@@ -399,18 +543,9 @@ export default function MatchesScreen({ navigation }) {
             </View>
           </View>
 
-          {/* Action Buttons: Hidden & Filters */}
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-            {!authenticated ? (
-              <TouchableOpacity
-                style={styles.guestSignInBtn}
-                onPress={() => navigation.navigate('Login')}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="log-in-outline" size={15} color={Colors.white} />
-                <Text style={styles.guestSignInBtnText}>Sign In</Text>
-              </TouchableOpacity>
-            ) : (
+          {/* Action Buttons: Hidden (if authenticated) & Filters */}
+          <View style={styles.headerActionsContainer}>
+            {authenticated && (
               <TouchableOpacity
                 style={[styles.hiddenButton, hiddenList.length > 0 && styles.hiddenButtonActive]}
                 onPress={handleOpenHiddenModal}
@@ -449,78 +584,72 @@ export default function MatchesScreen({ navigation }) {
           <TouchableOpacity
             style={[styles.tabPill, activeTab === 'all' && styles.tabPillActive]}
             onPress={() => setActiveTab('all')}
+            activeOpacity={0.8}
           >
+            <Ionicons
+              name="shield-checkmark"
+              size={13}
+              color={activeTab === 'all' ? Colors.white : Colors.slate[400]}
+            />
             <Text style={[styles.tabPillText, activeTab === 'all' && styles.tabPillTextActive]}>
-              All Rishtay
+              All Rishtay / تمام رشتے
             </Text>
           </TouchableOpacity>
+
           <TouchableOpacity
             style={[styles.tabPill, activeTab === 'assisted' && styles.tabPillActive]}
             onPress={() => setActiveTab('assisted')}
+            activeOpacity={0.8}
           >
+            <Ionicons
+              name="people"
+              size={13}
+              color={activeTab === 'assisted' ? Colors.white : Colors.slate[400]}
+            />
             <Text style={[styles.tabPillText, activeTab === 'assisted' && styles.tabPillTextActive]}>
-              Assisted (اسسٹڈ)
+              Assisted / اسسٹڈ رشتے
             </Text>
           </TouchableOpacity>
         </View>
 
-        {/* Active Filter Chips Bar */}
+        {/* Count Bar */}
+        <View style={styles.countRow}>
+          <Text style={styles.countText}>
+            {loading ? (
+              'Searching profiles...'
+            ) : totalCount !== null ? (
+              `${totalCount} verified ${activeTab === 'assisted' ? 'assisted listings' : 'profiles'} available`
+            ) : (
+              `${candidates.length} profiles available`
+            )}
+          </Text>
+        </View>
+
+        {/* Active Filter Chips */}
         {activeFilterCount > 0 && (
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.chipsScroll}
+            style={styles.filterChipsRow}
+            contentContainerStyle={styles.filterChipsContent}
           >
-            {filters.profile_code && (
-              <TouchableOpacity
-                style={styles.filterChip}
-                onPress={() => removeFilterKey('profile_code')}
-              >
-                <Text style={styles.filterChipText}>#{filters.profile_code} ✕</Text>
-              </TouchableOpacity>
-            )}
-            {filters.gender && (
-              <TouchableOpacity
-                style={styles.filterChip}
-                onPress={() => removeFilterKey('gender')}
-              >
-                <Text style={styles.filterChipText}>
-                  {filters.gender === 'female' ? 'Bride (دلہن)' : 'Groom (دلہا)'} ✕
-                </Text>
-              </TouchableOpacity>
-            )}
-            {filters.city && (
-              <TouchableOpacity
-                style={styles.filterChip}
-                onPress={() => removeFilterKey('city')}
-              >
-                <Text style={styles.filterChipText}>{filters.city} ✕</Text>
-              </TouchableOpacity>
-            )}
-            {filters.sect && (
-              <TouchableOpacity
-                style={styles.filterChip}
-                onPress={() => removeFilterKey('sect')}
-              >
-                <Text style={styles.filterChipText}>{filters.sect} ✕</Text>
-              </TouchableOpacity>
-            )}
-            {filters.min_age && (
-              <TouchableOpacity
-                style={styles.filterChip}
-                onPress={() => removeFilterKey('min_age')}
-              >
-                <Text style={styles.filterChipText}>Age: {filters.min_age}+ ✕</Text>
-              </TouchableOpacity>
-            )}
-            {filters.max_age && (
-              <TouchableOpacity
-                style={styles.filterChip}
-                onPress={() => removeFilterKey('max_age')}
-              >
-                <Text style={styles.filterChipText}>Under {filters.max_age} ✕</Text>
-              </TouchableOpacity>
-            )}
+            {Object.keys(filters).map((key) => {
+              const val = filters[key];
+              if (!val) return null;
+              return (
+                <View key={key} style={styles.filterChip}>
+                  <Text style={styles.filterChipText}>
+                    {key}: {String(val)}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => removeFilterKey(key)}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  >
+                    <Ionicons name="close-circle" size={14} color={Colors.white} />
+                  </TouchableOpacity>
+                </View>
+              );
+            })}
             <TouchableOpacity style={styles.clearAllChip} onPress={clearAllFilters}>
               <Text style={styles.clearAllText}>Clear All</Text>
             </TouchableOpacity>
@@ -528,23 +657,33 @@ export default function MatchesScreen({ navigation }) {
         )}
       </View>
 
-      {/* Candidate Feed */}
+      {/* Candidate Feed / Guest Banner */}
       <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
         {!authenticated ? (
           <View style={styles.guestBanner}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1 }}>
-              <Ionicons name="sparkles" size={16} color={Colors.cyan[400]} />
-              <Text style={styles.guestBannerText} numberOfLines={2}>
-                Browsing verified profiles as Guest. Register free to connect.
+            <View style={styles.guestBannerTextWrap}>
+              <Ionicons name="sparkles" size={15} color={Colors.cyan[400]} />
+              <Text style={styles.guestBannerText} numberOfLines={1}>
+                Browsing verified profiles as Guest.
               </Text>
             </View>
-            <TouchableOpacity
-              style={styles.guestBannerAction}
-              onPress={() => navigation.navigate('Register')}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.guestBannerActionText}>Register Free</Text>
-            </TouchableOpacity>
+            <View style={styles.guestBannerButtons}>
+              <TouchableOpacity
+                style={styles.guestBannerSignIn}
+                onPress={() => navigation.navigate('Login')}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="log-in-outline" size={13} color={Colors.white} />
+                <Text style={styles.guestBannerSignInText}>Sign In</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.guestBannerAction}
+                onPress={() => navigation.navigate('Register')}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.guestBannerActionText}>Register</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <OnboardingBanner />
@@ -554,10 +693,13 @@ export default function MatchesScreen({ navigation }) {
       {loading ? (
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.magenta[500]} />
-          <Text style={styles.loadingText}>Loading verified profiles...</Text>
+          <Text style={styles.loadingText}>
+            {activeTab === 'assisted' ? 'Loading assisted profiles...' : 'Loading verified profiles...'}
+          </Text>
         </View>
       ) : (
         <FlatList
+          key={activeTab}
           data={candidates}
           keyExtractor={(item, index) => item.listing_code || item.profile_code || String(index)}
           renderItem={({ item }) => (
@@ -600,18 +742,20 @@ export default function MatchesScreen({ navigation }) {
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
-              <Ionicons name="search-outline" size={48} color={Colors.slate[500]} />
-              <Text style={styles.emptyTitle}>
-                {activeFilterCount > 0 ? 'No Matches for Selected Filters' : 'No Profiles Found'}
-              </Text>
+              <View style={styles.emptyIconCircle}>
+                <Ionicons name="search-outline" size={40} color={Colors.slate[500]} />
+              </View>
+              <Text style={styles.emptyTitle}>No Matching Profiles</Text>
               <Text style={styles.emptySubtitle}>
                 {activeFilterCount > 0
-                  ? 'Try relaxing your filter parameters to view more compatible profiles.'
-                  : 'Check back soon as new verified candidates register daily.'}
+                  ? 'No profiles match your current search criteria. Try removing or adjusting filters.'
+                  : activeTab === 'assisted'
+                  ? 'There are currently no active assisted matchmaking listings.'
+                  : 'There are currently no verified profiles to display.'}
               </Text>
               {activeFilterCount > 0 && (
-                <TouchableOpacity style={styles.resetButton} onPress={clearAllFilters}>
-                  <Text style={styles.resetButtonText}>Reset All Filters</Text>
+                <TouchableOpacity style={styles.resetFiltersBtn} onPress={clearAllFilters}>
+                  <Text style={styles.resetFiltersBtnText}>Clear All Filters</Text>
                 </TouchableOpacity>
               )}
             </View>
@@ -643,13 +787,12 @@ export default function MatchesScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.navy[900],
-    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) + 6 : 4,
+    backgroundColor: Colors.navy[950],
   },
   header: {
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
     paddingTop: 8,
-    paddingBottom: 12,
+    paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: Colors.navy[800],
     backgroundColor: Colors.navy[900],
@@ -658,7 +801,30 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 12,
+    marginBottom: 10,
+  },
+  headerBrandContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  backButton: {
+    padding: 4,
+    marginRight: 2,
+  },
+  brandLogo: {
+    width: 36,
+    height: 36,
+    borderRadius: 8,
+  },
+  brandTitleContainer: {
+    justifyContent: 'center',
+  },
+  headerActionsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   brandTitle: {
     fontSize: 22,
@@ -678,21 +844,21 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 10,
     borderRadius: 10,
-    backgroundColor: Colors.navy[950],
+    backgroundColor: Colors.navy[800],
     borderWidth: 1,
-    borderColor: Colors.navy[750],
+    borderColor: Colors.navy[700],
   },
   hiddenButtonActive: {
-    backgroundColor: Colors.navy[800],
-    borderColor: Colors.slate[600],
+    backgroundColor: 'rgba(239, 68, 68, 0.15)',
+    borderColor: 'rgba(239, 68, 68, 0.4)',
   },
   hiddenButtonText: {
+    color: Colors.slate[400],
     fontSize: 12,
     fontWeight: '600',
-    color: Colors.slate[400],
   },
   hiddenButtonTextActive: {
-    color: Colors.slate[200],
+    color: Colors.white,
     fontWeight: '700',
   },
   filterButton: {
@@ -702,44 +868,42 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 12,
     borderRadius: 10,
-    backgroundColor: Colors.navy[950],
+    backgroundColor: Colors.navy[800],
     borderWidth: 1,
-    borderColor: Colors.navy[750],
+    borderColor: Colors.navy[700],
   },
   filterButtonActive: {
     backgroundColor: Colors.magenta[600],
-    borderColor: Colors.magenta[400],
+    borderColor: Colors.magenta[500],
   },
   filterButtonText: {
-    fontSize: 12,
-    fontWeight: '600',
     color: Colors.slate[300],
+    fontSize: 12,
+    fontWeight: '700',
   },
   filterButtonTextActive: {
     color: Colors.white,
-    fontWeight: '700',
   },
   tabPillContainer: {
     flexDirection: 'row',
-    backgroundColor: Colors.navy[950],
-    borderRadius: 12,
+    backgroundColor: Colors.navy[800],
     padding: 3,
+    borderRadius: 10,
+    marginBottom: 8,
     borderWidth: 1,
-    borderColor: Colors.navy[750],
+    borderColor: Colors.navy[700],
   },
   tabPill: {
     flex: 1,
-    paddingVertical: 7,
+    flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 9,
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 7,
+    borderRadius: 8,
   },
   tabPillActive: {
-    backgroundColor: Colors.navy[800],
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    elevation: 2,
+    backgroundColor: Colors.magenta[600],
   },
   tabPillText: {
     fontSize: 12,
@@ -748,50 +912,66 @@ const styles = StyleSheet.create({
   },
   tabPillTextActive: {
     color: Colors.white,
-    fontWeight: '700',
+    fontWeight: '800',
   },
-  chipsScroll: {
+  countRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginTop: 10,
-    paddingBottom: 2,
+    justifyContent: 'space-between',
+  },
+  countText: {
+    fontSize: 12,
+    color: Colors.slate[400],
+    fontWeight: '500',
+  },
+  filterChipsRow: {
+    marginTop: 8,
+  },
+  filterChipsContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
   },
   filterChip: {
-    backgroundColor: Colors.magenta[900] || '#4c0519',
-    borderColor: Colors.magenta[500],
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: 'rgba(225, 29, 116, 0.2)',
     borderWidth: 1,
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 16,
+    borderColor: 'rgba(225, 29, 116, 0.4)',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 12,
   },
   filterChipText: {
-    color: Colors.magenta[100] || '#ffe4e6',
     fontSize: 11,
+    color: Colors.magenta[200],
     fontWeight: '600',
   },
   clearAllChip: {
-    paddingVertical: 4,
+    paddingVertical: 3,
     paddingHorizontal: 8,
   },
   clearAllText: {
-    color: Colors.rose[400],
     fontSize: 11,
+    color: Colors.magenta[400],
     fontWeight: '700',
   },
   listContent: {
     padding: 16,
-    paddingBottom: 32,
+    paddingTop: 8,
   },
   centerContainer: {
     flex: 1,
-    alignItems: 'center',
     justifyContent: 'center',
+    alignItems: 'center',
+    padding: 32,
     gap: 12,
   },
   loadingText: {
     color: Colors.slate[400],
     fontSize: 13,
+    marginTop: 6,
   },
   emptyContainer: {
     alignItems: 'center',
@@ -799,6 +979,15 @@ const styles = StyleSheet.create({
     paddingVertical: 60,
     paddingHorizontal: 24,
     gap: 12,
+  },
+  emptyIconCircle: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    backgroundColor: Colors.navy[800],
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 4,
   },
   emptyTitle: {
     color: Colors.white,
@@ -811,7 +1000,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 18,
   },
-  resetButton: {
+  resetFiltersBtn: {
     marginTop: 8,
     backgroundColor: Colors.navy[800],
     borderColor: Colors.magenta[500],
@@ -820,7 +1009,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 10,
   },
-  resetButtonText: {
+  resetFiltersBtnText: {
     color: Colors.magenta[400],
     fontSize: 13,
     fontWeight: '700',
@@ -836,37 +1025,50 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: Colors.slate[400],
   },
-  guestSignInBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingVertical: 6,
-    paddingHorizontal: 10,
-    borderRadius: 8,
-    backgroundColor: Colors.magenta[600],
-  },
-  guestSignInBtnText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.white,
-  },
   guestBanner: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: 10,
+    gap: 8,
     backgroundColor: 'rgba(6, 182, 212, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(6, 182, 212, 0.3)',
     borderRadius: 12,
-    paddingVertical: 10,
+    paddingVertical: 8,
     paddingHorizontal: 12,
     marginBottom: 6,
   },
+  guestBannerTextWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    flex: 1,
+  },
   guestBannerText: {
-    fontSize: 12,
+    fontSize: 11,
     color: Colors.cyan[200],
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  guestBannerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  guestBannerSignIn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+    backgroundColor: 'rgba(255, 255, 255, 0.14)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.25)',
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: 8,
+  },
+  guestBannerSignInText: {
+    color: Colors.white,
+    fontSize: 11,
+    fontWeight: '700',
   },
   guestBannerAction: {
     backgroundColor: Colors.cyan[500],
