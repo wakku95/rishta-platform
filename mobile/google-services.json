@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "195158349088",
+    "project_id": "raabtanow-86b1d",
+    "storage_bucket": "raabtanow-86b1d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:195158349088:android:5beef5a982ea610a357345",
+        "android_client_info": {
+          "package_name": "com.raabtanow.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDs3SC8mf9Wq9Q9yerqgmD5B_ilyGkXZHM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

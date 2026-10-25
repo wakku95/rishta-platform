@@ -94,7 +94,9 @@ export async function registerForPushNotificationsAsync() {
       }
 
       if (typeof Notifications.getExpoPushTokenAsync === 'function') {
-        const tokenData = await Notifications.getExpoPushTokenAsync();
+        const tokenData = await Notifications.getExpoPushTokenAsync({
+          projectId: 'a7697117-62ca-4e04-9687-74737864b772',
+        });
         token = tokenData?.data;
 
         if (token) {
