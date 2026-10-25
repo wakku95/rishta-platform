@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking, Platform, Animated } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Config } from '../../constants/config';
@@ -14,6 +15,7 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
  * Features a staggered 3D flip animation (every ~5.5 seconds with 1 second stagger).
  */
 export default function FloatingSocialChat() {
+  const insets = useSafeAreaInsets();
   const flipAnim1 = useRef(new Animated.Value(0)).current;
   const flipAnim2 = useRef(new Animated.Value(0)).current;
 
@@ -90,8 +92,10 @@ export default function FloatingSocialChat() {
     });
   };
 
+  const bottomPosition = 68 + Math.max(insets.bottom, 12);
+
   return (
-    <View pointerEvents="box-none" style={styles.floatingContainer}>
+    <View pointerEvents="box-none" style={[styles.floatingContainer, { bottom: bottomPosition }]}>
       {/* Instagram DM floating button (Authentic Gradient Background) */}
       <AnimatedTouchable
         activeOpacity={0.82}

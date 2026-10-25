@@ -1,0 +1,20 @@
+# Dependencies (EAS reinstalls clean in the cloud)
+node_modules/
+
+# Build caches & exports
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Git & Logs
+.git/
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+*.log
+*.zip
+
+# Local files
+.env*.local
+*.tsbuildinfo

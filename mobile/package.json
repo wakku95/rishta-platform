@@ -31,5 +31,8 @@
     "react-native-safe-area-context": "~5.10.1",
     "react-native-screens": "~4.30.0"
   },
-  "private": true
+  "private": true,
+  "devDependencies": {
+    "eas-cli": "^25.3.0"
+  }
 }

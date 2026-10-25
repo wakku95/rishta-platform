@@ -8,12 +8,14 @@ import NotificationsScreen from '../screens/notifications/NotificationsScreen';
 import MyProfileScreen from '../screens/profile/MyProfileScreen';
 import { Ionicons } from '@expo/vector-icons';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { requestsApi } from '../api/requests';
 import { notificationsApi } from '../api/notifications';
 
 const Tab = createBottomTabNavigator();
 
 export default function AppTabs() {
+  const insets = useSafeAreaInsets();
   const [pendingProposalsCount, setPendingProposalsCount] = useState(0);
   const [unreadAlertsCount, setUnreadAlertsCount] = useState(0);
 
@@ -43,6 +45,10 @@ export default function AppTabs() {
     return () => clearInterval(interval);
   }, [fetchBadgeCounts]);
 
+  // Dynamically compute bottom padding and height to guarantee clear separation from Android system navigation buttons and iOS home bar
+  const bottomInset = Math.max(insets.bottom, 10);
+  const tabHeight = 60 + bottomInset;
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -51,8 +57,8 @@ export default function AppTabs() {
           backgroundColor: Colors.navy[950],
           borderTopColor: Colors.navy[800],
           borderTopWidth: 1,
-          height: Platform.OS === 'ios' ? 86 : 64,
-          paddingBottom: Platform.OS === 'ios' ? 24 : 8,
+          height: tabHeight,
+          paddingBottom: bottomInset,
           paddingTop: 8,
         },
         tabBarActiveTintColor: Colors.magenta[400],

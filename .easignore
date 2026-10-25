@@ -1,0 +1,10 @@
+# Ignore backend files for EAS mobile build
+vendor/
+node_modules/
+storage/
+public/
+tests/
+*.zip
+.git/
+.expo/
+dist/
