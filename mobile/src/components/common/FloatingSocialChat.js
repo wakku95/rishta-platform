@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import { View, StyleSheet, TouchableOpacity, Linking, Platform, Animated } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Config } from '../../constants/config';
 import { Colors } from '../../constants/colors';
 
@@ -9,6 +10,7 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 /**
  * Global Floating Social Chat component for Mobile.
  * Renders compact Instagram DM & Facebook Messenger quick-chat floating icons at bottom-right.
+ * Uses official Instagram gradient and authentic Facebook Messenger logo & brand color.
  * Features a staggered 3D flip animation (every ~5.5 seconds with 1 second stagger).
  */
 export default function FloatingSocialChat() {
@@ -86,12 +88,11 @@ export default function FloatingSocialChat() {
 
   return (
     <View pointerEvents="box-none" style={styles.floatingContainer}>
-      {/* Instagram DM floating button */}
+      {/* Instagram DM floating button (Authentic Gradient Background) */}
       <AnimatedTouchable
         activeOpacity={0.82}
         style={[
           styles.floatingBtn,
-          styles.instagramBtn,
           {
             transform: [{ rotateY: rotateY1 }, { scale: scale1 }],
           },
@@ -100,15 +101,22 @@ export default function FloatingSocialChat() {
         accessibilityLabel="Chat on Instagram DM"
         accessibilityRole="button"
       >
-        <Ionicons name="logo-instagram" size={19} color={Colors.white} />
+        <LinearGradient
+          colors={['#F59E0B', '#F43F5E', '#C026D3', '#7C3AED']}
+          start={{ x: 0, y: 1 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.gradientFill}
+        >
+          <Ionicons name="logo-instagram" size={20} color={Colors.white} />
+        </LinearGradient>
       </AnimatedTouchable>
 
-      {/* Facebook Messenger floating button */}
+      {/* Facebook Messenger floating button (Official Messenger Icon & Blue) */}
       <AnimatedTouchable
         activeOpacity={0.82}
         style={[
           styles.floatingBtn,
-          styles.facebookBtn,
+          styles.messengerBtn,
           {
             transform: [{ rotateY: rotateY2 }, { scale: scale2 }],
           },
@@ -117,7 +125,7 @@ export default function FloatingSocialChat() {
         accessibilityLabel="Chat on Facebook Messenger"
         accessibilityRole="button"
       >
-        <Ionicons name="logo-facebook" size={19} color={Colors.white} />
+        <MaterialCommunityIcons name="facebook-messenger" size={20} color={Colors.white} />
       </AnimatedTouchable>
     </View>
   );
@@ -140,6 +148,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 1.5,
     borderColor: 'rgba(255, 255, 255, 0.25)',
+    overflow: 'hidden',
     ...Platform.select({
       ios: {
         shadowColor: '#000',
@@ -152,10 +161,14 @@ const styles = StyleSheet.create({
       },
     }),
   },
-  instagramBtn: {
-    backgroundColor: '#E1306C',
+  gradientFill: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 17,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  facebookBtn: {
-    backgroundColor: '#1877F2',
+  messengerBtn: {
+    backgroundColor: '#0084FF',
   },
 });
