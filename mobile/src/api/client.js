@@ -33,7 +33,7 @@ apiClient.interceptors.request.use(
     }
 
     // Allow native multipart boundary to be computed automatically for FormData
-    if (config.data instanceof FormData || config.data?._parts) {
+    if (config.data && (config.data instanceof FormData || config.data?._parts || typeof config.data?.append === 'function')) {
       delete config.headers['Content-Type'];
     }
 
