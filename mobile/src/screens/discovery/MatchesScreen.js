@@ -520,7 +520,7 @@ export default function MatchesScreen({ navigation }) {
     loadingMore: false,
     refreshing: false,
   };
-  const { candidates, loading, loadingMore, refreshing, totalCount } = currentTabState;
+  const { candidates, loading, loadingMore, refreshing } = currentTabState;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -621,19 +621,6 @@ export default function MatchesScreen({ navigation }) {
               Assisted / اسسٹڈ رشتے
             </Text>
           </TouchableOpacity>
-        </View>
-
-        {/* Count Bar */}
-        <View style={styles.countRow}>
-          <Text style={styles.countText}>
-            {loading ? (
-              'Searching profiles...'
-            ) : totalCount !== null ? (
-              `${totalCount} verified ${activeTab === 'assisted' ? 'assisted listings' : 'profiles'} available`
-            ) : (
-              `${candidates.length} profiles available`
-            )}
-          </Text>
         </View>
 
         {/* Active Filter Chips */}
@@ -908,7 +895,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.navy[800],
     padding: 3,
     borderRadius: 10,
-    marginBottom: 8,
+    marginBottom: 2,
     borderWidth: 1,
     borderColor: Colors.navy[700],
   },
@@ -932,16 +919,6 @@ const styles = StyleSheet.create({
   tabPillTextActive: {
     color: Colors.white,
     fontWeight: '800',
-  },
-  countRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  countText: {
-    fontSize: 12,
-    color: Colors.slate[400],
-    fontWeight: '500',
   },
   filterChipsRow: {
     marginTop: 8,
