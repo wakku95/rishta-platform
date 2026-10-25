@@ -75,8 +75,12 @@ export default function FloatingSocialChat() {
   });
 
   const handleOpenInstagram = () => {
-    Linking.openURL(Config.INSTAGRAM_CHAT_URL).catch(() => {
-      Linking.openURL(`https://instagram.com/${Config.INSTAGRAM_HANDLE}`);
+    const appUrl = `instagram://user?username=${Config.INSTAGRAM_HANDLE}`;
+    const webUrl = `https://www.instagram.com/${Config.INSTAGRAM_HANDLE}`;
+    Linking.openURL(appUrl).catch(() => {
+      Linking.openURL(webUrl).catch(() => {
+        Linking.openURL(Config.INSTAGRAM_CHAT_URL);
+      });
     });
   };
 
