@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from './Footer';
 import TawkToChat from '../ui/TawkToChat';
+import FloatingSocialChat from '../ui/FloatingSocialChat';
 import OnboardingBanner from '../ui/OnboardingBanner';
 import OnboardingModal from '../ui/OnboardingModal';
 
@@ -37,6 +38,9 @@ export default function AppLayout() {
 
       {/* Tawk.to Live Chat Widget */}
       <TawkToChat />
+
+      {/* Floating Instagram & Facebook Social Chat Actions */}
+      <FloatingSocialChat />
     </div>
   );
 }

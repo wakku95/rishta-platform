@@ -10,11 +10,9 @@ import {
   RefreshControl,
   TouchableOpacity,
   Platform,
-  Linking,
 } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Colors } from '../../constants/colors';
-import { Config } from '../../constants/config';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
 import { notificationsApi } from '../../api/notifications';
@@ -79,33 +77,6 @@ export default function NotificationsScreen({ navigation }) {
             <Text style={styles.markAllText}>Mark all read</Text>
           </TouchableOpacity>
         )}
-      </View>
-
-      {/* Prominent Top Direct Chat Bar */}
-      <View style={styles.topSupportBar}>
-        <View style={styles.topSupportHeader}>
-          <Ionicons name="headset" size={13} color={Colors.cyan[400]} />
-          <Text style={styles.topSupportTitle}>Live Matchmaker Support / رابطہ و رہنمائی:</Text>
-        </View>
-        <View style={styles.topSupportButtons}>
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={[styles.topSupportButton, styles.instagramButton]}
-            onPress={() => Linking.openURL(Config.INSTAGRAM_CHAT_URL).catch(() => Linking.openURL(`https://instagram.com/${Config.INSTAGRAM_HANDLE}`))}
-          >
-            <Ionicons name="logo-instagram" size={15} color="#F43F8E" />
-            <Text style={styles.instagramButtonText}>Instagram DM</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            activeOpacity={0.8}
-            style={[styles.topSupportButton, styles.facebookButton]}
-            onPress={() => Linking.openURL(Config.FACEBOOK_CHAT_URL).catch(() => Linking.openURL(Config.FACEBOOK_PAGE_URL))}
-          >
-            <Ionicons name="logo-facebook" size={15} color="#3B82F6" />
-            <Text style={styles.facebookButtonText}>Facebook Chat</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
       <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
@@ -290,57 +261,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
     textAlign: 'center',
     lineHeight: 18,
-  },
-  topSupportBar: {
-    backgroundColor: 'rgba(15, 23, 42, 0.75)',
-    borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.08)',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    gap: 8,
-  },
-  topSupportHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  topSupportTitle: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: Colors.slate[300],
-    letterSpacing: 0.2,
-  },
-  topSupportButtons: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  topSupportButton: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 9,
-    paddingHorizontal: 12,
-    borderRadius: 10,
-    borderWidth: 1,
-  },
-  instagramButton: {
-    backgroundColor: 'rgba(244, 63, 142, 0.12)',
-    borderColor: 'rgba(244, 63, 142, 0.35)',
-  },
-  instagramButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#F43F8E',
-  },
-  facebookButton: {
-    backgroundColor: 'rgba(59, 130, 246, 0.12)',
-    borderColor: 'rgba(59, 130, 246, 0.35)',
-  },
-  facebookButtonText: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#60A5FA',
   },
 });

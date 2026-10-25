@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { Colors } from '../constants/colors';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
+import FloatingSocialChat from '../components/common/FloatingSocialChat';
 
 export default function RootNavigator() {
   const { authenticated, loading } = useAuth();
@@ -18,13 +19,20 @@ export default function RootNavigator() {
   }
 
   return (
-    <NavigationContainer>
-      {authenticated ? <AppStack /> : <AuthStack />}
-    </NavigationContainer>
+    <View style={styles.rootContainer}>
+      <NavigationContainer>
+        {authenticated ? <AppStack /> : <AuthStack />}
+      </NavigationContainer>
+      <FloatingSocialChat />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  rootContainer: {
+    flex: 1,
+    backgroundColor: Colors.navy[950],
+  },
   splashContainer: {
     flex: 1,
     backgroundColor: Colors.navy[900],
