@@ -668,111 +668,114 @@ export default function MatchesScreen({ navigation }) {
         )}
       </View>
 
-      {/* Candidate Feed / Guest Banner */}
-      <View style={{ paddingHorizontal: 16, paddingTop: 4 }}>
-        {!authenticated ? (
-          <View style={styles.guestBanner}>
-            <View style={styles.guestBannerTextWrap}>
-              <Ionicons name="sparkles" size={15} color={Colors.cyan[400]} />
-              <Text style={styles.guestBannerText} numberOfLines={1}>
-                Browsing verified profiles as Guest.
-              </Text>
+      {/* Main Content Area */}
+      <View style={styles.mainFeedArea}>
+        {/* Candidate Feed / Guest Banner */}
+        <View style={{ paddingHorizontal: 16, paddingTop: 6 }}>
+          {!authenticated ? (
+            <View style={styles.guestBanner}>
+              <View style={styles.guestBannerTextWrap}>
+                <Ionicons name="sparkles" size={15} color={Colors.cyan[400]} />
+                <Text style={styles.guestBannerText} numberOfLines={1}>
+                  Browsing verified profiles as Guest.
+                </Text>
+              </View>
+              <View style={styles.guestBannerButtons}>
+                <TouchableOpacity
+                  style={styles.guestBannerSignIn}
+                  onPress={() => navigation.navigate('Login')}
+                  activeOpacity={0.8}
+                >
+                  <Ionicons name="log-in-outline" size={13} color={Colors.white} />
+                  <Text style={styles.guestBannerSignInText}>Sign In</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.guestBannerAction}
+                  onPress={() => navigation.navigate('Register')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.guestBannerActionText}>Register</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-            <View style={styles.guestBannerButtons}>
-              <TouchableOpacity
-                style={styles.guestBannerSignIn}
-                onPress={() => navigation.navigate('Login')}
-                activeOpacity={0.8}
-              >
-                <Ionicons name="log-in-outline" size={13} color={Colors.white} />
-                <Text style={styles.guestBannerSignInText}>Sign In</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.guestBannerAction}
-                onPress={() => navigation.navigate('Register')}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.guestBannerActionText}>Register</Text>
-              </TouchableOpacity>
-            </View>
+          ) : (
+            <OnboardingBanner />
+          )}
+        </View>
+
+        {loading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={Colors.magenta[500]} />
+            <Text style={styles.loadingText}>
+              {activeTab === 'assisted' ? 'Loading assisted profiles...' : 'Loading verified profiles...'}
+            </Text>
           </View>
         ) : (
-          <OnboardingBanner />
+          <FlatList
+            key={activeTab}
+            data={candidates}
+            keyExtractor={(item, index) => item.listing_code || item.profile_code || String(index)}
+            renderItem={({ item }) => (
+              <CandidateCard
+                candidate={item}
+                isShortlisted={shortlistedCodes.has(item.profile_code || item.listing_code)}
+                onToggleShortlist={handleToggleShortlist}
+                onIgnore={handleIgnore}
+                onPress={(candidate) => {
+                  if (activeTab === 'assisted') {
+                    navigation.navigate('AssistedDetail', {
+                      listingCode: candidate.listing_code || candidate.profile_code,
+                    });
+                  } else {
+                    navigation.navigate('CandidateDetail', {
+                      profileCode: candidate.profile_code,
+                    });
+                  }
+                }}
+              />
+            )}
+            contentContainerStyle={styles.listContent}
+            onEndReached={handleLoadMore}
+            onEndReachedThreshold={0.4}
+            ListFooterComponent={
+              loadingMore ? (
+                <View style={styles.footerLoader}>
+                  <ActivityIndicator size="small" color={Colors.magenta[400]} />
+                  <Text style={styles.footerLoaderText}>Loading more profiles...</Text>
+                </View>
+              ) : null
+            }
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor={Colors.magenta[400]}
+                colors={[Colors.magenta[500]]}
+              />
+            }
+            ListEmptyComponent={
+              <View style={styles.emptyContainer}>
+                <View style={styles.emptyIconCircle}>
+                  <Ionicons name="search-outline" size={40} color={Colors.slate[500]} />
+                </View>
+                <Text style={styles.emptyTitle}>No Matching Profiles</Text>
+                <Text style={styles.emptySubtitle}>
+                  {activeFilterCount > 0
+                    ? 'No profiles match your current search criteria. Try removing or adjusting filters.'
+                    : activeTab === 'assisted'
+                    ? 'There are currently no active assisted matchmaking listings.'
+                    : 'There are currently no verified profiles to display.'}
+                </Text>
+                {activeFilterCount > 0 && (
+                  <TouchableOpacity style={styles.resetFiltersBtn} onPress={clearAllFilters}>
+                    <Text style={styles.resetFiltersBtnText}>Clear All Filters</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
+            }
+          />
         )}
       </View>
-
-      {loading ? (
-        <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color={Colors.magenta[500]} />
-          <Text style={styles.loadingText}>
-            {activeTab === 'assisted' ? 'Loading assisted profiles...' : 'Loading verified profiles...'}
-          </Text>
-        </View>
-      ) : (
-        <FlatList
-          key={activeTab}
-          data={candidates}
-          keyExtractor={(item, index) => item.listing_code || item.profile_code || String(index)}
-          renderItem={({ item }) => (
-            <CandidateCard
-              candidate={item}
-              isShortlisted={shortlistedCodes.has(item.profile_code || item.listing_code)}
-              onToggleShortlist={handleToggleShortlist}
-              onIgnore={handleIgnore}
-              onPress={(candidate) => {
-                if (activeTab === 'assisted') {
-                  navigation.navigate('AssistedDetail', {
-                    listingCode: candidate.listing_code || candidate.profile_code,
-                  });
-                } else {
-                  navigation.navigate('CandidateDetail', {
-                    profileCode: candidate.profile_code,
-                  });
-                }
-              }}
-            />
-          )}
-          contentContainerStyle={styles.listContent}
-          onEndReached={handleLoadMore}
-          onEndReachedThreshold={0.4}
-          ListFooterComponent={
-            loadingMore ? (
-              <View style={styles.footerLoader}>
-                <ActivityIndicator size="small" color={Colors.magenta[400]} />
-                <Text style={styles.footerLoaderText}>Loading more profiles...</Text>
-              </View>
-            ) : null
-          }
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={Colors.magenta[400]}
-              colors={[Colors.magenta[500]]}
-            />
-          }
-          ListEmptyComponent={
-            <View style={styles.emptyContainer}>
-              <View style={styles.emptyIconCircle}>
-                <Ionicons name="search-outline" size={40} color={Colors.slate[500]} />
-              </View>
-              <Text style={styles.emptyTitle}>No Matching Profiles</Text>
-              <Text style={styles.emptySubtitle}>
-                {activeFilterCount > 0
-                  ? 'No profiles match your current search criteria. Try removing or adjusting filters.'
-                  : activeTab === 'assisted'
-                  ? 'There are currently no active assisted matchmaking listings.'
-                  : 'There are currently no verified profiles to display.'}
-              </Text>
-              {activeFilterCount > 0 && (
-                <TouchableOpacity style={styles.resetFiltersBtn} onPress={clearAllFilters}>
-                  <Text style={styles.resetFiltersBtnText}>Clear All Filters</Text>
-                </TouchableOpacity>
-              )}
-            </View>
-          }
-        />
-      )}
 
       {/* Filter Modal */}
       <FilterModal
@@ -798,15 +801,20 @@ export default function MatchesScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.navy[950],
+    backgroundColor: Colors.navy[900],
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 24) : 0,
   },
   header: {
     paddingHorizontal: 16,
-    paddingTop: 8,
+    paddingTop: Platform.OS === 'ios' ? 4 : 8,
     paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: Colors.navy[800],
     backgroundColor: Colors.navy[900],
+  },
+  mainFeedArea: {
+    flex: 1,
+    backgroundColor: Colors.navy[950],
   },
   headerTopRow: {
     flexDirection: 'row',
