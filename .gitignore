@@ -40,3 +40,5 @@ Thumbs.db
 *.jks
 google-services.json
 mobile/google-services.json
+credentials.json
+mobile/credentials.json
