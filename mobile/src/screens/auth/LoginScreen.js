@@ -73,13 +73,18 @@ export default function LoginScreen({ navigation }) {
             <Text style={styles.backText}>Back</Text>
           </TouchableOpacity>
 
-          {/* Heading with Official Logo (No Background) */}
+          {/* Heading with Crisp HD Emblem + Native Typography */}
           <View style={styles.header}>
-            <Image
-              source={require('../../../assets/raabtanow-logo-white-transparent.png')}
-              style={{ width: 220, height: 60, marginBottom: 14 }}
-              resizeMode="contain"
-            />
+            <View style={styles.brandHero}>
+              <Image
+                source={require('../../../assets/raabtanow-icon.png')}
+                style={styles.brandEmblem}
+                resizeMode="contain"
+              />
+              <Text style={styles.brandTitle}>
+                Raabta<Text style={styles.brandTitleAccent}>Now</Text>
+              </Text>
+            </View>
             <Text style={styles.title}>Welcome Back</Text>
             <Text style={styles.subtitle}>Sign in with your email address</Text>
           </View>
@@ -165,18 +170,25 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   header: {
-    marginBottom: 28,
+    marginBottom: 24,
   },
-  logoPill: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    backgroundColor: 'rgba(225, 29, 116, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(225, 29, 116, 0.3)',
+  brandHero: {
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 14,
+    marginBottom: 16,
+  },
+  brandEmblem: {
+    width: 52,
+    height: 52,
+    marginBottom: 6,
+  },
+  brandTitle: {
+    fontSize: 26,
+    fontWeight: '800',
+    color: Colors.white,
+    letterSpacing: -0.5,
+  },
+  brandTitleAccent: {
+    color: Colors.magenta[500],
   },
   title: {
     fontSize: 24,

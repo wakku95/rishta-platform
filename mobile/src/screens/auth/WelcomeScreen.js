@@ -9,13 +9,19 @@ export default function WelcomeScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
       
-      {/* Brand Header with Official Refined Logo (No Background) */}
+      {/* Brand Header with Crisp HD Emblem + Native Typography */}
       <View style={styles.heroSection}>
-        <Image
-          source={require('../../../assets/raabtanow-logo-white-transparent.png')}
-          style={{ width: 280, height: 76, marginBottom: 16 }}
-          resizeMode="contain"
-        />
+        <View style={styles.brandHero}>
+          <Image
+            source={require('../../../assets/raabtanow-icon.png')}
+            style={styles.brandEmblem}
+            resizeMode="contain"
+          />
+          <Text style={styles.brandTitle}>
+            Raabta<Text style={styles.brandTitleAccent}>Now</Text>
+          </Text>
+          <Text style={styles.brandSubtitle}>Privacy-First Pakistani Matrimonial</Text>
+        </View>
 
         <View style={styles.taglineCard}>
           <Text style={styles.urduTagline}>خاندانی وقار اور مکمل پردہ داری کے ساتھ بااعتماد رشتے</Text>
@@ -84,34 +90,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingTop: 40,
   },
-  logoBadge: {
-    width: 68,
-    height: 68,
-    borderRadius: 20,
-    backgroundColor: Colors.magenta[500],
+  brandHero: {
     alignItems: 'center',
-    justifyContent: 'center',
     marginBottom: 16,
-    shadowColor: Colors.magenta[500],
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    elevation: 6,
+  },
+  brandEmblem: {
+    width: 60,
+    height: 60,
+    marginBottom: 8,
   },
   brandTitle: {
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: '800',
     color: Colors.white,
     letterSpacing: -0.5,
   },
+  brandTitleAccent: {
+    color: Colors.magenta[500],
+  },
   brandSubtitle: {
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '700',
     color: Colors.slate[400],
     textTransform: 'uppercase',
     letterSpacing: 1.5,
     marginTop: 4,
-    marginBottom: 24,
   },
   taglineCard: {
     backgroundColor: Colors.navy[850],
