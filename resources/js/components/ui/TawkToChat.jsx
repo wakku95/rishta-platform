@@ -28,6 +28,17 @@ export default function TawkToChat({
     window.Tawk_API = window.Tawk_API || {};
     window.Tawk_LoadStart = new Date();
 
+    window.Tawk_API.onLoad = function() {
+      if (window.Tawk_API && typeof window.Tawk_API.hideWidget === 'function') {
+        window.Tawk_API.hideWidget();
+      }
+    };
+    window.Tawk_API.onChatMinimized = function() {
+      if (window.Tawk_API && typeof window.Tawk_API.hideWidget === 'function') {
+        window.Tawk_API.hideWidget();
+      }
+    };
+
     const s1 = document.createElement('script');
     s1.id = 'tawk-script';
     s1.async = true;

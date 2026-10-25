@@ -507,3 +507,40 @@ html.light ::-webkit-scrollbar-thumb:hover {
 [data-keep-white] * {
   color: #FFFFFF !important;
 }
+
+/* Staggered Social Chat 3D Flip Animation (Cycles every 5.5s with 1s stagger) */
+@keyframes socialFlipStagger {
+  0% {
+    transform: perspective(400px) rotateY(0deg) scale(1);
+  }
+  6% {
+    transform: perspective(400px) rotateY(180deg) scale(1.14);
+  }
+  12% {
+    transform: perspective(400px) rotateY(360deg) scale(1);
+  }
+  100% {
+    transform: perspective(400px) rotateY(360deg) scale(1);
+  }
+}
+
+.animate-social-flip-1 {
+  animation: socialFlipStagger 5.5s ease-in-out infinite;
+  animation-delay: 0s;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.animate-social-flip-2 {
+  animation: socialFlipStagger 5.5s ease-in-out infinite;
+  animation-delay: 1s;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.animate-social-flip-3 {
+  animation: socialFlipStagger 5.5s ease-in-out infinite;
+  animation-delay: 2s;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
