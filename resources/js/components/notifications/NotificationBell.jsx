@@ -25,7 +25,7 @@ export default function NotificationBell() {
   const unreadCount = notifData?.unread_count || 0;
   const notifications = notifData?.data || [];
 
-  // Handle click outside to close dropdown
+  // Handle click / touch outside to close dropdown
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -34,8 +34,12 @@ export default function NotificationBell() {
     };
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('touchstart', handleClickOutside);
     }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
   }, [isOpen]);
 
   const handleMarkAsRead = async (id, e) => {
@@ -109,7 +113,7 @@ export default function NotificationBell() {
 
       {/* Notifications Dropdown Popover */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-navy-900 border border-white/10 shadow-2xl z-[150] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
+        <div className="fixed inset-x-3 top-[4.25rem] max-w-sm mx-auto sm:max-w-none sm:mx-0 sm:absolute sm:inset-x-auto sm:right-0 sm:top-full sm:mt-2 sm:w-96 rounded-2xl bg-navy-900 border border-white/10 shadow-2xl z-[150] overflow-hidden animate-in fade-in zoom-in-95 duration-150">
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-white/10 bg-navy-950/70">
             <div className="flex items-center gap-2">
