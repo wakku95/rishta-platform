@@ -245,7 +245,7 @@ export default function Navbar() {
 
                   {/* 2. Live Chat on Instagram */}
                   <a
-                    href="https://ig.me/m/raabtanow"
+                    href="https://www.instagram.com/raabtanow/"
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setToolsDropdownOpen(false)}
@@ -432,7 +432,7 @@ export default function Navbar() {
           <div className="pt-1 flex flex-col gap-2">
             <div className="grid grid-cols-2 gap-2">
               <a
-                href="https://ig.me/m/raabtanow"
+                href="https://www.instagram.com/raabtanow/"
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => setMobileMenuOpen(false)}

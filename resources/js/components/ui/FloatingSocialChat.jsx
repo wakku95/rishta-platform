@@ -33,7 +33,7 @@ export default function FloatingSocialChat() {
         </div>
 
         <a
-          href="https://ig.me/m/raabtanow"
+          href="https://www.instagram.com/raabtanow/"
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Chat with RaabtaNow matchmakers on Instagram Direct Message"

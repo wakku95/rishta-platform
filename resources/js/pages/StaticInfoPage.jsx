@@ -806,7 +806,7 @@ export function ContactUsPage() {
               <span className="font-bold block text-slate-400 mb-1.5">Official Direct Chat & Support:</span>
               <div className="flex flex-wrap gap-2">
                 <a
-                  href="https://ig.me/m/raabtanow"
+                  href="https://www.instagram.com/raabtanow/"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-500/10 border border-pink-500/30 hover:border-pink-500 hover:text-white transition text-pink-300 text-xs font-medium"

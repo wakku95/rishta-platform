@@ -15,7 +15,7 @@ export const Config = {
   SUPPORT_PHONE: '+92 323 9225450',
   SUPPORT_EMAIL: 'support@raabtanow.com',
   INSTAGRAM_HANDLE: 'raabtanow',
-  INSTAGRAM_CHAT_URL: 'https://ig.me/m/raabtanow',
+  INSTAGRAM_CHAT_URL: 'https://www.instagram.com/raabtanow/',
   FACEBOOK_CHAT_URL: 'https://m.me/61594211561148',
   FACEBOOK_PAGE_URL: 'https://www.facebook.com/profile.php?id=61594211561148',
 };

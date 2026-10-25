@@ -74,7 +74,7 @@ export default function Footer() {
             <div className="flex flex-wrap items-center gap-2 mt-3">
               <span className="text-[11px] font-semibold text-slate-400 block w-full">Direct Assistance & Social Chat:</span>
               <a 
-                href="https://ig.me/m/raabtanow" 
+                href="https://www.instagram.com/raabtanow/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pink-500/10 border border-pink-500/30 text-xs text-pink-300 hover:text-white hover:border-pink-400 hover:bg-pink-500/20 transition-colors font-medium"

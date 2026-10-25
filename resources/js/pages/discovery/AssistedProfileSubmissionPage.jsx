@@ -133,7 +133,7 @@ export default function AssistedProfileSubmissionPage() {
                 Chat on Facebook Messenger
               </a>
               <a
-                href="https://ig.me/m/raabtanow"
+                href="https://www.instagram.com/raabtanow/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 hover:opacity-95 text-white font-medium text-sm transition-all shadow-lg shadow-pink-500/20"
