@@ -20,6 +20,7 @@ import {
 } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
+import * as ScreenCapture from 'expo-screen-capture';
 import { Colors } from '../../constants/colors';
 import Card from '../../components/common/Card';
 import Badge from '../../components/common/Badge';
@@ -94,6 +95,19 @@ export default function ProposalsScreen({ navigation }) {
   const [photoTid, setPhotoTid] = useState('');
   const [photoReceiptAsset, setPhotoReceiptAsset] = useState(null);
   const [submittingPhotoFee, setSubmittingPhotoFee] = useState(false);
+
+  // Dynamic screen capture protection: strictly prevent screenshots and screen recordings only when sensitive photo viewer modal is open
+  useEffect(() => {
+    if (viewerModalOpen) {
+      ScreenCapture.preventScreenCaptureAsync('proposal-photo-viewer').catch(() => {});
+    } else {
+      ScreenCapture.allowScreenCaptureAsync('proposal-photo-viewer').catch(() => {});
+    }
+
+    return () => {
+      ScreenCapture.allowScreenCaptureAsync('proposal-photo-viewer').catch(() => {});
+    };
+  }, [viewerModalOpen]);
 
   // Assisted Inquiry Reply States
   const [assistedReplyModalOpen, setAssistedReplyModalOpen] = useState(false);
