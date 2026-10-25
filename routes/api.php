@@ -352,6 +352,13 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
         Route::post('/', [\App\Http\Controllers\Api\Admin\AdminAnnouncementController::class, 'store']);
         Route::delete('/{announcement}', [\App\Http\Controllers\Api\Admin\AdminAnnouncementController::class, 'destroy']);
     });
+
+    // Admin Direct Mobile Push Notifications
+    Route::prefix('push-notifications')->group(function () {
+        Route::post('/search-candidate', [\App\Http\Controllers\Api\Admin\AdminPushNotificationController::class, 'searchCandidate']);
+        Route::post('/send', [\App\Http\Controllers\Api\Admin\AdminPushNotificationController::class, 'sendPush']);
+        Route::get('/logs', [\App\Http\Controllers\Api\Admin\AdminPushNotificationController::class, 'logs']);
+    });
 });
 
 // Public Magic Link Document Verification (Token-secured, no login needed)

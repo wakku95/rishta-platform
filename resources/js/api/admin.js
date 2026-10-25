@@ -110,4 +110,9 @@ export const adminApi = {
   getAnnouncements: (params) => api.get('/admin/announcements', { params }).then(r => r.data),
   broadcastAnnouncement: (data) => api.post('/admin/announcements', data).then(r => r.data),
   deleteAnnouncement: (id) => api.delete(`/admin/announcements/${id}`).then(r => r.data),
+
+  // Direct Mobile Push Notifications
+  searchPushCandidates: (query) => api.post('/admin/push-notifications/search-candidate', { query }).then(r => r.data),
+  sendPushNotification: (data) => api.post('/admin/push-notifications/send', data).then(r => r.data),
+  getPushNotificationLogs: (params) => api.get('/admin/push-notifications/logs', { params }).then(r => r.data),
 };
