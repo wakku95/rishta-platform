@@ -11,6 +11,7 @@ use App\Http\Requests\RishtaRequest\CreateRishtaRequestRequest;
 use App\Http\Resources\RishtaRequestResource;
 use App\Models\Profile;
 use App\Models\RishtaRequest;
+use App\Services\Notification\PushNotificationService;
 use App\Traits\ApiResponse;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
@@ -673,6 +674,26 @@ class RishtaRequestController extends Controller
                     'photo_requested_by' => $user->id,
                 ]);
             }
+
+            // Send push notification to target candidate
+            $targetUser = $isSender ? $rishtaRequest->receiver : $rishtaRequest->sender;
+            if ($targetUser) {
+                $requesterName = $user->profile?->full_name ?? 'A candidate';
+                PushNotificationService::sendToUser(
+                    $targetUser,
+                    'Photo Request Received 📷',
+                    "{$requesterName} has requested to exchange photos for proposal #{$rishtaRequest->request_code}.",
+                    [
+                        'action' => 'photo_request',
+                        'screen' => 'Proposals',
+                        'params' => [
+                            'tab' => 'received',
+                            'request_code' => $rishtaRequest->request_code,
+                        ],
+                    ]
+                );
+            }
+
             $msg = 'Photo exchange requested. The candidate will be notified to review and exchange photos.';
         } else {
             $rishtaRequest->update([

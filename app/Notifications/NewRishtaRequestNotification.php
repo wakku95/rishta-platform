@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\RishtaRequest;
+use App\Channels\ExpoPushChannel;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -25,7 +26,26 @@ class NewRishtaRequestNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return ['mail', ExpoPushChannel::class];
+    }
+
+    /**
+     * Get the Expo push representation of the notification.
+     */
+    public function toExpoPush(object $notifiable): array
+    {
+        $senderProfile = $this->rishtaRequest->sender?->profile;
+        $profileCode = $senderProfile?->profile_code ?? 'A verified candidate';
+
+        return [
+            'title' => 'New Rishta Proposal 💌',
+            'body' => "{$profileCode} has sent you a marriage proposal! Tap to view details.",
+            'data' => [
+                'screen' => 'Proposals',
+                'tab' => 'received',
+                'requestCode' => $this->rishtaRequest->request_code,
+            ],
+        ];
     }
 
     /**

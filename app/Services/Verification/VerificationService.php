@@ -4,6 +4,7 @@ namespace App\Services\Verification;
 
 use App\Models\ProfileVerification;
 use App\Models\User;
+use App\Services\Notification\PushNotificationService;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -153,6 +154,19 @@ class VerificationService
             'rejection_reason' => null,
         ]);
 
+        if ($verification->type === ProfileVerification::TYPE_IDENTITY && $verification->user) {
+            PushNotificationService::sendToUser(
+                $verification->user,
+                'Identity Verified! 🛡️',
+                'Your CNIC has been approved! Your profile now has the Blue Verified Badge.',
+                [
+                    'action' => 'cnic_verified',
+                    'screen' => 'MyProfile',
+                    'params' => ['tab' => 'verification'],
+                ]
+            );
+        }
+
         return $verification;
     }
 
@@ -167,6 +181,19 @@ class VerificationService
             'reviewed_by' => $admin->id,
             'rejection_reason' => trim($reason),
         ]);
+
+        if ($verification->type === ProfileVerification::TYPE_IDENTITY && $verification->user) {
+            PushNotificationService::sendToUser(
+                $verification->user,
+                'Identity Verification Update ⚠️',
+                'Your CNIC submission needs attention: ' . Str::limit($reason, 80),
+                [
+                    'action' => 'cnic_rejected',
+                    'screen' => 'MyProfile',
+                    'params' => ['tab' => 'verification'],
+                ]
+            );
+        }
 
         return $verification;
     }

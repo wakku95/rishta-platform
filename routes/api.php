@@ -376,3 +376,10 @@ Route::post('/assisted-submissions', [\App\Http\Controllers\AssistedProfileSubmi
 
 // External Portfolio API (Public)
 Route::get('/portfolio/data', [\App\Http\Controllers\Api\PortfolioController::class, 'index']);
+
+// User Push Notification Token Registration & Testing
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/user/push-token', [\App\Http\Controllers\Api\NotificationController::class, 'updatePushToken']);
+    Route::post('/user/push-token/test', [\App\Http\Controllers\Api\NotificationController::class, 'sendTestPush']);
+});
+

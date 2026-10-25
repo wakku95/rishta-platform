@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ContactUnlock;
 use App\Models\Payment;
 use App\Models\RishtaRequest;
+use App\Services\Notification\PushNotificationService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -652,6 +653,41 @@ class AdminActivityController extends Controller
 
         $rishtaRequest->update($updates);
 
+        // Push notification to viewer and uploader
+        $rishtaRequest->load(['sender', 'receiver']);
+        $viewer = ($side === 'sender') ? $rishtaRequest->receiver : $rishtaRequest->sender;
+        $uploader = ($side === 'sender') ? $rishtaRequest->sender : $rishtaRequest->receiver;
+
+        if ($viewer) {
+            PushNotificationService::sendToUser(
+                $viewer,
+                'Photo Unlocked! 📸',
+                "Candidate's photo for proposal #{$rishtaRequest->request_code} has been approved and is now visible.",
+                [
+                    'action' => 'photo_approved',
+                    'screen' => 'Proposals',
+                    'params' => [
+                        'request_code' => $rishtaRequest->request_code,
+                    ],
+                ]
+            );
+        }
+
+        if ($uploader) {
+            PushNotificationService::sendToUser(
+                $uploader,
+                'Photo Approved ✅',
+                "Your photo for proposal #{$rishtaRequest->request_code} was approved by admin.",
+                [
+                    'action' => 'photo_approved',
+                    'screen' => 'Proposals',
+                    'params' => [
+                        'request_code' => $rishtaRequest->request_code,
+                    ],
+                ]
+            );
+        }
+
         return $this->successResponse([
             'id' => $rishtaRequest->id,
             'request_code' => $rishtaRequest->request_code,
@@ -708,6 +744,25 @@ class AdminActivityController extends Controller
         }
 
         $rishtaRequest->update($updates);
+
+        // Notify the uploader that the photo was rejected and needs re-upload
+        $rishtaRequest->load(['sender', 'receiver']);
+        $uploader = ($side === 'sender') ? $rishtaRequest->sender : $rishtaRequest->receiver;
+
+        if ($uploader) {
+            PushNotificationService::sendToUser(
+                $uploader,
+                'Photo Update Needed ⚠️',
+                "Your photo for proposal #{$rishtaRequest->request_code} was not approved: " . \Illuminate\Support\Str::limit($reason, 80),
+                [
+                    'action' => 'photo_rejected',
+                    'screen' => 'Proposals',
+                    'params' => [
+                        'request_code' => $rishtaRequest->request_code,
+                    ],
+                ]
+            );
+        }
 
         return $this->successResponse([
             'id' => $rishtaRequest->id,
