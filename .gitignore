@@ -38,3 +38,5 @@ Thumbs.db
 # Release signing keys (Keystore)
 *.keystore
 *.jks
+google-services.json
+mobile/google-services.json
