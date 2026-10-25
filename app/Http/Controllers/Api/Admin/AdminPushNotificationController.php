@@ -32,7 +32,6 @@ class AdminPushNotificationController extends Controller
             ->with(['user', 'user.verifications'])
             ->where(function ($q) use ($query) {
                 $q->where('profile_code', 'LIKE', "%{$query}%")
-                  ->orWhere('full_name', 'LIKE', "%{$query}%")
                   ->orWhere('city', 'LIKE', "%{$query}%")
                   ->orWhereHas('user', function ($uq) use ($query) {
                       $uq->where('email', 'LIKE', "%{$query}%")
