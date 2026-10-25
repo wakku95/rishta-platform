@@ -31,13 +31,20 @@ export default function LoginScreen({ navigation }) {
       return;
     }
 
+    const emailTrimmed = email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+    if (!emailRegex.test(emailTrimmed)) {
+      setError('Please enter a valid email address (e.g. name@domain.com).');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
     try {
       await login({
-        email: email.trim(),
-        login: email.trim(),
+        email: emailTrimmed,
+        login: emailTrimmed,
         password: password,
       });
       // Navigation to AppTabs is automatically handled by AuthContext state

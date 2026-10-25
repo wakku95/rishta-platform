@@ -17,6 +17,64 @@ import Button from '../../components/common/Button';
 import { useAuth } from '../../contexts/AuthContext';
 import { Ionicons } from '@expo/vector-icons';
 
+const validateEmail = (rawEmail) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[a-zA-Z]{2,}$/;
+  const trimmed = rawEmail.trim().toLowerCase();
+
+  if (!emailRegex.test(trimmed)) {
+    return 'Please enter a valid email address (e.g. name@domain.com).';
+  }
+
+  const parts = trimmed.split('@');
+  if (parts.length === 2) {
+    const domain = parts[1];
+    const typoMap = {
+      'gmail.co': 'gmail.com',
+      'yahoo.co': 'yahoo.com',
+      'hotmail.co': 'hotmail.com',
+      'outlook.co': 'outlook.com',
+      'icloud.co': 'icloud.com',
+      'gamil.com': 'gmail.com',
+      'gmai.com': 'gmail.com',
+      'gmial.com': 'gmail.com',
+      'gmaill.com': 'gmail.com',
+      'yaho.com': 'yahoo.com',
+      'yaho.co': 'yahoo.com',
+      'hotmial.com': 'hotmail.com',
+      'hotmaill.com': 'hotmail.com',
+      'outlok.com': 'outlook.com',
+    };
+
+    if (typoMap[domain]) {
+      return `Did you mean @${typoMap[domain]}? Please check your email address.`;
+    }
+  }
+
+  return null;
+};
+
+const validatePassword = (pwd) => {
+  if (pwd.length < 8) {
+    return 'Password must be at least 8 characters long.';
+  }
+  const hasLetter = /[a-zA-Z]/.test(pwd);
+  const hasNumber = /[0-9]/.test(pwd);
+  if (!hasLetter || !hasNumber) {
+    return 'Password must contain both letters and numbers.';
+  }
+  return null;
+};
+
+const validatePhone = (rawPhone) => {
+  const trimmed = rawPhone.trim();
+  if (!trimmed) return null; // Optional
+  const phoneRegex = /^[0-9+\-\s()]{7,25}$/;
+  if (!phoneRegex.test(trimmed)) {
+    return 'Please enter a valid phone number (digits and optional country code).';
+  }
+  return null;
+};
+
 export default function RegisterScreen({ navigation }) {
   const { register } = useAuth();
   const [name, setName] = useState('');
@@ -28,12 +86,43 @@ export default function RegisterScreen({ navigation }) {
   const [error, setError] = useState('');
 
   const handleRegister = async () => {
-    if (!name.trim() || !phone.trim() || !email.trim() || !password) {
-      setError('Please fill in all required fields.');
+    if (!name.trim()) {
+      setError('Please enter your full name.');
       return;
     }
+    if (name.trim().length < 3) {
+      setError('Full name must be at least 3 characters long.');
+      return;
+    }
+
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+    const emailErr = validateEmail(email);
+    if (emailErr) {
+      setError(emailErr);
+      return;
+    }
+
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) {
+      setError(phoneErr);
+      return;
+    }
+
+    if (!password) {
+      setError('Please enter a password.');
+      return;
+    }
+    const pwdErr = validatePassword(password);
+    if (pwdErr) {
+      setError(pwdErr);
+      return;
+    }
+
     if (password !== passwordConfirmation) {
-      setError('Passwords do not match.');
+      setError('Passwords do not match. Please re-enter.');
       return;
     }
 
@@ -43,8 +132,8 @@ export default function RegisterScreen({ navigation }) {
     try {
       await register({
         name: name.trim(),
-        phone: phone.trim(),
-        email: email.trim(),
+        phone: phone.trim() ? phone.trim() : null,
+        email: email.trim().toLowerCase(),
         password: password,
         password_confirmation: passwordConfirmation,
       });
@@ -108,8 +197,8 @@ export default function RegisterScreen({ navigation }) {
             />
 
             <Input
-              label="Active Phone Number / موبائل نمبر *"
-              placeholder="+923XXXXXXXXX"
+              label="Phone Number / فون نمبر (Optional / اختیاری)"
+              placeholder="+923XXXXXXXXX ya international"
               value={phone}
               onChangeText={setPhone}
               keyboardType="phone-pad"
