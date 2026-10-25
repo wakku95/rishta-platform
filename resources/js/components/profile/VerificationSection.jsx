@@ -311,6 +311,20 @@ export default function VerificationSection() {
         }
       >
         <form onSubmit={handleIdentitySubmit} className="space-y-4">
+          {/* Privacy & Confidentiality Guarantee Banner */}
+          <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-xs space-y-1.5">
+            <div className="flex items-center gap-2 text-emerald-400 font-bold text-xs">
+              <ShieldCheck className="w-4 h-4 shrink-0" />
+              <span>100% Confidential & Secure / مکمل رازداری کی ضمانت</span>
+            </div>
+            <p className="text-slate-200 text-xs leading-relaxed">
+              آپ کا شناختی کارڈ (CNIC) اور لائیو تصویر مکمل طور پر محفوظ اور پرائیویٹ رکھی جاتی ہے۔ یہ دستاویزات کسی بھی دوسرے صارف، امیدوار یا عوام کے ساتھ ہرگز شیئر نہیں کی جائیں گی۔ یہ صرف تصدیق (Verification) کے لیے ایڈمن ٹیم کے پاس محفوظ رہتی ہیں تاکہ جعلی پروفائلز کا سدِباب ہو سکے۔
+            </p>
+            <p className="text-slate-400 text-[11px] leading-normal">
+              Your CNIC documents and live selfie are strictly encrypted. They will NEVER be displayed on your profile or shared with other candidates. Used solely for one-time admin verification.
+            </p>
+          </div>
+
           {formError && (
             <Alert variant="danger" title="Notice" className="text-xs">
               {formError}

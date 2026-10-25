@@ -50,19 +50,19 @@ class VerificationController extends Controller
     public function submitIdentity(Request $request): JsonResponse
     {
         $request->validate([
-            'front' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
-            'back' => 'required|file|mimes:jpg,jpeg,png,webp,pdf|max:5120',
-            'live_selfie' => 'required|file|mimes:jpg,jpeg,png,webp|max:5120',
+            'front' => 'required|file|mimes:jpg,jpeg,png,webp,pdf,heic,heif|max:10240',
+            'back' => 'required|file|mimes:jpg,jpeg,png,webp,pdf,heic,heif|max:10240',
+            'live_selfie' => 'required|file|mimes:jpg,jpeg,png,webp,heic,heif|max:10240',
         ], [
             'front.required' => 'CNIC front document image or PDF is required.',
             'front.mimes' => 'CNIC front must be a valid image (JPG, PNG, WebP) or PDF document.',
-            'front.max' => 'CNIC front file size may not exceed 5 MB.',
+            'front.max' => 'CNIC front file size may not exceed 10 MB.',
             'back.required' => 'CNIC back document image or PDF is required.',
             'back.mimes' => 'CNIC back must be a valid image (JPG, PNG, WebP) or PDF document.',
-            'back.max' => 'CNIC back file size may not exceed 5 MB.',
+            'back.max' => 'CNIC back file size may not exceed 10 MB.',
             'live_selfie.required' => 'Live selfie or recent face photo is required for identity verification.',
             'live_selfie.mimes' => 'Live selfie must be an image (JPG, PNG, WebP).',
-            'live_selfie.max' => 'Live selfie file size may not exceed 5 MB.',
+            'live_selfie.max' => 'Live selfie file size may not exceed 10 MB.',
         ]);
 
         try {

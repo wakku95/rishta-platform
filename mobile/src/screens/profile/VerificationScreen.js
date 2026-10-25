@@ -158,11 +158,11 @@ export default function VerificationScreen({ navigation }) {
       const appendFile = (form, key, asset, defaultFileName) => {
         let uri = asset.uri;
         let name = asset.fileName || defaultFileName;
-        if (!name.match(/\.(jpe?g|png|webp|pdf)$/i)) {
+        if (!name.match(/\.(jpe?g|png|webp|pdf|heic|heif)$/i)) {
           name = `${name}.jpg`;
         }
         let type = asset.mimeType || 'image/jpeg';
-        if (type.startsWith('image/') && !type.includes('jpeg') && !type.includes('png') && !type.includes('webp')) {
+        if (type.startsWith('image/') && !type.includes('jpeg') && !type.includes('png') && !type.includes('webp') && !type.includes('heic') && !type.includes('heif')) {
           type = 'image/jpeg';
         }
 
@@ -407,6 +407,26 @@ export default function VerificationScreen({ navigation }) {
             {/* If not approved and not pending, or rejected, show upload form */}
             {(!isIdApproved && !isIdPending) || isIdRejected ? (
               <View style={styles.uploadSection}>
+                {/* 100% Privacy & Confidentiality Guarantee Banner */}
+                <Card style={styles.privacyCard}>
+                  <View style={styles.privacyCardHeader}>
+                    <View style={styles.privacyIconCircle}>
+                      <Ionicons name="shield-checkmark" size={20} color={Colors.emerald[400]} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.privacyCardTitle}>
+                        100% Confidential & Secure / مکمل رازداری کی ضمانت
+                      </Text>
+                      <Text style={styles.privacyCardUrdu}>
+                        آپ کا شناختی کارڈ (CNIC) اور لائیو تصویر مکمل طور پر محفوظ اور پرائیویٹ رکھی جاتی ہے۔ یہ دستاویزات کسی بھی دوسرے صارف، امیدوار یا عوام کے ساتھ ہرگز شیئر نہیں کی جائیں گی۔ یہ صرف تصدیق (Verification) کے لیے ایڈمن ٹیم کے پاس محفوظ رہتی ہیں تاکہ جعلی پروفائلز کا سدِباب ہو سکے۔
+                      </Text>
+                      <Text style={styles.privacyCardEnglish}>
+                        Your CNIC documents and live selfie are strictly encrypted. They will NEVER be displayed on your profile or shared with other candidates. Used solely for one-time admin verification.
+                      </Text>
+                    </View>
+                  </View>
+                </Card>
+
                 <Text style={styles.sectionTitle}>CNIC Documents / شناختی کارڈ</Text>
 
                 {/* 1. CNIC Front */}
@@ -861,5 +881,45 @@ const styles = StyleSheet.create({
     color: Colors.slate[400],
     lineHeight: 16,
     flex: 1,
+  },
+  privacyCard: {
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderColor: 'rgba(16, 185, 129, 0.3)',
+    borderWidth: 1,
+    padding: 14,
+    borderRadius: 14,
+    marginBottom: 16,
+  },
+  privacyCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  privacyIconCircle: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 2,
+  },
+  privacyCardTitle: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: Colors.emerald[400],
+    marginBottom: 6,
+  },
+  privacyCardUrdu: {
+    fontSize: 12,
+    color: Colors.slate[200],
+    lineHeight: 20,
+    marginBottom: 6,
+    textAlign: 'left',
+  },
+  privacyCardEnglish: {
+    fontSize: 10.5,
+    color: Colors.slate[400],
+    lineHeight: 16,
   },
 });
