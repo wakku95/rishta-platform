@@ -25,9 +25,13 @@ import OnboardingBanner from '../../components/common/OnboardingBanner';
 import SocialPublicationModal from './SocialPublicationModal';
 import { useAuth } from '../../contexts/AuthContext';
 import { profilesApi } from '../../api/profiles';
+import { notificationsApi } from '../../api/notifications';
+import { registerForPushNotificationsAsync } from '../../services/notificationService';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MyProfileScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const {
     user,
     logout,
@@ -45,6 +49,28 @@ export default function MyProfileScreen({ navigation }) {
   const [togglingVisibility, setTogglingVisibility] = useState(false);
   const [socialModalOpen, setSocialModalOpen] = useState(false);
   const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [testingPush, setTestingPush] = useState(false);
+
+  const handleTestPush = async () => {
+    setTestingPush(true);
+    let step = 'Step 1: Permission / Token generation';
+    try {
+      await registerForPushNotificationsAsync();
+      step = 'Step 2: Sending test push from server';
+      await notificationsApi.sendTestPush();
+      Alert.alert(
+        'Push Dispatched / نوٹیفکیشن بھیج دیا گیا',
+        'A test push notification has been sent to your device! Check your notification bar or lock screen.'
+      );
+    } catch (err) {
+      const status = err.response?.status ? ` (HTTP ${err.response.status})` : '';
+      const url = err.config?.url ? `\nEndpoint: ${err.config.url}` : '';
+      const errMsg = err.response?.data?.message || err.message || 'Unable to deliver test notification';
+      Alert.alert('Push Notification Test', `${step}${status}\n${errMsg}${url}`);
+    } finally {
+      setTestingPush(false);
+    }
+  };
 
   const {
     data: profile,
@@ -141,7 +167,7 @@ export default function MyProfileScreen({ navigation }) {
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -449,6 +475,28 @@ export default function MyProfileScreen({ navigation }) {
               </View>
             </View>
             <Ionicons name="open-outline" size={15} color={Colors.slate[500]} />
+          </TouchableOpacity>
+
+          {/* Push Notification Test */}
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={handleTestPush}
+            disabled={testingPush}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="notifications-active-outline" size={18} color={Colors.gold[400]} />
+              <View style={{ marginLeft: 6 }}>
+                <Text style={styles.menuLabel}>Test Push Notification / نوٹیفکیشن ٹیسٹ</Text>
+                <Text style={{ fontSize: 10, color: Colors.slate[400] }}>
+                  {testingPush ? 'Sending test signal...' : 'Tap to test device notifications & sound'}
+                </Text>
+              </View>
+            </View>
+            {testingPush ? (
+              <ActivityIndicator size="small" color={Colors.gold[400]} />
+            ) : (
+              <Ionicons name="paper-plane-outline" size={16} color={Colors.gold[400]} />
+            )}
           </TouchableOpacity>
 
           {/* Logout */}

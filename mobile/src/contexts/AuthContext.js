@@ -2,6 +2,8 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { authApi } from '../api/auth';
 import { Config } from '../constants/config';
+import { queryClient } from '../config/queryClient';
+import { registerForPushNotificationsAsync } from '../services/notificationService';
 
 const AuthContext = createContext(null);
 
@@ -31,6 +33,7 @@ export const AuthProvider = ({ children }) => {
           if (savedUser) {
             await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.USER_DATA);
           }
+          queryClient.clear();
           setToken(null);
           setUser(null);
           setLoading(false);
@@ -50,6 +53,7 @@ export const AuthProvider = ({ children }) => {
           if (freshUser && (freshUser.id || freshUser.email)) {
             setUser(freshUser);
             await SecureStore.setItemAsync(Config.STORAGE_KEYS.USER_DATA, JSON.stringify(freshUser));
+            registerForPushNotificationsAsync().catch(() => {});
           }
         } catch (e) {
           console.warn('Profile sync notice:', e.message);
@@ -57,6 +61,7 @@ export const AuthProvider = ({ children }) => {
           if (e.response?.status === 401 && savedToken !== 'session_cookie_active') {
             await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.AUTH_TOKEN);
             await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.USER_DATA);
+            queryClient.clear();
             setToken(null);
             setUser(null);
           }
@@ -72,6 +77,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = async (credentials) => {
+    // Purge any existing query cache from previous session before authenticating
+    queryClient.clear();
+
     const payload = {
       email: (credentials.email || credentials.login || '').trim(),
       login: (credentials.email || credentials.login || '').trim(),
@@ -99,10 +107,15 @@ export const AuthProvider = ({ children }) => {
       await SecureStore.setItemAsync(Config.STORAGE_KEYS.USER_DATA, JSON.stringify(receivedUser));
       setUser(receivedUser);
     }
+    // Synchronize device push notification token
+    registerForPushNotificationsAsync().catch(() => {});
     return res;
   };
 
   const register = async (data) => {
+    // Purge any existing query cache from previous session before authenticating
+    queryClient.clear();
+
     const res = await authApi.register(data);
     const receivedUser = res.user || res.data?.user || (res.data?.id ? res.data : null);
     const receivedToken =
@@ -119,6 +132,8 @@ export const AuthProvider = ({ children }) => {
       await SecureStore.setItemAsync(Config.STORAGE_KEYS.USER_DATA, JSON.stringify(receivedUser));
       setUser(receivedUser);
     }
+    // Synchronize device push notification token
+    registerForPushNotificationsAsync().catch(() => {});
     return res;
   };
 
@@ -130,6 +145,7 @@ export const AuthProvider = ({ children }) => {
     } finally {
       await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.AUTH_TOKEN);
       await SecureStore.deleteItemAsync(Config.STORAGE_KEYS.USER_DATA);
+      queryClient.clear();
       setToken(null);
       setUser(null);
     }

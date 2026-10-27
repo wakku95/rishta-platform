@@ -26,7 +26,7 @@ class RishtaRequestAcceptedNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['mail', ExpoPushChannel::class];
+        return [ExpoPushChannel::class, 'mail'];
     }
 
     /**

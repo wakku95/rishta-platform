@@ -25,6 +25,16 @@ class RishtaRequestController extends Controller
     use ApiResponse;
 
     /**
+     * Find a RishtaRequest by public request_code or ID.
+     */
+    private function findRishtaRequest(string $codeOrId): ?RishtaRequest
+    {
+        return RishtaRequest::where('request_code', $codeOrId)
+            ->orWhere('id', $codeOrId)
+            ->first();
+    }
+
+    /**
      * Send a new Rishta request to a candidate profile.
      */
     public function store(CreateRishtaRequestRequest $request): JsonResponse
@@ -409,7 +419,10 @@ class RishtaRequestController extends Controller
         $user = $request->user();
 
         $rishtaRequest = RishtaRequest::query()
-            ->where('request_code', $request_code)
+            ->where(function ($q) use ($request_code) {
+                $q->where('request_code', $request_code)
+                  ->orWhere('id', $request_code);
+            })
             ->with(['sender.profile', 'receiver.profile'])
             ->first();
 
@@ -447,7 +460,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse(
@@ -529,7 +542,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse(
@@ -587,7 +600,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse(
@@ -634,7 +647,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse(
@@ -718,7 +731,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse('The requested Rishta request was not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
@@ -773,7 +786,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             abort(404, 'Proposal not found.');
@@ -884,7 +897,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             abort(404, 'Proposal not found.');
@@ -938,7 +951,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse('The requested Rishta request was not found.', [], Response::HTTP_NOT_FOUND, 'REQUEST_NOT_FOUND');
@@ -975,7 +988,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse(
@@ -1031,7 +1044,7 @@ class RishtaRequestController extends Controller
     {
         $user = $request->user();
 
-        $rishtaRequest = RishtaRequest::where('request_code', $request_code)->first();
+        $rishtaRequest = $this->findRishtaRequest($request_code);
 
         if (!$rishtaRequest) {
             return $this->errorResponse(

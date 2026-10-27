@@ -28,11 +28,13 @@ import Button from '../../components/common/Button';
 import { requestsApi } from '../../api/requests';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Config } from '../../constants/config';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 export default function ProposalsScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { isIdentityVerified, user, token } = useAuth();
   const viewerProfileCode = user?.profile?.profile_code || user?.profile_code || user?.code || 'MEMBER';
   const viewerPhone = user?.phone || user?.profile?.phone || 'CONFIDENTIAL';
@@ -161,6 +163,11 @@ export default function ProposalsScreen({ navigation }) {
     queryClient.invalidateQueries({ queryKey: ['request_counts'] });
   }, [queryClient]);
 
+  const fetchCounts = useCallback(() => {
+    queryClient.invalidateQueries({ queryKey: ['request_counts'] });
+    refetchCounts();
+  }, [queryClient, refetchCounts]);
+
   const handleCopyCode = async (code) => {
     if (!code) return;
     try {
@@ -200,7 +207,8 @@ export default function ProposalsScreen({ navigation }) {
     if (!selectedProposal) return;
     setAcceptSubmitting(true);
     try {
-      await requestsApi.respondToRequest(selectedProposal.request_code || selectedProposal.id, 'accept', {
+      const targetCode = selectedProposal.request_code || selectedProposal.id;
+      const res = await requestsApi.respondToRequest(targetCode, 'accept', {
         receiver_answers: receiverAnswers.trim() || null,
         receiver_intro: receiverIntro.trim() || null,
         receiver_questions: receiverQuestions.trim() || null,
@@ -208,12 +216,12 @@ export default function ProposalsScreen({ navigation }) {
 
       setAcceptModalOpen(false);
       setSelectedProposal(null);
-      fetchRequests(typeTab, statusFilter);
+      fetchRequests();
       fetchCounts();
 
       Alert.alert(
         'Proposal Accepted / رشتہ منظور',
-        'Your response and questions have been submitted for moderation review and will be delivered to the candidate family once approved.'
+        res?.message || 'Your response and questions have been submitted for moderation review and will be delivered to the candidate family once approved.'
       );
     } catch (err) {
       const errData = err.response?.data;
@@ -236,7 +244,7 @@ export default function ProposalsScreen({ navigation }) {
           ]
         );
       } else {
-        Alert.alert('Error', errData?.message || 'Failed to submit proposal response.');
+        Alert.alert('Error', errData?.message || err?.message || 'Failed to submit proposal response.');
       }
     } finally {
       setAcceptSubmitting(false);
@@ -256,7 +264,7 @@ export default function ProposalsScreen({ navigation }) {
           onPress: async () => {
             try {
               await requestsApi.respondToRequest(requestCode, 'decline');
-              fetchRequests(typeTab, statusFilter);
+              fetchRequests();
               fetchCounts();
             } catch (err) {
               Alert.alert('Error', err.response?.data?.message || 'Failed to decline proposal.');
@@ -280,7 +288,7 @@ export default function ProposalsScreen({ navigation }) {
           onPress: async () => {
             try {
               await requestsApi.cancelRequest(requestCode);
-              fetchRequests(typeTab, statusFilter);
+              fetchRequests();
               fetchCounts();
               Alert.alert('Cancelled / منسوخ', 'Your Rishta proposal has been cancelled successfully.');
             } catch (err) {
@@ -310,7 +318,7 @@ export default function ProposalsScreen({ navigation }) {
       await requestsApi.replyToQuestions(replyTarget.request_code || replyTarget.id, senderAnswers.trim());
       setReplyModalOpen(false);
       setReplyTarget(null);
-      fetchRequests(typeTab, statusFilter);
+      fetchRequests();
       fetchCounts();
       Alert.alert(
         'Answers Submitted / جوابات جمع کر دیے گئے',
@@ -341,7 +349,7 @@ export default function ProposalsScreen({ navigation }) {
       });
       setEditModalOpen(false);
       setEditTarget(null);
-      fetchRequests(typeTab, statusFilter);
+      fetchRequests();
       fetchCounts();
       Alert.alert(
         'Proposal Updated / تجویز میں ترمیم ہو گئی',
@@ -746,9 +754,15 @@ export default function ProposalsScreen({ navigation }) {
       };
     }
 
+    const isModerationPending =
+      adminStatus === 'pending_review' ||
+      adminStatus === 'pending' ||
+      item.receiver_response_pending_moderation ||
+      item.sender_answers_pending_moderation;
+
     switch (status) {
       case 'pending':
-        if (isSender && adminStatus === 'pending_review') {
+        if (isSender && (adminStatus === 'pending_review' || adminStatus === 'pending')) {
           return { label: 'UNDER REVIEW / زیرِ جائزہ', variant: 'gold' };
         }
         if (isSender && adminStatus === 'rejected') {
@@ -757,9 +771,9 @@ export default function ProposalsScreen({ navigation }) {
         return { label: 'PENDING / زیرِ التواء', variant: 'gold' };
 
       case 'accepted':
-        if (adminStatus === 'pending_review') {
+        if (isModerationPending) {
           return {
-            label: isSender ? 'RESPONSE UNDER REVIEW' : 'AWAITING APPROVAL',
+            label: 'Response Submitted — Awaiting Admin Review',
             variant: 'gold',
           };
         }
@@ -880,7 +894,7 @@ export default function ProposalsScreen({ navigation }) {
         <FlatList
           data={requests}
           keyExtractor={(item) => item.request_code || String(item.id || Math.random())}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}
@@ -1295,19 +1309,22 @@ export default function ProposalsScreen({ navigation }) {
                           />
                         )}
                       </View>
-                    ) : item.admin_status === 'pending_review' ? (
-                      <View style={styles.reviewNoticeBox}>
-                        <Ionicons name="time-outline" size={15} color={Colors.gold[400]} />
-                        <Text style={styles.reviewNoticeText}>
-                          {item.sender_answers || item.has_sender_answers || item.sender_answers_pending_moderation
-                            ? isSender
-                              ? 'Your answers to candidate\'s questions have been submitted and are under admin review.'
-                              : 'Candidate has submitted answers to your questions! They are currently under admin review.'
-                            : isSender
-                            ? 'Candidate has responded! Their answers are under admin review.'
-                            : 'Your response is awaiting admin approval before delivery.'}
-                        </Text>
-                      </View>
+                    ) : (item.admin_status === 'pending_review' || item.admin_status === 'pending') ? (
+                      !isSender ? (
+                        <View style={styles.reviewNoticeBox}>
+                          <Ionicons name="time-outline" size={15} color={Colors.gold[400]} />
+                          <Text style={styles.reviewNoticeText}>
+                            Your response and answers have been submitted and are awaiting admin review before delivery.
+                          </Text>
+                        </View>
+                      ) : (item.sender_answers || item.has_sender_answers || item.sender_answers_pending_moderation) ? (
+                        <View style={styles.reviewNoticeBox}>
+                          <Ionicons name="time-outline" size={15} color={Colors.gold[400]} />
+                          <Text style={styles.reviewNoticeText}>
+                            Your answers to candidate's questions have been submitted and are under admin review.
+                          </Text>
+                        </View>
+                      ) : null
                     ) : item.receiver_questions && !item.sender_answers ? (
                       isSender ? (
                         <View style={{ marginTop: 6 }}>
@@ -1517,7 +1534,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll}>
+            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
               {selectedProposal && (() => {
                 const cand = selectedProposal.candidate_profile || selectedProposal.sender?.profile || selectedProposal.sender;
                 return (
@@ -1670,7 +1687,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll}>
+            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
               {replyTarget && (
                 <View style={styles.receivedQuestionsCard}>
                   <Text style={[styles.receivedQuestionsHeader, { color: Colors.gold[400] }]}>
@@ -1746,7 +1763,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll}>
+            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
               {editTarget?.admin_notes && (
                 <View style={styles.revisionNoticeBox}>
                   <Ionicons name="alert-circle" size={16} color={Colors.rose[400]} />
@@ -1828,7 +1845,11 @@ export default function ProposalsScreen({ navigation }) {
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={styles.modalScroll}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={{ flex: 1 }}
+          >
+            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
             {contactLoading ? (
               <View style={styles.centerContainer}>
                 <ActivityIndicator size="large" color={Colors.magenta[500]} />
@@ -2141,6 +2162,7 @@ export default function ProposalsScreen({ navigation }) {
               style={{ marginTop: 16 }}
             />
           </ScrollView>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
 
@@ -2358,7 +2380,11 @@ export default function ProposalsScreen({ navigation }) {
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={styles.modalScroll}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            style={{ flex: 1 }}
+          >
+            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
             {photoModalMode === 'upload' ? (
               <View style={{ gap: 14 }}>
                 <View style={styles.securityWarningCard}>
@@ -2503,6 +2529,7 @@ export default function ProposalsScreen({ navigation }) {
               style={{ marginTop: 14 }}
             />
           </ScrollView>
+          </KeyboardAvoidingView>
         </SafeAreaView>
       </Modal>
 
@@ -2533,7 +2560,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll}>
+            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
               {selectedAssistedInquiry?.listing && (
                 <View style={[styles.receivedQuestionsCard, { borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
                   <Text style={[styles.receivedQuestionsHeader, { color: Colors.cyan[400] }]}>

@@ -31,6 +31,11 @@
         "backgroundColor": "#111827",
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
+      "splash": {
+        "image": "./assets/raabtanow-logo-white-transparent.png",
+        "resizeMode": "contain",
+        "backgroundColor": "#111827"
+      },
       "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
@@ -46,6 +51,18 @@
         {
           "icon": "./assets/icon.png",
           "color": "#e11d48"
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#111827",
+          "image": "./assets/raabtanow-logo-white-transparent.png",
+          "dark": {
+            "image": "./assets/raabtanow-logo-white-transparent.png",
+            "backgroundColor": "#111827"
+          },
+          "imageWidth": 220
         }
       ]
     ],

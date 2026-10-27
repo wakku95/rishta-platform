@@ -15,6 +15,7 @@ import { Colors } from '../../constants/colors';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 const validateEmail = (rawEmail) => {
@@ -76,6 +77,7 @@ const validatePhone = (rawPhone) => {
 };
 
 export default function RegisterScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { register } = useAuth();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -152,10 +154,10 @@ export default function RegisterScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 40, 60) }]} keyboardShouldPersistTaps="handled">
           {/* Back button */}
           <TouchableOpacity
             style={styles.backButton}

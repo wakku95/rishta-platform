@@ -25,8 +25,10 @@ import { profilesApi } from '../../api/profiles';
 import { Ionicons } from '@expo/vector-icons';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function MatchesScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { authenticated } = useAuth();
   const queryClient = useQueryClient();
 
@@ -721,7 +723,7 @@ export default function MatchesScreen({ navigation }) {
                 }}
               />
             )}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}
             onEndReached={handleLoadMore}
             onEndReachedThreshold={0.4}
             ListFooterComponent={

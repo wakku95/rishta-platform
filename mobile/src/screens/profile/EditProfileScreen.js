@@ -11,12 +11,14 @@ import {
   ActivityIndicator,
   Alert,
   Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
 import Card from '../../components/common/Card';
 import Button from '../../components/common/Button';
 import { profilesApi } from '../../api/profiles';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 // Canonical fallback options matching website
@@ -65,6 +67,7 @@ const HEIGHT_OPTIONS = Array.from({ length: 101 }, (_, i) => {
 });
 
 export default function EditProfileScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { user, refreshUser } = useAuth();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
@@ -210,7 +213,14 @@ export default function EditProfileScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}
+          keyboardShouldPersistTaps="handled"
+        >
         {/* Strict Privacy Notice */}
         <View style={styles.privacyBanner}>
           <Ionicons name="shield-checkmark" size={18} color={Colors.cyan[400]} style={{ marginTop: 2 }} />
@@ -521,7 +531,8 @@ export default function EditProfileScreen({ navigation }) {
           onPress={handleSubmit}
           style={styles.submitButton}
         />
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Simple Options Modal */}
       {pickerModal.visible && (

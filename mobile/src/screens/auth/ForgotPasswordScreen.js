@@ -7,14 +7,18 @@ import {
   StatusBar,
   ScrollView,
   TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { authApi } from '../../api/auth';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function ForgotPasswordScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
@@ -43,58 +47,66 @@ export default function ForgotPasswordScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+      >
+        <ScrollView
+          contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 40, 60) }]}
+          keyboardShouldPersistTaps="handled"
         >
-          <Ionicons name="arrow-back" size={20} color={Colors.slate[300]} />
-          <Text style={styles.backText}>Back to Sign In</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Ionicons name="arrow-back" size={20} color={Colors.slate[300]} />
+            <Text style={styles.backText}>Back to Sign In</Text>
+          </TouchableOpacity>
 
-        <View style={styles.header}>
-          <View style={styles.logoPill}>
-            <Ionicons name="key" size={20} color={Colors.magenta[400]} />
+          <View style={styles.header}>
+            <View style={styles.logoPill}>
+              <Ionicons name="key" size={20} color={Colors.magenta[400]} />
+            </View>
+            <Text style={styles.title}>Reset Password</Text>
+            <Text style={styles.subtitle}>
+              Enter your registered email and we'll send you recovery instructions.
+            </Text>
           </View>
-          <Text style={styles.title}>Reset Password</Text>
-          <Text style={styles.subtitle}>
-            Enter your registered email and we'll send you recovery instructions.
-          </Text>
-        </View>
 
-        {message ? (
-          <View style={styles.successBox}>
-            <Ionicons name="checkmark-circle" size={18} color={Colors.emerald[400]} />
-            <Text style={styles.successText}>{message}</Text>
+          {message ? (
+            <View style={styles.successBox}>
+              <Ionicons name="checkmark-circle" size={18} color={Colors.emerald[400]} />
+              <Text style={styles.successText}>{message}</Text>
+            </View>
+          ) : null}
+
+          {error ? (
+            <View style={styles.errorBox}>
+              <Ionicons name="alert-circle" size={18} color={Colors.rose[400]} />
+              <Text style={styles.errorText}>{error}</Text>
+            </View>
+          ) : null}
+
+          <View style={styles.form}>
+            <Input
+              label="Registered Email / رجسٹرڈ ای میل"
+              placeholder="name@domain.com"
+              value={email}
+              onChangeText={setEmail}
+              keyboardType="email-address"
+              autoCapitalize="none"
+            />
+
+            <Button
+              title="Send Recovery Link"
+              onPress={handleReset}
+              variant="primary"
+              size="lg"
+              loading={loading}
+            />
           </View>
-        ) : null}
-
-        {error ? (
-          <View style={styles.errorBox}>
-            <Ionicons name="alert-circle" size={18} color={Colors.rose[400]} />
-            <Text style={styles.errorText}>{error}</Text>
-          </View>
-        ) : null}
-
-        <View style={styles.form}>
-          <Input
-            label="Registered Email / رجسٹرڈ ای میل"
-            placeholder="name@domain.com"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-
-          <Button
-            title="Send Recovery Link"
-            onPress={handleReset}
-            variant="primary"
-            size="lg"
-            loading={loading}
-          />
-        </View>
-      </ScrollView>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 }

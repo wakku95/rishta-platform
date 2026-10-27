@@ -1,35 +1,21 @@
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
 import { notificationsApi } from '../api/notifications';
 
-// Safely resolve Expo native modules without breaking Expo Go if a native module is missing
-let Notifications = null;
-let Device = null;
-
+// Configure foreground notification behavior
 try {
-  Notifications = require('expo-notifications');
-} catch (e) {
-  console.warn('[Push] expo-notifications module could not be initialized:', e.message);
-}
-
-try {
-  Device = require('expo-device');
-} catch (e) {
-  console.warn('[Push] expo-device module could not be initialized:', e.message);
-}
-
-// Configure foreground notification behavior if module is present
-if (Notifications && typeof Notifications.setNotificationHandler === 'function') {
-  try {
-    Notifications.setNotificationHandler({
-      handleNotification: async () => ({
-        shouldShowAlert: true,
-        shouldPlaySound: true,
-        shouldSetBadge: true,
-      }),
-    });
-  } catch (err) {
-    console.warn('[Push] setNotificationHandler notice:', err);
-  }
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+    }),
+  });
+} catch (err) {
+  console.warn('[Push] setNotificationHandler notice:', err);
 }
 
 /**
@@ -63,54 +49,47 @@ export async function setupNotificationChannels() {
  * Register device for Expo Push Notifications and sync token with backend.
  */
 export async function registerForPushNotificationsAsync() {
-  if (!Notifications || !Device) {
-    console.log('[Push] Push notifications module not active in this runtime');
-    return null;
+  if (Platform.OS === 'android') {
+    await setupNotificationChannels();
   }
 
-  let token = null;
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
 
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    console.log('[Push] Notification permission not granted:', finalStatus);
+    throw new Error(
+      'Notification permission is disabled. Please open your phone Settings -> Apps -> RaabtaNow -> Notifications and enable Allow Notifications.'
+    );
+  }
+
+  let tokenData = null;
   try {
-    if (Platform.OS === 'android') {
-      await setupNotificationChannels();
+    tokenData = await Notifications.getExpoPushTokenAsync({
+      projectId: 'a7697117-62ca-4e04-9687-74737864b772',
+    });
+  } catch (err1) {
+    console.warn('[Push] Explicit projectId token fetch warning:', err1?.message);
+    try {
+      tokenData = await Notifications.getExpoPushTokenAsync();
+    } catch (err2) {
+      console.warn('[Push] Fallback token fetch error:', err2?.message);
+      throw new Error('Push Token generation error: ' + (err2?.message || err1?.message || 'FCM/EAS project mismatch'));
     }
-
-    if (Device.isDevice) {
-      if (typeof Notifications.getPermissionsAsync !== 'function') {
-        return null;
-      }
-
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
-      let finalStatus = existingStatus;
-
-      if (existingStatus !== 'granted' && typeof Notifications.requestPermissionsAsync === 'function') {
-        const { status } = await Notifications.requestPermissionsAsync();
-        finalStatus = status;
-      }
-
-      if (finalStatus !== 'granted') {
-        console.log('[Push] Notification permission not granted');
-        return null;
-      }
-
-      if (typeof Notifications.getExpoPushTokenAsync === 'function') {
-        const tokenData = await Notifications.getExpoPushTokenAsync({
-          projectId: 'a7697117-62ca-4e04-9687-74737864b772',
-        });
-        token = tokenData?.data;
-
-        if (token) {
-          console.log('[Push] Expo push token obtained:', token);
-          await notificationsApi.updatePushToken(token);
-        }
-      }
-    } else {
-      console.log('[Push] Push notifications require a physical device');
-    }
-  } catch (error) {
-    console.warn('[Push] Error registering push notifications:', error?.message || error);
   }
 
+  const token = tokenData?.data;
+  if (!token) {
+    throw new Error('Device push token could not be generated.');
+  }
+
+  console.log('[Push] Expo push token obtained:', token);
+  await notificationsApi.updatePushToken(token);
   return token;
 }
 

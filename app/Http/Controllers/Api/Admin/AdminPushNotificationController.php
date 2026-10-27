@@ -123,9 +123,10 @@ class AdminPushNotificationController extends Controller
         $statusNote = '';
 
         // 2. Dispatch push notification if device token is registered
+        $diag = null;
         if (!empty($targetUser->push_token)) {
-            $pushDelivered = PushNotificationService::sendToUser(
-                $targetUser,
+            $diag = PushNotificationService::sendWithDiagnostics(
+                $targetUser->push_token,
                 $title,
                 $message,
                 [
@@ -134,12 +135,14 @@ class AdminPushNotificationController extends Controller
                     'params' => [
                         'tab' => $targetTab,
                     ],
-                ]
+                ],
+                true
             );
 
-            $statusNote = $pushDelivered 
+            $pushDelivered = $diag['success'];
+            $statusNote = $pushDelivered
                 ? 'Mobile push notification delivered instantly to device.'
-                : 'Mobile push delivery was attempted but returned non-200 from Expo push service.';
+                : 'Push delivery error: ' . ($diag['error'] ?? 'Unknown error from Expo/FCM.');
         } else {
             $statusNote = 'Candidate has not logged into the mobile app yet, but in-app notification was saved.';
         }

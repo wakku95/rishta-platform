@@ -157,4 +157,64 @@ class PushNotificationTest extends TestCase
             'admin_id' => $admin->id,
         ]);
     }
+
+    public function test_push_payload_includes_default_android_channel(): void
+    {
+        Http::fake([
+            'https://exp.host/--/api/v2/push/send' => Http::response([
+                'data' => [['status' => 'ok', 'id' => 'abc-123']],
+            ], 200),
+        ]);
+
+        $dispatched = PushNotificationService::sendToToken(
+            'ExponentPushToken[android-channel-test]',
+            'Channel Test',
+            'Testing Android channel',
+            ['screen' => 'Notifications']
+        );
+
+        $this->assertTrue($dispatched);
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://exp.host/--/api/v2/push/send'
+                && $request['to'] === 'ExponentPushToken[android-channel-test]'
+                && $request['channelId'] === 'default'
+                && $request['priority'] === 'high'
+                && $request['sound'] === 'default';
+        });
+    }
+
+    public function test_announcement_send_to_user_automatically_dispatches_push(): void
+    {
+        Http::fake([
+            'https://exp.host/--/api/v2/push/send' => Http::response([
+                'data' => [['status' => 'ok', 'id' => 'announcement-push-1']],
+            ], 200),
+        ]);
+
+        $user = User::factory()->create([
+            'push_token' => 'ExponentPushToken[announcement-user-token]',
+        ]);
+
+        $announcement = \App\Models\Announcement::sendToUser(
+            $user->id,
+            'New Proposal Received 💌',
+            'Candidate RN-1024 has sent you a proposal.',
+            'info',
+            '/requests',
+            'Review Proposal'
+        );
+
+        $this->assertNotNull($announcement);
+        $this->assertDatabaseHas('announcements', [
+            'id' => $announcement->id,
+            'user_id' => $user->id,
+        ]);
+
+        Http::assertSent(function ($request) {
+            return $request->url() === 'https://exp.host/--/api/v2/push/send'
+                && $request['to'] === 'ExponentPushToken[announcement-user-token]'
+                && $request['title'] === 'New Proposal Received 💌';
+        });
+    }
 }

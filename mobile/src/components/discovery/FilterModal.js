@@ -10,10 +10,12 @@ import {
   TextInput,
   Platform,
   StatusBar,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
 import Button from '../common/Button';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const CITIES = [
   'All',
@@ -47,6 +49,7 @@ export default function FilterModal({
   onApply,
   onReset,
 }) {
+  const insets = useSafeAreaInsets();
   const [profileCode, setProfileCode] = useState(initialFilters.profile_code || '');
   const [gender, setGender] = useState(initialFilters.gender || '');
   const [city, setCity] = useState(initialFilters.city || 'All');
@@ -102,7 +105,14 @@ export default function FilterModal({
           </TouchableOpacity>
         </View>
 
-        <ScrollView contentContainerStyle={styles.scrollBody}>
+        <KeyboardAvoidingView
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          style={{ flex: 1 }}
+        >
+          <ScrollView
+            contentContainerStyle={[styles.scrollBody, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}
+            keyboardShouldPersistTaps="handled"
+          >
           {/* Search by Profile Code */}
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>Search Profile Code / نمبر سے تلاش</Text>
@@ -244,9 +254,10 @@ export default function FilterModal({
             </View>
           </View>
         </ScrollView>
+        </KeyboardAvoidingView>
 
         {/* Modal Bottom Sticky CTA */}
-        <View style={styles.bottomBar}>
+        <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
           <Button
             title="Apply Filters / فلٹرز لاگو کریں"
             variant="primary"

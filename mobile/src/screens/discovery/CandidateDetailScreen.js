@@ -13,6 +13,7 @@ import {
   Modal,
   KeyboardAvoidingView,
   TextInput,
+  BackHandler,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
 import * as SecureStore from 'expo-secure-store';
@@ -25,9 +26,11 @@ import GenderAvatar from '../../components/common/GenderAvatar';
 import { profilesApi } from '../../api/profiles';
 import { requestsApi } from '../../api/requests';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function CandidateDetailScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { profileCode } = route.params;
   const { authenticated, isIdentityVerified, refreshUser, emailVerified, hasProfile, profileStatus, resendVerification } = useAuth();
   const [candidate, setCandidate] = useState(null);
@@ -57,6 +60,23 @@ export default function CandidateDetailScreen({ route, navigation }) {
       navigation.navigate('Proposals');
     }
   };
+
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('MainTabs', { screen: 'Matches' });
+    }
+  };
+
+  useEffect(() => {
+    const onBackPress = () => {
+      handleBack();
+      return true;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [navigation]);
 
   useEffect(() => {
     const checkShortlist = async () => {
@@ -119,7 +139,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
         }
       } catch (err) {
         Alert.alert('Error', 'Failed to load candidate biodata.');
-        navigation.goBack();
+        handleBack();
       } finally {
         setLoading(false);
       }
@@ -141,7 +161,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
             try {
               await profilesApi.hideProfile(profileCode);
               Alert.alert('Notice', `Candidate #${profileCode} has been hidden.`);
-              navigation.goBack();
+              handleBack();
             } catch (err) {
               Alert.alert('Notice', 'Unable to hide candidate right now.');
             }
@@ -352,7 +372,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
 
       {/* Top Bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="arrow-back" size={22} color={Colors.white} />
         </TouchableOpacity>
         <View style={styles.topBarTitleRow}>
@@ -391,7 +411,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={[styles.scrollContent, activeRequest && { paddingBottom: 220 }]}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + (activeRequest ? 240 : 120), 140) }]}>
         {/* Profile Card Header */}
         <Card style={styles.profileHeaderCard}>
           <GenderAvatar
@@ -467,7 +487,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
       </ScrollView>
 
       {/* Fixed Bottom Action Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         {!activeRequest ? (
           <Button
             title="Send Formal Rishta Proposal"
@@ -556,7 +576,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.proposalModalScroll}>
+            <ScrollView contentContainerStyle={[styles.proposalModalScroll, { paddingBottom: Math.max(insets.bottom + 60, 80) }]}>
               {/* Target Candidate Summary Banner */}
               <View style={styles.targetBanner}>
                 <View style={styles.targetIconWrap}>
@@ -662,7 +682,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
           </KeyboardAvoidingView>
 
           {/* Sticky Bottom Actions */}
-          <View style={styles.proposalModalActions}>
+          <View style={[styles.proposalModalActions, { paddingBottom: Math.max(insets.bottom, 16) }]}>
             <Button
               title="Cancel / منسوخ"
               variant="secondary"

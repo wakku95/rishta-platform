@@ -10,6 +10,8 @@ import {
   TouchableOpacity,
   Alert,
   Platform,
+  BackHandler,
+  KeyboardAvoidingView,
 } from 'react-native';
 import { Colors } from '../../constants/colors';
 import Card from '../../components/common/Card';
@@ -21,9 +23,11 @@ import Input from '../../components/common/Input';
 import GenderAvatar from '../../components/common/GenderAvatar';
 import { profilesApi } from '../../api/profiles';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function AssistedDetailScreen({ route, navigation }) {
+  const insets = useSafeAreaInsets();
   const { listingCode } = route.params;
   const { authenticated, isIdentityVerified, user, refreshUser } = useAuth();
   const [listing, setListing] = useState(null);
@@ -102,6 +106,23 @@ export default function AssistedDetailScreen({ route, navigation }) {
     }
   };
 
+  const handleBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('MainTabs', { screen: 'Matches' });
+    }
+  };
+
+  useEffect(() => {
+    const onBackPress = () => {
+      handleBack();
+      return true;
+    };
+    const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    return () => subscription.remove();
+  }, [navigation]);
+
   useEffect(() => {
     const fetchListing = async () => {
       try {
@@ -109,7 +130,7 @@ export default function AssistedDetailScreen({ route, navigation }) {
         setListing(res.data || res);
       } catch (err) {
         Alert.alert('Error', 'Failed to load assisted listing.');
-        navigation.goBack();
+        handleBack();
       } finally {
         setLoading(false);
       }
@@ -195,7 +216,7 @@ export default function AssistedDetailScreen({ route, navigation }) {
             try {
               await profilesApi.hideProfile(code);
               Alert.alert('Notice', `Listing #${code} has been hidden.`);
-              navigation.goBack();
+              handleBack();
             } catch (err) {
               Alert.alert('Notice', 'Unable to hide listing right now.');
             }
@@ -219,7 +240,7 @@ export default function AssistedDetailScreen({ route, navigation }) {
 
       {/* Top Bar */}
       <View style={styles.topBar}>
-        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Ionicons name="arrow-back" size={22} color={Colors.white} />
         </TouchableOpacity>
         <View style={styles.topBarTitleRow}>
@@ -258,7 +279,7 @@ export default function AssistedDetailScreen({ route, navigation }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 100, 120) }]}>
         {/* Banner */}
         <View style={styles.assistedBanner}>
           <Ionicons name="people" size={20} color={Colors.navy[950]} />
@@ -320,7 +341,7 @@ export default function AssistedDetailScreen({ route, navigation }) {
       </ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={styles.bottomBar}>
+      <View style={[styles.bottomBar, { paddingBottom: Math.max(insets.bottom, 16) }]}>
         <Button
           title="Inquire via Matchmaker (ایجنٹ رابطہ)"
           onPress={handleOpenInquiry}
@@ -334,51 +355,56 @@ export default function AssistedDetailScreen({ route, navigation }) {
       {/* Modal */}
       {interestModalOpen && (
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Inquire via Matchmaker</Text>
-              <TouchableOpacity onPress={() => setInterestModalOpen(false)}>
-                <Ionicons name="close" size={22} color={Colors.slate[400]} />
-              </TouchableOpacity>
-            </View>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={{ width: '100%' }}
+          >
+            <View style={styles.modalContent}>
+              <View style={styles.modalHeader}>
+                <Text style={styles.modalTitle}>Inquire via Matchmaker</Text>
+                <TouchableOpacity onPress={() => setInterestModalOpen(false)}>
+                  <Ionicons name="close" size={22} color={Colors.slate[400]} />
+                </TouchableOpacity>
+              </View>
 
-            <Text style={styles.modalSubtitle}>
-              Our matchmaker coordinates directly between both families. Ensure your contact details are accurate.
-            </Text>
+              <Text style={styles.modalSubtitle}>
+                Our matchmaker coordinates directly between both families. Ensure your contact details are accurate.
+              </Text>
 
-            <Input
-              label="Contact Phone Number / رابطہ نمبر *"
-              placeholder="+923XXXXXXXXX"
-              value={contactNumber}
-              onChangeText={setContactNumber}
-              keyboardType="phone-pad"
-            />
-
-            <Input
-              label="Questions or Family Notes (Optional)"
-              placeholder="e.g. Inquiring on behalf of family for candidate..."
-              value={message}
-              onChangeText={setMessage}
-              multiline
-              numberOfLines={3}
-            />
-
-            <View style={styles.modalActions}>
-              <Button
-                title="Cancel"
-                variant="secondary"
-                onPress={() => setInterestModalOpen(false)}
-                style={{ flex: 1 }}
+              <Input
+                label="Contact Phone Number / رابطہ نمبر *"
+                placeholder="+923XXXXXXXXX"
+                value={contactNumber}
+                onChangeText={setContactNumber}
+                keyboardType="phone-pad"
               />
-              <Button
-                title="Submit Inquiry"
-                variant="gold"
-                onPress={handleSubmitInterest}
-                loading={submitting}
-                style={{ flex: 1 }}
+
+              <Input
+                label="Questions or Family Notes (Optional)"
+                placeholder="e.g. Inquiring on behalf of family for candidate..."
+                value={message}
+                onChangeText={setMessage}
+                multiline
+                numberOfLines={3}
               />
+
+              <View style={styles.modalActions}>
+                <Button
+                  title="Cancel"
+                  variant="secondary"
+                  onPress={() => setInterestModalOpen(false)}
+                  style={{ flex: 1 }}
+                />
+                <Button
+                  title="Submit Inquiry"
+                  variant="gold"
+                  onPress={handleSubmitInterest}
+                  loading={submitting}
+                  style={{ flex: 1 }}
+                />
+              </View>
             </View>
-          </View>
+          </KeyboardAvoidingView>
         </View>
       )}
     </SafeAreaView>

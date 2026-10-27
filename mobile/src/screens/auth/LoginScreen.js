@@ -16,9 +16,11 @@ import { Colors } from '../../constants/colors';
 import Input from '../../components/common/Input';
 import Button from '../../components/common/Button';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function LoginScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { login } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -67,10 +69,10 @@ export default function LoginScreen({ navigation }) {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scrollContent}>
+        <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 40, 60) }]} keyboardShouldPersistTaps="handled">
           {/* Back button */}
           <TouchableOpacity
             style={styles.backButton}

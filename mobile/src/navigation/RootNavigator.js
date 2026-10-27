@@ -6,14 +6,21 @@ import { Colors } from '../constants/colors';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
 import FloatingSocialChat from '../components/common/FloatingSocialChat';
+import * as SplashScreen from 'expo-splash-screen';
 import {
   registerForPushNotificationsAsync,
   setupNotificationListeners,
 } from '../services/notificationService';
 
 export default function RootNavigator() {
-  const { authenticated, loading } = useAuth();
+  const { user, authenticated, loading } = useAuth();
   const navigationRef = useNavigationContainerRef();
+
+  useEffect(() => {
+    if (!loading) {
+      SplashScreen.hideAsync().catch(() => {});
+    }
+  }, [loading]);
 
   useEffect(() => {
     if (authenticated) {
@@ -33,9 +40,13 @@ export default function RootNavigator() {
     );
   }
 
+  // Keying the NavigationContainer by user ID guarantees that on logout or switching accounts,
+  // the entire navigation stack is completely destroyed and recreated from scratch at the default route.
+  const navKey = user?.id ? `user-session-${user.id}` : 'guest-session';
+
   return (
     <View style={styles.rootContainer}>
-      <NavigationContainer ref={navigationRef}>
+      <NavigationContainer ref={navigationRef} key={navKey}>
         {authenticated ? <AppStack /> : <AuthStack />}
       </NavigationContainer>
       <FloatingSocialChat />

@@ -19,8 +19,10 @@ import Badge from '../../components/common/Badge';
 import { notificationsApi } from '../../api/notifications';
 import { Ionicons } from '@expo/vector-icons';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function NotificationsScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
   const {
@@ -92,7 +94,7 @@ export default function NotificationsScreen({ navigation }) {
         <FlatList
           data={notifications}
           keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

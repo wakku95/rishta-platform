@@ -19,9 +19,11 @@ import Button from '../../components/common/Button';
 import { verificationApi } from '../../api/verification';
 import { useAuth } from '../../contexts/AuthContext';
 import * as ImagePicker from 'expo-image-picker';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function VerificationScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { refreshUser, logout } = useAuth();
   const [activeTab, setActiveTab] = useState('identity'); // 'identity' | 'education'
   const [data, setData] = useState(null);
@@ -348,7 +350,7 @@ export default function VerificationScreen({ navigation }) {
         </TouchableOpacity>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView contentContainerStyle={[styles.scrollContent, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}>
         {/* Session Expired Re-auth Prompt */}
         {sessionExpired && (
           <Card style={styles.sessionExpiredCard}>

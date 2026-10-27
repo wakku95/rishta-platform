@@ -17,6 +17,7 @@ import CandidateCard from '../../components/candidate/CandidateCard';
 import { profilesApi } from '../../api/profiles';
 import { Ionicons } from '@expo/vector-icons';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 async function fetchShortlistData() {
   // 1. Fetch regular shortlists from backend API
@@ -111,6 +112,7 @@ async function fetchShortlistData() {
 }
 
 export default function ShortlistScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
 
   const {
@@ -192,7 +194,7 @@ export default function ShortlistScreen({ navigation }) {
           keyExtractor={(item) =>
             item.profile_code || item.listing_code || String(item.id)
           }
-          contentContainerStyle={styles.listContent}
+          contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 80, 100) }]}
           refreshControl={
             <RefreshControl
               refreshing={refreshing}

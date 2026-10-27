@@ -51,17 +51,27 @@ class NotificationController extends Controller
             );
         }
 
-        $result = PushNotificationService::sendToUser(
-            $user,
+        $diag = PushNotificationService::sendWithDiagnostics(
+            $user->push_token,
             'Test Notification 🔔',
             'Push notifications are working perfectly on RaabtaNow!',
             [
                 'action' => 'test',
                 'screen' => 'MyProfile',
                 'timestamp' => now()->toIso8601String(),
-            ]
+            ],
+            true
         );
 
-        return $this->successResponse($result, 'Test notification dispatched.');
+        if (!$diag['success']) {
+            return $this->errorResponse(
+                $diag['error'] ?? 'Push delivery failed.',
+                $diag,
+                Response::HTTP_UNPROCESSABLE_ENTITY,
+                $diag['error_code'] ?? 'PUSH_DELIVERY_FAILED'
+            );
+        }
+
+        return $this->successResponse($diag, 'Test notification dispatched.');
     }
 }

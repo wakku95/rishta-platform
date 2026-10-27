@@ -2,6 +2,7 @@
 
 namespace App\Notifications;
 
+use App\Channels\ExpoPushChannel;
 use App\Models\ContactUnlock;
 use App\Models\RishtaRequest;
 use Illuminate\Bus\Queueable;
@@ -19,7 +20,20 @@ class ContactDetailsUnlockedNotification extends Notification
 
     public function via(object $notifiable): array
     {
-        return ['mail'];
+        return [ExpoPushChannel::class, 'mail'];
+    }
+
+    public function toExpoPush(object $notifiable): array
+    {
+        return [
+            'title' => 'Contact Details Unlocked! 📱',
+            'body' => "Verified contact details for candidate {$this->otherPartyProfileCode} are now unlocked! Tap to view.",
+            'data' => [
+                'screen' => 'Proposals',
+                'tab' => 'accepted',
+                'requestCode' => $this->rishtaRequest->request_code,
+            ],
+        ];
     }
 
     public function toMail(object $notifiable): MailMessage

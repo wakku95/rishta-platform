@@ -81,7 +81,7 @@ class Announcement extends Model
     }
 
     /**
-     * Helper to send an in-app notification directly to a user.
+     * Helper to send an in-app notification directly to a user and dispatch device push notification.
      */
     public static function sendToUser(
         int $userId,
@@ -91,7 +91,7 @@ class Announcement extends Model
         ?string $actionUrl = null,
         ?string $actionLabel = null
     ): self {
-        return self::create([
+        $announcement = self::create([
             'user_id' => $userId,
             'title' => $title,
             'message' => $message,
@@ -100,5 +100,23 @@ class Announcement extends Model
             'action_url' => $actionUrl,
             'action_label' => $actionLabel,
         ]);
+
+        try {
+            \App\Services\Notification\PushNotificationService::sendToUser(
+                $userId,
+                $title,
+                $message,
+                [
+                    'action' => 'in_app_notice',
+                    'screen' => 'Notifications',
+                    'action_url' => $actionUrl,
+                    'type' => $type,
+                ]
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning("Failed to auto-dispatch push in Announcement::sendToUser: {$e->getMessage()}");
+        }
+
+        return $announcement;
     }
 }
