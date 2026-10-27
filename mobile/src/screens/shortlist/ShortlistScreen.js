@@ -171,8 +171,10 @@ export default function ShortlistScreen({ navigation }) {
     }
   };
 
+  const screenTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 12);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
 
       <View style={styles.header}>

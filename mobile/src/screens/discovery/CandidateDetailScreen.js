@@ -356,9 +356,12 @@ export default function CandidateDetailScreen({ route, navigation }) {
     }
   };
 
+  const screenTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 12);
+  const modalTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 10 : 16);
+
   if (loading || !candidate) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
+      <SafeAreaView style={[styles.container, styles.center, { paddingTop: screenTopPadding }]}>
         <ActivityIndicator size="large" color={Colors.magenta[500]} />
       </SafeAreaView>
     );
@@ -367,7 +370,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
   const isMale = candidate.gender === 'male';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
 
       {/* Top Bar */}
@@ -555,7 +558,7 @@ export default function CandidateDetailScreen({ route, navigation }) {
         transparent={false}
         onRequestClose={() => setProposalModalOpen(false)}
       >
-        <SafeAreaView style={styles.proposalModalContainer}>
+        <SafeAreaView style={[styles.proposalModalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
           {/* Modal Header */}

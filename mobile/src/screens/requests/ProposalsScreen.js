@@ -793,8 +793,12 @@ export default function ProposalsScreen({ navigation }) {
     }
   };
 
+  const screenTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 12);
+  const modalTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 10 : 16);
+  const modalBottomPadding = Math.max(insets.bottom + 50, 64);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
 
       <View style={styles.header}>
@@ -1514,7 +1518,7 @@ export default function ProposalsScreen({ navigation }) {
         transparent={false}
         onRequestClose={() => setAcceptModalOpen(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={[styles.modalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
           <View style={styles.modalHeader}>
@@ -1534,7 +1538,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.modalScroll, { paddingBottom: modalBottomPadding }]} keyboardShouldPersistTaps="handled">
               {selectedProposal && (() => {
                 const cand = selectedProposal.candidate_profile || selectedProposal.sender?.profile || selectedProposal.sender;
                 return (
@@ -1667,7 +1671,7 @@ export default function ProposalsScreen({ navigation }) {
         transparent={false}
         onRequestClose={() => setReplyModalOpen(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={[styles.modalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
           <View style={styles.modalHeader}>
@@ -1687,7 +1691,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.modalScroll, { paddingBottom: modalBottomPadding }]} keyboardShouldPersistTaps="handled">
               {replyTarget && (
                 <View style={styles.receivedQuestionsCard}>
                   <Text style={[styles.receivedQuestionsHeader, { color: Colors.gold[400] }]}>
@@ -1743,7 +1747,7 @@ export default function ProposalsScreen({ navigation }) {
         transparent={false}
         onRequestClose={() => setEditModalOpen(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={[styles.modalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
           <View style={styles.modalHeader}>
@@ -1763,7 +1767,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.modalScroll, { paddingBottom: modalBottomPadding }]} keyboardShouldPersistTaps="handled">
               {editTarget?.admin_notes && (
                 <View style={styles.revisionNoticeBox}>
                   <Ionicons name="alert-circle" size={16} color={Colors.rose[400]} />
@@ -1829,7 +1833,7 @@ export default function ProposalsScreen({ navigation }) {
         transparent={false}
         onRequestClose={() => setContactModalOpen(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={[styles.modalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
           <View style={styles.modalHeader}>
@@ -1849,7 +1853,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.modalScroll, { paddingBottom: modalBottomPadding }]} keyboardShouldPersistTaps="handled">
             {contactLoading ? (
               <View style={styles.centerContainer}>
                 <ActivityIndicator size="large" color={Colors.magenta[500]} />
@@ -2173,7 +2177,7 @@ export default function ProposalsScreen({ navigation }) {
         transparent={false}
         onRequestClose={() => setViewerModalOpen(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={[styles.modalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
           <View style={styles.modalHeader}>
             <TouchableOpacity
@@ -2188,7 +2192,7 @@ export default function ProposalsScreen({ navigation }) {
             </View>
           </View>
 
-          <ScrollView contentContainerStyle={styles.viewerScroll}>
+          <ScrollView contentContainerStyle={[styles.viewerScroll, { paddingBottom: modalBottomPadding }]}>
             {/* Security Warning Notice */}
             <View style={styles.securityWarningCard}>
               <Ionicons name="shield-checkmark" size={18} color={Colors.cyan[400]} />
@@ -2361,7 +2365,7 @@ export default function ProposalsScreen({ navigation }) {
         transparent={false}
         onRequestClose={() => setPhotoModalOpen(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={[styles.modalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
           <View style={styles.modalHeader}>
             <TouchableOpacity
@@ -2384,7 +2388,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.modalScroll, { paddingBottom: modalBottomPadding }]} keyboardShouldPersistTaps="handled">
             {photoModalMode === 'upload' ? (
               <View style={{ gap: 14 }}>
                 <View style={styles.securityWarningCard}>
@@ -2540,7 +2544,7 @@ export default function ProposalsScreen({ navigation }) {
         transparent={false}
         onRequestClose={() => setAssistedReplyModalOpen(false)}
       >
-        <SafeAreaView style={styles.modalContainer}>
+        <SafeAreaView style={[styles.modalContainer, { paddingTop: modalTopPadding }]}>
           <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
           <View style={styles.modalHeader}>
@@ -2560,7 +2564,7 @@ export default function ProposalsScreen({ navigation }) {
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             style={{ flex: 1 }}
           >
-            <ScrollView contentContainerStyle={styles.modalScroll} keyboardShouldPersistTaps="handled">
+            <ScrollView contentContainerStyle={[styles.modalScroll, { paddingBottom: modalBottomPadding }]} keyboardShouldPersistTaps="handled">
               {selectedAssistedInquiry?.listing && (
                 <View style={[styles.receivedQuestionsCard, { borderColor: 'rgba(56, 189, 248, 0.3)' }]}>
                   <Text style={[styles.receivedQuestionsHeader, { color: Colors.cyan[400] }]}>
@@ -3112,6 +3116,7 @@ const styles = StyleSheet.create({
   modalContainer: {
     flex: 1,
     backgroundColor: Colors.navy[900],
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 10 : 12,
   },
   modalHeader: {
     flexDirection: 'row',

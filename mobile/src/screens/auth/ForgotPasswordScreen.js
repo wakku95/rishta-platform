@@ -44,8 +44,10 @@ export default function ForgotPasswordScreen({ navigation }) {
     }
   };
 
+  const screenTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 12);
+
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -115,6 +117,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.navy[900],
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 4,
   },
   scrollContent: {
     paddingHorizontal: 24,

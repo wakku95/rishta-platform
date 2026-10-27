@@ -283,9 +283,11 @@ export default function VerificationScreen({ navigation }) {
     Alert.alert('Upload Error / اپ لوڈ خرابی', msg);
   };
 
+  const screenTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 12);
+
   if (loading) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
+      <SafeAreaView style={[styles.container, styles.center, { paddingTop: screenTopPadding }]}>
         <ActivityIndicator size="large" color={Colors.magenta[500]} />
       </SafeAreaView>
     );
@@ -302,7 +304,7 @@ export default function VerificationScreen({ navigation }) {
   const isEduRejected = education?.status === 'rejected';
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
 
       <View style={styles.topBar}>

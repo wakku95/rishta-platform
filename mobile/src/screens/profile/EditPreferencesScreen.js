@@ -152,9 +152,11 @@ export default function EditPreferencesScreen({ navigation }) {
     }
   };
 
+  const screenTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 12);
+
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
         <View style={styles.centerContainer}>
           <ActivityIndicator size="large" color={Colors.magenta[500]} />
         </View>
@@ -163,7 +165,7 @@ export default function EditPreferencesScreen({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
 
       {/* Header */}

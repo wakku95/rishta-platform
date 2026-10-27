@@ -13,8 +13,10 @@ import { Colors } from '../../constants/colors';
 import Button from '../../components/common/Button';
 import { socialApi } from '../../api/social';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function SocialPublicationModal({ visible, onClose }) {
+  const insets = useSafeAreaInsets();
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [latestRequest, setLatestRequest] = useState(null);
@@ -87,8 +89,8 @@ export default function SocialPublicationModal({ visible, onClose }) {
 
   return (
     <Modal visible={visible} animationType="slide" transparent={true} onRequestClose={onClose}>
-      <View style={styles.overlay}>
-        <View style={styles.sheet}>
+      <View style={[styles.overlay, { paddingTop: Math.max(insets.top + 16, 44) }]}>
+        <View style={[styles.sheet, { paddingBottom: Math.max(insets.bottom + 24, 32) }]}>
           {/* Header */}
           <View style={styles.header}>
             <View style={{ flex: 1 }}>

@@ -14,6 +14,7 @@ import {
 import { Colors } from '../../constants/colors';
 import GenderAvatar from '../common/GenderAvatar';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function HiddenProfilesModal({
   visible,
@@ -22,6 +23,9 @@ export default function HiddenProfilesModal({
   loading = false,
   onUnhide,
 }) {
+  const insets = useSafeAreaInsets();
+  const modalTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 10 : 16);
+
   return (
     <Modal
       visible={visible}
@@ -29,7 +33,7 @@ export default function HiddenProfilesModal({
       transparent={false}
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { paddingTop: modalTopPadding }]}>
         <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
         {/* Modal Header */}
@@ -62,7 +66,7 @@ export default function HiddenProfilesModal({
           <FlatList
             data={hiddenList}
             keyExtractor={(item, index) => item.code || String(index)}
-            contentContainerStyle={styles.listContent}
+            contentContainerStyle={[styles.listContent, { paddingBottom: Math.max(insets.bottom + 40, 48) }]}
             renderItem={({ item }) => {
               const isAssisted = item.type === 'assisted' || String(item.code).startsWith('AL');
               return (

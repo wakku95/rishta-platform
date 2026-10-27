@@ -8,7 +8,7 @@
     "userInterfaceStyle": "dark",
     "backgroundColor": "#111827",
     "splash": {
-      "image": "./assets/raabtanow-logo-white-transparent.png",
+      "image": "./assets/splash-logo-square.png",
       "resizeMode": "contain",
       "backgroundColor": "#111827"
     },
@@ -32,7 +32,7 @@
         "foregroundImage": "./assets/android-icon-foreground.png"
       },
       "splash": {
-        "image": "./assets/raabtanow-logo-white-transparent.png",
+        "image": "./assets/splash-logo-square.png",
         "resizeMode": "contain",
         "backgroundColor": "#111827"
       },
@@ -57,12 +57,12 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#111827",
-          "image": "./assets/raabtanow-logo-white-transparent.png",
+          "image": "./assets/splash-logo-square.png",
           "dark": {
-            "image": "./assets/raabtanow-logo-white-transparent.png",
+            "image": "./assets/splash-logo-square.png",
             "backgroundColor": "#111827"
           },
-          "imageWidth": 220
+          "imageWidth": 240
         }
       ]
     ],

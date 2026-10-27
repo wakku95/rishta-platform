@@ -226,16 +226,18 @@ export default function AssistedDetailScreen({ route, navigation }) {
     );
   };
 
+  const screenTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 6 : 12);
+
   if (loading || !listing) {
     return (
-      <SafeAreaView style={[styles.container, styles.center]}>
+      <SafeAreaView style={[styles.container, styles.center, { paddingTop: screenTopPadding }]}>
         <ActivityIndicator size="large" color={Colors.gold[500]} />
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { paddingTop: screenTopPadding }]}>
       <StatusBar barStyle="light-content" backgroundColor={Colors.navy[900]} />
 
       {/* Top Bar */}

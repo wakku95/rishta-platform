@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, ActivityIndicator, StyleSheet } from 'react-native';
+import { View, ActivityIndicator, StyleSheet, Image } from 'react-native';
 import { NavigationContainer, useNavigationContainerRef } from '@react-navigation/native';
 import { useAuth } from '../contexts/AuthContext';
 import { Colors } from '../constants/colors';
@@ -35,6 +35,11 @@ export default function RootNavigator() {
   if (loading) {
     return (
       <View style={styles.splashContainer}>
+        <Image
+          source={require('../../assets/splash-logo-square.png')}
+          style={styles.splashLogo}
+          resizeMode="contain"
+        />
         <ActivityIndicator size="large" color={Colors.magenta[500]} />
       </View>
     );
@@ -61,8 +66,13 @@ const styles = StyleSheet.create({
   },
   splashContainer: {
     flex: 1,
-    backgroundColor: Colors.navy[900],
+    backgroundColor: '#111827',
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  splashLogo: {
+    width: 240,
+    height: 240,
+    marginBottom: 8,
   },
 });

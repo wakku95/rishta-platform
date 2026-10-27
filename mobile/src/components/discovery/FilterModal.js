@@ -84,6 +84,8 @@ export default function FilterModal({
     onClose();
   };
 
+  const modalTopPadding = Math.max(insets.top, Platform.OS === 'android' ? (StatusBar.currentHeight || 28) + 10 : 16);
+
   return (
     <Modal
       visible={visible}
@@ -91,7 +93,7 @@ export default function FilterModal({
       transparent={false}
       onRequestClose={onClose}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={[styles.container, { paddingTop: modalTopPadding }]}>
         <StatusBar barStyle="light-content" backgroundColor={Colors.navy[950]} />
 
         {/* Modal Header */}
