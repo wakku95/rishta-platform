@@ -73,7 +73,7 @@ fs.cpSync(tempDir, deploymentDir, { recursive: true });
 console.log('6. Packaging public_html.zip (root-level extraction for cPanel)...');
 try {
   // Use PowerShell Push-Location so tar packages files directly at root without dot-prefix
-  const cmd = `powershell -NoProfile -Command "Push-Location '${tempDir}'; tar.exe -a -cf '${zipFile}' * .htaccess; Pop-Location"`;
+  const cmd = `powershell -NoProfile -Command "Push-Location '${tempDir}'; tar.exe -a -cf '${zipFile}' *; Pop-Location"`;
   execSync(cmd, { stdio: 'inherit' });
   console.log('Successfully created production public_html.zip!');
 } catch (e) {

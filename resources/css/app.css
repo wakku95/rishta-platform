@@ -1,5 +1,7 @@
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *));
+
 @source '../views';
 @source '../js';
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views';
@@ -246,8 +248,114 @@ html.light .gradient-text {
 }
 
 /* Headings and titles that used text-white now render in rich deep slate in light mode */
-html.light .text-white:not(.gradient-btn):not(.gradient-btn *):not([class*="bg-magenta"]):not([class*="bg-purple"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-amber"]):not([data-keep-white]):not([data-keep-white] *) {
+html.light .text-white:not(.gradient-btn):not(.gradient-btn *):not([data-keep-white]):not([data-keep-white] *) {
   color: #0F172A;
+}
+
+/* Preserve crisp white text on vibrant solid & gradient buttons, badges, and dark scrims in light mode */
+html.light .gradient-btn,
+html.light .gradient-btn *,
+html.light .bg-magenta-500,
+html.light .bg-magenta-500 .text-white,
+html.light .bg-magenta-600,
+html.light .bg-magenta-600 .text-white,
+html.light .bg-purple-500,
+html.light .bg-purple-500 .text-white,
+html.light .bg-purple-600,
+html.light .bg-purple-600 .text-white,
+html.light .bg-cyan-500,
+html.light .bg-cyan-500 .text-white,
+html.light .bg-cyan-600,
+html.light .bg-cyan-600 .text-white,
+html.light .bg-emerald-500,
+html.light .bg-emerald-500 .text-white,
+html.light .bg-emerald-600,
+html.light .bg-emerald-600 .text-white,
+html.light .bg-rose-500,
+html.light .bg-rose-500 .text-white,
+html.light .bg-rose-600,
+html.light .bg-rose-600 .text-white,
+html.light .bg-blue-500,
+html.light .bg-blue-500 .text-white,
+html.light .bg-blue-600,
+html.light .bg-blue-600 .text-white,
+html.light .from-magenta-500,
+html.light .from-magenta-500 .text-white,
+html.light .from-magenta-600,
+html.light .from-magenta-600 .text-white,
+html.light .from-purple-500,
+html.light .from-purple-500 .text-white,
+html.light .from-purple-600,
+html.light .from-purple-600 .text-white,
+html.light .from-cyan-500,
+html.light .from-cyan-500 .text-white,
+html.light .from-cyan-600,
+html.light .from-cyan-600 .text-white,
+html.light .from-emerald-500,
+html.light .from-emerald-500 .text-white,
+html.light .from-emerald-600,
+html.light .from-emerald-600 .text-white {
+  color: #FFFFFF !important;
+}
+
+/* Prevent inverted --color-slate-600/700/800 variables from making text invisible in light mode */
+html.light .text-slate-500 {
+  color: #475569 !important;
+}
+
+html.light .text-slate-600 {
+  color: #334155 !important;
+}
+
+html.light .text-slate-700 {
+  color: #1E293B !important;
+}
+
+html.light .text-slate-800,
+html.light .text-slate-900,
+html.light .text-slate-950 {
+  color: #0F172A !important;
+}
+
+/* Prevent inverted --color-slate-100/200 variables from turning light slate backgrounds dark in light mode */
+html.light .bg-slate-50,
+html.light .bg-slate-100,
+html.light .bg-slate-100\/70,
+html.light .bg-slate-100\/80 {
+  background-color: #F1F5F9 !important;
+  border-color: #CBD5E1 !important;
+}
+
+html.light .bg-slate-200,
+html.light .bg-slate-200\/70 {
+  background-color: #E2E8F0 !important;
+}
+
+html.light .bg-slate-800,
+html.light .bg-slate-800\/50,
+html.light .bg-slate-800\/60,
+html.light .bg-slate-800\/80,
+html.light .bg-slate-900,
+html.light .bg-slate-900\/40,
+html.light .bg-slate-900\/50,
+html.light .bg-slate-900\/60,
+html.light .bg-slate-900\/70,
+html.light .bg-slate-900\/80,
+html.light .bg-slate-950,
+html.light .bg-slate-950\/50 {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
+}
+
+/* Clean inner surfaces inside modals and cards in light mode */
+html.light [role="dialog"] .bg-navy-950,
+html.light [role="dialog"] [class*="bg-navy-950/"],
+html.light [role="dialog"] .bg-navy-900,
+html.light [role="dialog"] [class*="bg-navy-900/"],
+html.light [role="dialog"] .bg-navy-850,
+html.light [role="dialog"] [class*="bg-navy-850/"] {
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1 !important;
 }
 
 /* Hero Urdu couplet in light mode */
@@ -362,118 +470,203 @@ html.light textarea::placeholder {
 }
 
 /* Status Badges & Icon Highlights in Light Mode: Rich saturated text on delicate tints */
+html.light [class*="text-amber-100"],
+html.light [class*="text-amber-200"],
 html.light [class*="text-amber-300"] {
-  color: #92400E !important;
+  color: #78350F !important;
 }
 
+html.light [class*="text-amber-400"],
+html.light [class*="text-amber-500"] {
+  color: #B45309 !important;
+}
+
+html.light [class*="text-cyan-100"],
+html.light [class*="text-cyan-200"],
+html.light [class*="text-cyan-300"] {
+  color: #155E75 !important;
+}
+
+html.light [class*="text-cyan-400"],
+html.light [class*="text-cyan-500"] {
+  color: #0E7490 !important;
+}
+
+html.light [class*="text-purple-100"],
+html.light [class*="text-purple-200"],
 html.light [class*="text-purple-300"] {
-  color: #6B21A8 !important;
+  color: #581C87 !important;
 }
 
+html.light [class*="text-purple-400"] {
+  color: #6D28D9 !important;
+}
+
+html.light [class*="text-magenta-100"],
+html.light [class*="text-magenta-200"],
 html.light [class*="text-magenta-300"] {
-  color: #9D174D !important;
-}
-
-html.light [class*="text-emerald-300"] {
-  color: #065F46 !important;
+  color: #831843 !important;
 }
 
 html.light [class*="text-magenta-400"] {
   color: #BE185D !important;
 }
 
-html.light [class*="text-purple-400"] {
-  color: #7C3AED !important;
-}
-
-html.light [class*="text-blue-400"] {
-  color: #1D4ED8 !important;
-}
-
-html.light [class*="text-amber-400"] {
-  color: #B45309 !important;
+html.light [class*="text-emerald-100"],
+html.light [class*="text-emerald-200"],
+html.light [class*="text-emerald-300"] {
+  color: #065F46 !important;
 }
 
 html.light [class*="text-emerald-400"] {
   color: #047857 !important;
 }
 
+html.light [class*="text-rose-100"],
+html.light [class*="text-rose-200"],
+html.light [class*="text-rose-300"] {
+  color: #9F1239 !important;
+}
+
 html.light [class*="text-rose-400"] {
   color: #BE123C !important;
 }
 
-/* Badge background tints in light mode */
+html.light [class*="text-pink-200"],
+html.light [class*="text-pink-300"],
+html.light [class*="text-pink-400"] {
+  color: #BE185D !important;
+}
+
+html.light [class*="text-blue-100"],
+html.light [class*="text-blue-200"],
+html.light [class*="text-blue-300"] {
+  color: #1E3A8A !important;
+}
+
+html.light [class*="text-blue-400"] {
+  color: #1D4ED8 !important;
+}
+
+html.light [class*="text-teal-200"],
+html.light [class*="text-teal-300"],
+html.light [class*="text-teal-400"] {
+  color: #0F766E !important;
+}
+
+/* Badge & Callout background tints in light mode */
+html.light .bg-emerald-500\/5,
+html.light .bg-emerald-500\/10,
 html.light .bg-emerald-500\/15,
-html.light .bg-emerald-500\/20 {
+html.light .bg-emerald-500\/20,
+html.light .bg-emerald-950\/20,
+html.light .bg-emerald-950\/30,
+html.light .bg-emerald-950\/40,
+html.light .bg-emerald-950\/50 {
   background-color: #ECFDF5 !important;
-  border-color: #A7F3D0 !important;
+  border-color: #6EE7B7 !important;
 }
 
+html.light .bg-amber-500\/5,
+html.light .bg-amber-500\/10,
 html.light .bg-amber-500\/15,
-html.light .bg-amber-500\/20 {
+html.light .bg-amber-500\/20,
+html.light .bg-amber-950\/20,
+html.light .bg-amber-950\/30,
+html.light .bg-amber-950\/40,
+html.light .bg-amber-900\/20 {
   background-color: #FFFBEB !important;
-  border-color: #FDE68A !important;
+  border-color: #FCD34D !important;
 }
 
-html.light .bg-magenta-500\/15,
+html.light .bg-cyan-500\/5,
+html.light .bg-cyan-500\/10,
+html.light .bg-cyan-500\/15,
+html.light .bg-cyan-500\/20,
+html.light .bg-cyan-950\/20,
+html.light .bg-cyan-950\/30,
+html.light .bg-cyan-950\/40,
+html.light .bg-cyan-950\/50 {
+  background-color: #ECFEFF !important;
+  border-color: #67E8F9 !important;
+}
+
+html.light .bg-magenta-500\/5,
 html.light .bg-magenta-500\/10,
-html.light .bg-magenta-500\/20 {
+html.light .bg-magenta-500\/15,
+html.light .bg-magenta-500\/20,
+html.light .bg-magenta-950\/30,
+html.light .bg-magenta-950\/40,
+html.light .bg-pink-500\/10,
+html.light .bg-pink-500\/15,
+html.light .bg-pink-500\/20 {
   background-color: #FDF2F8 !important;
-  border-color: #FBCFE8 !important;
+  border-color: #F9A8D4 !important;
 }
 
-html.light .bg-purple-500\/15,
+html.light .bg-purple-500\/5,
 html.light .bg-purple-500\/10,
-html.light .bg-purple-500\/20 {
+html.light .bg-purple-500\/15,
+html.light .bg-purple-500\/20,
+html.light .bg-purple-950\/20,
+html.light .bg-purple-950\/30,
+html.light .bg-purple-950\/40,
+html.light .bg-purple-900\/20 {
   background-color: #F5F3FF !important;
-  border-color: #DDD6FE !important;
+  border-color: #C4B5FD !important;
 }
 
+html.light .bg-rose-500\/5,
+html.light .bg-rose-500\/10,
 html.light .bg-rose-500\/15,
-html.light .bg-rose-500\/20 {
+html.light .bg-rose-500\/20,
+html.light .bg-rose-950\/20,
+html.light .bg-rose-950\/30,
+html.light .bg-rose-950\/40 {
   background-color: #FFF1F2 !important;
-  border-color: #FECDD3 !important;
+  border-color: #FDA4AF !important;
 }
 
+html.light .bg-blue-500\/5,
+html.light .bg-blue-500\/10,
 html.light .bg-blue-500\/15,
-html.light .bg-blue-500\/20 {
+html.light .bg-blue-500\/20,
+html.light .bg-blue-950\/20,
+html.light .bg-blue-950\/30,
+html.light .bg-blue-950\/40 {
   background-color: #EFF6FF !important;
-  border-color: #BFDBFE !important;
+  border-color: #93C5FD !important;
+}
+
+/* Dark gradient banners converted to clean pastel gradients in light mode */
+html.light [class*="from-emerald-950"] {
+  background-image: linear-gradient(to right, #ECFDF5, #F0FDF4) !important;
+  border-color: #6EE7B7 !important;
+}
+
+html.light [class*="from-cyan-950"] {
+  background-image: linear-gradient(to right, #ECFEFF, #EFF6FF) !important;
+  border-color: #67E8F9 !important;
+}
+
+html.light [class*="from-magenta-950"]:not([data-keep-white]):not(:has([data-keep-white])) {
+  background-image: linear-gradient(to right, #FDF2F8, #F5F3FF) !important;
+  border-color: #F9A8D4 !important;
+}
+
+html.light [class*="from-purple-900"],
+html.light [class*="from-purple-950"] {
+  background-image: linear-gradient(to right, #F5F3FF, #FDF2F8) !important;
+  border-color: #C4B5FD !important;
+}
+
+html.light [class*="from-navy-900"] {
+  background-image: linear-gradient(to right, #F8FAFC, #F1F5F9) !important;
 }
 
 /* Alert Banners in Light Mode */
 html.light [role="alert"] {
   box-shadow: 0 2px 8px -2px rgba(15, 23, 42, 0.05);
-}
-
-html.light .bg-emerald-950\/40 {
-  background-color: #ECFDF5 !important;
-  border-color: #6EE7B7 !important;
-  color: #064E3B !important;
-}
-
-html.light .bg-amber-950\/40 {
-  background-color: #FFFBEB !important;
-  border-color: #FCD34D !important;
-  color: #78350F !important;
-}
-
-html.light .bg-rose-950\/40 {
-  background-color: #FFF1F2 !important;
-  border-color: #FDA4AF !important;
-  color: #881337 !important;
-}
-
-html.light .bg-blue-950\/40 {
-  background-color: #EFF6FF !important;
-  border-color: #93C5FD !important;
-  color: #1E3A8A !important;
-}
-
-html.light .bg-magenta-950\/40 {
-  background-color: #FDF2F8 !important;
-  border-color: #F472B6 !important;
-  color: #831843 !important;
 }
 
 /* Modals & Dialogs in Light Mode */

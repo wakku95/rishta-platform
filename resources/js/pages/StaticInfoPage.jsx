@@ -229,7 +229,7 @@ export function HowItWorksPage() {
               decoding="async"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            <div className="absolute bottom-3 left-3 right-3 text-white">
+            <div className="absolute bottom-3 left-3 right-3 text-white" data-keep-white>
               <span className="text-xs font-semibold bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-md border border-white/20 inline-block">
                 Dedicated Family Matchmaker
               </span>

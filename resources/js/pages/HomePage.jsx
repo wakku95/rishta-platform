@@ -309,7 +309,7 @@ export default function HomePage() {
                 className="w-full h-48 object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent" />
-              <div className="absolute bottom-3 left-4 right-4 text-center">
+              <div className="absolute bottom-3 left-4 right-4 text-center" data-keep-white>
                 <p className="text-xs font-semibold text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">
                   Meaningful connections start with the right introduction
                 </p>

@@ -522,7 +522,7 @@ export default function ContactUnlockModal({
                               <Badge variant="warning" size="sm">Pending Verification</Badge>
                             </div>
                             <p className="text-xs text-amber-200/90 leading-relaxed">
-                              Your JazzCash payment proof has been received and is currently pending admin verification.
+                              Your Bank Transfer / Raast payment proof has been received and is currently pending admin verification.
                               Payments are typically reviewed within a few hours during business hours.
                             </p>
                           </div>
@@ -530,7 +530,7 @@ export default function ContactUnlockModal({
 
                         <div className="bg-navy-900/80 p-3 rounded-lg border border-amber-500/20 text-xs space-y-1.5 font-mono">
                           <div className="flex justify-between text-slate-300">
-                            <span>JazzCash TID:</span>
+                            <span>Transaction Ref (TID):</span>
                             <span className="font-bold text-white">{status.pending_payment.transaction_reference}</span>
                           </div>
                           <div className="flex justify-between text-slate-300">
@@ -788,7 +788,7 @@ export default function ContactUnlockModal({
                               <Badge variant="warning" size="sm">Verification in Progress</Badge>
                             </div>
                             <p className="text-xs text-amber-900 dark:text-amber-200/90 leading-relaxed">
-                              The sender has submitted their JazzCash / Bank payment receipt. Our admin team is currently verifying it. Once verified, Step 2 (Phone SMS Verification) will open automatically.
+                              The sender has submitted their Bank / Raast payment receipt. Our admin team is currently verifying it. Once verified, Step 2 (Phone SMS Verification) will open automatically.
                             </p>
                             <p className="text-xs text-amber-800 dark:text-amber-300 font-urdu leading-relaxed" dir="rtl">
                               بھیجنے والے نے فیس کی رسید جمع کروا دی ہے اور ایڈمن کی تصدیق جاری ہے۔ تصدیق مکمل ہوتے ہی آپ کو فون ویریفیکیشن کا آپشن مل جائے گا۔

@@ -21,6 +21,7 @@ export default function Badge({
     burgundy: 'bg-magenta-500/15 text-magenta-400 border border-magenta-500/30',
     magenta: 'bg-magenta-500/15 text-magenta-400 border border-magenta-500/30',
     purple: 'bg-purple-500/15 text-purple-300 border border-purple-500/30',
+    cyan: 'bg-cyan-500/15 text-cyan-300 border border-cyan-500/30',
     gold: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
     success: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30',
     warning: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
