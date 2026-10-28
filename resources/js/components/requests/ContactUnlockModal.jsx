@@ -582,7 +582,7 @@ export default function ContactUnlockModal({
                             Select Payment Method
                           </label>
                           <div className="grid grid-cols-2 gap-2">
-                            {/* JazzCash Option (Active) */}
+                            {/* Bank Transfer Option (Active) */}
                             <button
                               type="button"
                               onClick={() => setPaymentTab('jazzcash')}
@@ -592,9 +592,9 @@ export default function ContactUnlockModal({
                                   : 'bg-navy-800 border-slate-700 text-slate-400 hover:text-white'
                               }`}
                             >
-                              <QrCode className="w-4 h-4 text-amber-400 shrink-0" />
+                              <ShieldCheck className="w-4 h-4 text-amber-400 shrink-0" />
                               <div className="min-w-0">
-                                <div className="text-xs font-bold leading-tight truncate">JazzCash QR / Till</div>
+                                <div className="text-xs font-bold leading-tight truncate">Bank / Raast Transfer</div>
                                 <span className="text-[10px] text-amber-600 dark:text-amber-300 font-semibold block truncate">
                                   <span className="sm:inline hidden">Active & Recommended</span>
                                   <span className="sm:hidden inline">Active</span>
@@ -616,107 +616,71 @@ export default function ContactUnlockModal({
                           </div>
                         </div>
 
-                        {/* Active Tab: JazzCash Details & Submission Form */}
+                        {/* Active Tab: Official Askari Bank Details & Submission Form */}
                         {paymentTab === 'jazzcash' && (
                           <div className="p-3 sm:p-4 bg-navy-900/70 border border-slate-750 rounded-xl space-y-4">
-                            {/* Account Details & QR Section */}
-                            <div className="space-y-4 pb-3 border-b border-slate-800">
-                              {/* Prominent Clickable QR Card */}
-                              <div className="flex flex-col items-center gap-2">
-                                <div
-                                  onClick={() => setIsQrZoomed(true)}
-                                  className="group relative cursor-pointer bg-white p-3 rounded-2xl shadow-xl border-2 border-amber-400/50 hover:border-amber-400 transition-all duration-200 hover:shadow-amber-500/10 hover:shadow-2xl"
-                                  title="Tap or click to enlarge QR"
-                                >
-                                  <div className="w-44 h-44 sm:w-56 sm:h-56 relative flex items-center justify-center overflow-hidden rounded-xl bg-white">
-                                    <img
-                                      src="/images/jazzcash-qr-2500.png"
-                                      alt="JazzCash QR Code (Rs. 2500)"
-                                      className="w-full h-full object-contain transition-transform duration-200 group-hover:scale-105"
-                                      onError={(e) => {
-                                        if (e.target.src.indexOf('jazzcash-qr-2500.png') !== -1) {
-                                          e.target.src = '/images/jazzcash-qr.png';
-                                        } else {
-                                          e.target.style.display = 'none';
-                                          if (e.target.nextSibling) e.target.nextSibling.style.display = 'flex';
-                                        }
-                                      }}
-                                    />
-                                    <div className="hidden flex-col items-center justify-center text-slate-800 text-xs text-center font-bold p-4">
-                                      <QrCode className="w-12 h-12 mb-2 text-slate-700" />
-                                      Scan via JazzCash App
-                                    </div>
-
-                                    {/* Hover / Touch overlay cue */}
-                                    <div
-                                      data-keep-white
-                                      className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-white gap-1 backdrop-blur-[1px]"
-                                    >
-                                      <Maximize2 className="w-6 h-6 text-white" />
-                                      <span className="text-xs font-bold bg-black/60 px-2 py-1 rounded-md text-white">Tap to Enlarge</span>
-                                    </div>
-                                  </div>
-
-                                  {/* Floating Pill Cue */}
-                                  <div
-                                    data-keep-white
-                                    className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 bg-slate-900 border border-amber-400/80 text-amber-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full flex items-center gap-1 shadow-md whitespace-nowrap"
-                                  >
-                                    <ZoomIn className="w-3 h-3 text-amber-300" />
-                                    <span>Tap to Enlarge</span>
-                                  </div>
-                                </div>
-
-                                <div className="flex items-center gap-3 pt-2">
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsQrZoomed(true)}
-                                    className="text-xs text-cyan-700 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 font-semibold flex items-center gap-1 transition cursor-pointer"
-                                  >
-                                    <Maximize2 className="w-3.5 h-3.5" />
-                                    <span>View Fullscreen</span>
-                                  </button>
-                                  <span className="text-slate-400 dark:text-slate-600">•</span>
-                                  <a
-                                    href="/images/jazzcash-qr-2500.png"
-                                    download="jazzcash-raabtanow-2500-qr.png"
-                                    className="text-xs text-slate-700 dark:text-slate-300 hover:text-magenta-600 dark:hover:text-white font-semibold flex items-center gap-1 transition"
-                                    title="Save QR image to gallery for JazzCash scan"
-                                  >
-                                    <Download className="w-3.5 h-3.5 text-amber-500 dark:text-amber-400" />
-                                    <span>Save Image</span>
-                                  </a>
-                                </div>
-                              </div>
-
+                            {/* Account Details Section */}
+                            <div className="space-y-3 pb-3 border-b border-slate-800">
                               {/* Payment Particulars Box */}
-                              <div className="w-full bg-navy-950/80 border border-slate-800 rounded-xl p-3 sm:p-3.5 space-y-2 text-xs">
-                                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                              <div className="w-full bg-navy-950/80 border border-slate-800 rounded-xl p-3 sm:p-3.5 space-y-2.5 text-xs">
+                                <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-800/80">
                                   <span className="text-slate-400 font-medium">Exact Amount:</span>
                                   <span className="font-extrabold text-amber-600 dark:text-amber-300 text-sm">Rs. 2500.00 PKR</span>
                                 </div>
 
-                                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                                <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-800/80">
                                   <span className="text-slate-400 font-medium">Account Title:</span>
-                                  <span className="font-semibold text-white">muhammad shop</span>
+                                  <span className="font-bold text-white tracking-wide">RAABTA NOW</span>
                                 </div>
 
-                                <div className="flex items-center justify-between pb-1.5 border-b border-slate-800/80">
+                                <div className="flex items-center justify-between gap-2 pb-2 border-b border-slate-800/80">
                                   <span className="text-slate-400 font-medium">Bank Name:</span>
-                                  <span className="font-semibold text-white">Mobilink Microfinance Bank (JazzCash)</span>
+                                  <span className="font-semibold text-white text-right">Askari Bank Limited</span>
                                 </div>
 
-                                {/* IBAN Row with Copy */}
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 pb-1.5 border-b border-slate-800/80">
-                                  <span className="text-slate-400 font-medium">IBAN (Any Bank Transfer):</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-mono font-bold text-cyan-400 text-xs sm:text-sm tracking-wider select-all break-all">
-                                      PK74JCMA1009921032404609
+                                {/* Account Number Row with Copy */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-2 border-b border-slate-800/80">
+                                  <span className="text-slate-400 font-medium">Account Number:</span>
+                                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                                    <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-xs sm:text-sm tracking-wider select-all">
+                                      04910200000674
                                     </span>
                                     <button
                                       type="button"
-                                      onClick={() => handleCopyIban('PK74JCMA1009921032404609')}
-                                      className={`px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 ${
+                                      onClick={() => handleCopyTill('04910200000674')}
+                                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 ${
+                                        copiedTill
+                                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
+                                          : 'bg-navy-800 hover:bg-navy-700 text-slate-200 border border-slate-600'
+                                      }`}
+                                      title="Copy Account Number"
+                                    >
+                                      {copiedTill ? (
+                                        <>
+                                          <Check className="w-3.5 h-3.5" />
+                                          <span>Copied!</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy className="w-3.5 h-3.5" />
+                                          <span>Copy</span>
+                                        </>
+                                      )}
+                                    </button>
+                                  </div>
+                                </div>
+
+                                {/* IBAN Row with Copy */}
+                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 pb-1">
+                                  <span className="text-slate-400 font-medium">IBAN (Any Bank / Raast):</span>
+                                  <div className="flex items-center justify-between sm:justify-end gap-2">
+                                    <span className="font-mono font-bold text-cyan-400 text-xs sm:text-sm tracking-wider select-all break-all">
+                                      PK05ASCM0004910200000674
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleCopyIban('PK05ASCM0004910200000674')}
+                                      className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 ${
                                         copiedIban
                                           ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
                                           : 'bg-navy-800 hover:bg-navy-700 text-slate-200 border border-slate-600'
@@ -738,44 +702,11 @@ export default function ContactUnlockModal({
                                   </div>
                                 </div>
 
-                                {/* Till ID Row with Copy */}
-                                <div className="flex items-center justify-between">
-                                  <span className="text-slate-400 font-medium">Till ID (JazzCash App):</span>
-                                  <div className="flex items-center gap-1.5">
-                                    <span className="font-mono font-bold text-amber-600 dark:text-amber-400 text-sm tracking-wider">984453113</span>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleCopyTill('984453113')}
-                                      className={`px-2 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 ${
-                                        copiedTill
-                                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/40'
-                                          : 'bg-navy-800 hover:bg-navy-700 text-slate-200 border border-slate-600'
-                                      }`}
-                                      title="Copy Till ID"
-                                    >
-                                      {copiedTill ? (
-                                        <>
-                                          <Check className="w-3.5 h-3.5" />
-                                          <span>Copied!</span>
-                                        </>
-                                      ) : (
-                                        <>
-                                          <Copy className="w-3.5 h-3.5" />
-                                          <span>Copy</span>
-                                        </>
-                                      )}
-                                    </button>
-                                  </div>
+                                <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed space-y-1">
+                                  <p>
+                                    💡 <strong className="text-white">How to Pay:</strong> Send Rs. 2500 from any banking or wallet app (Askari Bank, HBL, Meezan, JazzCash, Easypaisa, SadaPay, NayaPay, or Raast) to the <strong>Askari Bank Limited</strong> Account Number or IBAN above.
+                                  </p>
                                 </div>
-
-                                  <div className="p-2.5 rounded-lg bg-navy-900/90 border border-slate-800 text-[11px] text-slate-300 leading-relaxed space-y-1">
-                                    <p>
-                                      💡 <strong className="text-white">Any Bank / Raast:</strong> Send Rs. 2500 from any app (SadaPay, NayaPay, Easypaisa, HBL, Meezan, etc.) to the IBAN above.
-                                    </p>
-                                    <p>
-                                      💡 <strong className="text-white">JazzCash App:</strong> Pay via Till ID <span className="font-mono text-amber-300 font-bold">984453113</span> under <em>"Till Payments"</em>, or scan the QR above.
-                                    </p>
-                                  </div>
                               </div>
                             </div>
 
@@ -1090,58 +1021,6 @@ export default function ContactUnlockModal({
             )}
           </div>
         )}
-      </div>
-    </Modal>
-
-    {/* Zoomed QR Code Lightbox Modal */}
-    <Modal
-      isOpen={isQrZoomed}
-      onClose={() => setIsQrZoomed(false)}
-      title="JazzCash Payment QR Code"
-      subtitle="Rs. 2500 PKR • muhammad shop"
-      maxWidth="max-w-md"
-    >
-      <div className="flex flex-col items-center py-2 space-y-4 text-center">
-        <div className="p-3 sm:p-4 bg-white rounded-2xl shadow-2xl border-2 border-amber-400 inline-block">
-          <img
-            src="/images/jazzcash-qr-2500.png"
-            alt="Enlarged JazzCash QR (Rs. 2500)"
-            className="w-52 h-52 sm:w-80 sm:h-80 object-contain mx-auto"
-            onError={(e) => {
-              if (e.target.src.indexOf('jazzcash-qr-2500.png') !== -1) {
-                e.target.src = '/images/jazzcash-qr.png';
-              }
-            }}
-          />
-        </div>
-
-        <div className="space-y-1">
-          <p className="text-sm font-bold text-white">
-            Scan with your JazzCash App
-          </p>
-          <p className="text-xs text-slate-300">
-            Till ID: <span className="font-mono font-bold text-amber-600 dark:text-amber-300">984453113</span> • Amount: <strong className="text-white">Rs. 2500 PKR</strong>
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-2 pt-2 w-full justify-center">
-          <a
-            href="/images/jazzcash-qr-2500.png"
-            download="jazzcash-raabtanow-2500-qr.png"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold bg-magenta-500 hover:bg-magenta-600 text-white transition shadow-md"
-          >
-            <Download className="w-4 h-4" />
-            <span>Save QR to Phone</span>
-          </a>
-          <Button
-            variant="secondary"
-            size="sm"
-            onClick={() => setIsQrZoomed(false)}
-            className="w-full sm:w-auto"
-          >
-            Close
-          </Button>
-        </div>
       </div>
     </Modal>
   </>

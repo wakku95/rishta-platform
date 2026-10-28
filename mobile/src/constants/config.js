@@ -18,4 +18,7 @@ export const Config = {
   INSTAGRAM_CHAT_URL: 'https://www.instagram.com/raabtanow/',
   FACEBOOK_CHAT_URL: 'https://m.me/61594211561148',
   FACEBOOK_PAGE_URL: 'https://www.facebook.com/profile.php?id=61594211561148',
+  TAWKTO_PROPERTY_ID: '6ad7ca018e1f2934c918420a',
+  TAWKTO_WIDGET_ID: '1k5deq690',
+  LIVE_CHAT_URL: 'https://tawk.to/chat/6ad7ca018e1f2934c918420a/1k5deq690',
 };

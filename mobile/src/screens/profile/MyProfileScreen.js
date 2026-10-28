@@ -23,6 +23,7 @@ import Button from '../../components/common/Button';
 import GenderAvatar from '../../components/common/GenderAvatar';
 import OnboardingBanner from '../../components/common/OnboardingBanner';
 import SocialPublicationModal from './SocialPublicationModal';
+import { openGlobalLiveChat } from '../../components/common/FloatingSocialChat';
 import { useAuth } from '../../contexts/AuthContext';
 import { profilesApi } from '../../api/profiles';
 import { Ionicons } from '@expo/vector-icons';
@@ -399,6 +400,21 @@ export default function MyProfileScreen({ navigation }) {
         {/* Support & Logout Section */}
         <Text style={styles.sectionTitle}>Direct Assistance & Chat / ہم سے رابطہ</Text>
         <Card style={styles.settingsCard}>
+          {/* In-App Live Chat Support */}
+          <TouchableOpacity
+            style={styles.menuRow}
+            onPress={() => openGlobalLiveChat()}
+          >
+            <View style={styles.menuLeft}>
+              <Ionicons name="chatbubble-ellipses" size={18} color={Colors.magenta[400]} />
+              <View style={{ marginLeft: 6 }}>
+                <Text style={styles.menuLabel}>Live Chat Support / براہِ راست چیٹ</Text>
+                <Text style={{ fontSize: 10, color: Colors.slate[400] }}>Instant Matchmaker & Admin Help Desk</Text>
+              </View>
+            </View>
+            <Ionicons name="chevron-forward" size={15} color={Colors.slate[500]} />
+          </TouchableOpacity>
+
           {/* Instagram DM */}
           <TouchableOpacity
             style={styles.menuRow}

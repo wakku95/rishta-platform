@@ -2069,43 +2069,24 @@ export default function ProposalsScreen({ navigation }) {
                   </View>
                   <View style={styles.bankDetailRow}>
                     <Text style={styles.bankDetailLabel}>Account Title / نام:</Text>
-                    <Text style={styles.bankDetailVal}>muhammad shop</Text>
+                    <Text style={styles.bankDetailVal}>RAABTA NOW</Text>
                   </View>
                   <View style={styles.bankDetailRow}>
                     <Text style={styles.bankDetailLabel}>Bank Name / بینک:</Text>
-                    <Text style={styles.bankDetailVal}>Mobilink Microfinance Bank (JazzCash)</Text>
+                    <Text style={styles.bankDetailVal}>Askari Bank Limited</Text>
                   </View>
 
-                  {/* IBAN */}
+                  {/* Account Number */}
                   <View style={styles.bankDetailRow}>
                     <View style={{ flex: 1, marginRight: 8 }}>
-                      <Text style={styles.bankDetailLabel}>IBAN (Any Bank Transfer):</Text>
-                      <Text style={[styles.bankDetailVal, { fontSize: 11, color: Colors.cyan[300] }]}>
-                        PK74JCMA1009921032404609
-                      </Text>
-                    </View>
-                    <TouchableOpacity
-                      style={[styles.copyBtn, copiedIban && styles.copyBtnCopied]}
-                      onPress={() => handleCopyText('PK74JCMA1009921032404609', 'iban')}
-                    >
-                      <Ionicons name={copiedIban ? 'checkmark' : 'copy-outline'} size={12} color={copiedIban ? Colors.emerald[400] : Colors.slate[300]} />
-                      <Text style={[styles.copyBtnText, copiedIban && { color: Colors.emerald[400] }]}>
-                        {copiedIban ? 'Copied' : 'Copy'}
-                      </Text>
-                    </TouchableOpacity>
-                  </View>
-
-                  {/* Till ID */}
-                  <View style={styles.bankDetailRow}>
-                    <View style={{ flex: 1, marginRight: 8 }}>
-                      <Text style={styles.bankDetailLabel}>Till ID (JazzCash App):</Text>
-                      <Text style={[styles.bankDetailVal, { fontSize: 13, color: Colors.gold[400] }]}>
-                        984453113
+                      <Text style={styles.bankDetailLabel}>Account Number / اکاؤنٹ نمبر:</Text>
+                      <Text style={[styles.bankDetailVal, { fontSize: 13, color: Colors.gold[400], marginTop: 2 }]} selectable>
+                        04910200000674
                       </Text>
                     </View>
                     <TouchableOpacity
                       style={[styles.copyBtn, copiedTill && styles.copyBtnCopied]}
-                      onPress={() => handleCopyText('984453113', 'till')}
+                      onPress={() => handleCopyText('04910200000674', 'till')}
                     >
                       <Ionicons name={copiedTill ? 'checkmark' : 'copy-outline'} size={12} color={copiedTill ? Colors.emerald[400] : Colors.slate[300]} />
                       <Text style={[styles.copyBtnText, copiedTill && { color: Colors.emerald[400] }]}>
@@ -2114,8 +2095,27 @@ export default function ProposalsScreen({ navigation }) {
                     </TouchableOpacity>
                   </View>
 
+                  {/* IBAN */}
+                  <View style={styles.bankDetailRow}>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.bankDetailLabel}>IBAN (Any Bank / Raast):</Text>
+                      <Text style={[styles.bankDetailVal, { fontSize: 11, color: Colors.cyan[300], marginTop: 2 }]} selectable>
+                        PK05ASCM0004910200000674
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={[styles.copyBtn, copiedIban && styles.copyBtnCopied]}
+                      onPress={() => handleCopyText('PK05ASCM0004910200000674', 'iban')}
+                    >
+                      <Ionicons name={copiedIban ? 'checkmark' : 'copy-outline'} size={12} color={copiedIban ? Colors.emerald[400] : Colors.slate[300]} />
+                      <Text style={[styles.copyBtnText, copiedIban && { color: Colors.emerald[400] }]}>
+                        {copiedIban ? 'Copied' : 'Copy'}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
                   <Text style={{ fontSize: 10, color: Colors.slate[400], lineHeight: 14 }}>
-                    💡 Send Rs. 2500 from any app (JazzCash, Easypaisa, Nayapay, SadaPay, HBL, Meezan) to IBAN or Till ID above, then submit TID and screenshot below.
+                    💡 Send Rs. 2500 from any banking or wallet app (Askari Bank, HBL, Meezan, JazzCash, Easypaisa, NayaPay, SadaPay, or Raast) to Account Number or IBAN above, then submit TID and screenshot below.
                   </Text>
                 </View>
 
@@ -2446,34 +2446,44 @@ export default function ProposalsScreen({ navigation }) {
                   </View>
                   <View style={styles.bankDetailRow}>
                     <Text style={styles.bankDetailLabel}>Account Title / نام:</Text>
-                    <Text style={styles.bankDetailVal}>muhammad shop</Text>
+                    <Text style={styles.bankDetailVal}>RAABTA NOW</Text>
                   </View>
                   <View style={styles.bankDetailRow}>
-                    <Text style={styles.bankDetailLabel}>Bank / بینک:</Text>
-                    <Text style={styles.bankDetailVal}>Mobilink Microfinance Bank (JazzCash)</Text>
+                    <Text style={styles.bankDetailLabel}>Bank Name / بینک:</Text>
+                    <Text style={styles.bankDetailVal}>Askari Bank Limited</Text>
                   </View>
                   <View style={styles.bankDetailRow}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.bankDetailLabel}>Till ID (JazzCash App):</Text>
-                      <Text style={[styles.bankDetailVal, { color: Colors.gold[400] }]}>984453113</Text>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.bankDetailLabel}>Account Number / اکاؤنٹ نمبر:</Text>
+                      <Text style={[styles.bankDetailVal, { fontSize: 13, color: Colors.gold[400], marginTop: 2 }]} selectable>
+                        04910200000674
+                      </Text>
                     </View>
                     <TouchableOpacity
                       style={[styles.copyBtn, copiedTill && styles.copyBtnCopied]}
-                      onPress={() => handleCopyText('984453113', 'till')}
+                      onPress={() => handleCopyText('04910200000674', 'till')}
                     >
-                      <Text style={styles.copyBtnText}>{copiedTill ? 'Copied' : 'Copy'}</Text>
+                      <Ionicons name={copiedTill ? 'checkmark' : 'copy-outline'} size={12} color={copiedTill ? Colors.emerald[400] : Colors.slate[300]} />
+                      <Text style={[styles.copyBtnText, copiedTill && { color: Colors.emerald[400] }]}>
+                        {copiedTill ? 'Copied' : 'Copy'}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                   <View style={styles.bankDetailRow}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.bankDetailLabel}>IBAN (Any Bank):</Text>
-                      <Text style={[styles.bankDetailVal, { fontSize: 11, color: Colors.cyan[300] }]}>PK74JCMA1009921032404609</Text>
+                    <View style={{ flex: 1, marginRight: 8 }}>
+                      <Text style={styles.bankDetailLabel}>IBAN (Any Bank / Raast):</Text>
+                      <Text style={[styles.bankDetailVal, { fontSize: 11, color: Colors.cyan[300], marginTop: 2 }]} selectable>
+                        PK05ASCM0004910200000674
+                      </Text>
                     </View>
                     <TouchableOpacity
                       style={[styles.copyBtn, copiedIban && styles.copyBtnCopied]}
-                      onPress={() => handleCopyText('PK74JCMA1009921032404609', 'iban')}
+                      onPress={() => handleCopyText('PK05ASCM0004910200000674', 'iban')}
                     >
-                      <Text style={styles.copyBtnText}>{copiedIban ? 'Copied' : 'Copy'}</Text>
+                      <Ionicons name={copiedIban ? 'checkmark' : 'copy-outline'} size={12} color={copiedIban ? Colors.emerald[400] : Colors.slate[300]} />
+                      <Text style={[styles.copyBtnText, copiedIban && { color: Colors.emerald[400] }]}>
+                        {copiedIban ? 'Copied' : 'Copy'}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </View>

@@ -52,9 +52,10 @@ return [
         ],
 
         'jazzcash' => [
-            'account_title' => env('JAZZCASH_ACCOUNT_TITLE', 'muhammad shop'),
-            'till_id' => env('JAZZCASH_TILL_ID', '984453113'),
-            'qr_image_url' => env('JAZZCASH_QR_IMAGE_URL', '/images/jazzcash-qr.png'),
+            'account_title' => env('JAZZCASH_ACCOUNT_TITLE', 'RAABTA NOW'),
+            'bank_name' => env('PAYMENT_BANK_NAME', 'Askari Bank Limited'),
+            'account_number' => env('PAYMENT_ACCOUNT_NUMBER', '04910200000674'),
+            'iban' => env('PAYMENT_IBAN', 'PK05ASCM0004910200000674'),
         ],
     ],
 ];

@@ -264,64 +264,54 @@ export default function PhotoExchangeModal({ isOpen, onClose, request, onSuccess
                         </p>
                       </div>
                     ) : paymentMode ? (
-                      // Manual Payment Form with Official Details & 300 QR
+                      // Manual Payment Form with Official Askari Bank Details
                       <form onSubmit={handleSubmitProof} className="space-y-3 text-left my-2 w-full">
-                        {/* 300 PKR QR Code Box */}
-                        <div className="flex flex-col items-center justify-center p-2.5 bg-white rounded-xl shadow-md border border-slate-700 mx-auto w-full max-w-[210px]">
-                          <img
-                            src="/images/jazzcash-qr.png"
-                            alt="Scan via JazzCash to Pay Rs. 300"
-                            className="w-36 h-36 object-contain"
-                          />
-                          <span className="text-[10px] font-bold text-slate-800 mt-1">Scan via JazzCash (Rs. {photoFee})</span>
-                        </div>
-
-                        <div className="p-3 bg-navy-900 border border-slate-700 rounded-xl text-xs space-y-2">
-                          <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                        <div className="p-3 bg-navy-900 border border-slate-700 rounded-xl text-xs space-y-2.5">
+                          <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
                             <span className="text-slate-400">Photo Viewing Fee:</span>
                             <span className="font-bold text-amber-400 text-xs">Rs. {photoFee}.00 PKR</span>
                           </div>
-                          <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                          <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
                             <span className="text-slate-400">Account Title:</span>
-                            <span className="font-semibold text-white">muhammad shop</span>
+                            <span className="font-bold text-white tracking-wide">RAABTA NOW</span>
                           </div>
-                          <div className="flex items-center justify-between pb-1 border-b border-slate-800">
+                          <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
                             <span className="text-slate-400">Bank Name:</span>
-                            <span className="font-semibold text-white">Mobilink Microfinance Bank (JazzCash)</span>
+                            <span className="font-semibold text-white text-right">Askari Bank Limited</span>
                           </div>
 
-                          {/* IBAN Row */}
-                          <div className="space-y-1 pb-1 border-b border-slate-800">
-                            <div className="flex items-center justify-between">
-                              <span className="text-slate-400">IBAN (Any Bank):</span>
-                              <button
-                                type="button"
-                                onClick={() => handleCopyIban('PK74JCMA1009921032404609')}
-                                className="px-2 py-0.5 rounded text-[10px] font-bold bg-navy-800 hover:bg-navy-700 text-cyan-300 border border-cyan-700/50 flex items-center gap-1"
-                              >
-                                {copiedIban ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                                <span>{copiedIban ? 'Copied' : 'Copy IBAN'}</span>
-                              </button>
-                            </div>
-                            <span className="font-mono text-[11px] text-cyan-300 block select-all break-all">
-                              PK74JCMA1009921032404609
-                            </span>
-                          </div>
-
-                          {/* Till ID Row */}
-                          <div className="flex items-center justify-between pt-0.5">
+                          {/* Account Number Row */}
+                          <div className="flex items-center justify-between gap-2 pb-1.5 border-b border-slate-800">
                             <div>
-                              <span className="text-slate-400 block text-[10px]">Till ID (JazzCash App):</span>
-                              <span className="font-mono font-bold text-amber-400 text-xs">984453113</span>
+                              <span className="text-slate-400 block text-[10px]">Account Number:</span>
+                              <span className="font-mono font-bold text-amber-400 text-xs select-all">04910200000674</span>
                             </div>
                             <button
                               type="button"
-                              onClick={() => handleCopyTill('984453113')}
-                              className="px-2 py-0.5 rounded text-[10px] font-bold bg-navy-800 hover:bg-navy-700 text-amber-300 border border-amber-600/50 flex items-center gap-1"
+                              onClick={() => handleCopyTill('04910200000674')}
+                              className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-navy-800 hover:bg-navy-700 text-amber-300 border border-amber-600/50 flex items-center gap-1 shrink-0"
                             >
                               {copiedTill ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
-                              <span>{copiedTill ? 'Copied' : 'Copy Till'}</span>
+                              <span>{copiedTill ? 'Copied!' : 'Copy'}</span>
                             </button>
+                          </div>
+
+                          {/* IBAN Row */}
+                          <div className="space-y-1 pt-0.5">
+                            <div className="flex items-center justify-between gap-2">
+                              <span className="text-slate-400 text-[10px]">IBAN (Any Bank / Raast):</span>
+                              <button
+                                type="button"
+                                onClick={() => handleCopyIban('PK05ASCM0004910200000674')}
+                                className="px-2.5 py-1 rounded-lg text-[10px] font-bold bg-navy-800 hover:bg-navy-700 text-cyan-300 border border-cyan-700/50 flex items-center gap-1 shrink-0"
+                              >
+                                {copiedIban ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                                <span>{copiedIban ? 'Copied!' : 'Copy'}</span>
+                              </button>
+                            </div>
+                            <span className="font-mono font-bold text-[11px] text-cyan-300 block select-all break-all">
+                              PK05ASCM0004910200000674
+                            </span>
                           </div>
                         </div>
 
