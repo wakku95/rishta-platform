@@ -566,7 +566,20 @@ export function PrivacyPolicyPage() {
         </div>
   
         <div>
-          <h3 className="font-bold text-base text-white mb-2">7. Governing Law & Jurisdiction</h3>
+          <h3 className="font-bold text-base text-white mb-2">7. Child Safety & Zero Tolerance Against CSAE</h3>
+          <p>
+            RaabtaNow is strictly a platform for adult matrimonial matchmaking (aged 18 and above). We maintain an absolute zero-tolerance policy regarding Child Sexual Abuse Material (CSAM), Child Sexual Abuse and Exploitation (CSAE), and any form of child grooming or endangerment.
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-400 mt-2">
+            <li><strong>Underage Prohibition:</strong> Any account created by or on behalf of minors under 18 years of age is strictly prohibited and subject to immediate permanent termination.</li>
+            <li><strong>Proactive Review & Moderation:</strong> All candidate identification credentials (CNIC), selfies, and exchanged photos are manually reviewed and audited by trained human administrators before approval.</li>
+            <li><strong>Immediate Law Enforcement Reporting:</strong> In compliance with international standards and Pakistani statutory obligations under the Prevention of Electronic Crimes Act (PECA) and relevant penal statutes, any suspected instance of child sexual abuse or exploitation is immediately preserved and reported to local authorities (such as the FIA National Response Centre for Cyber Crime) and competent international bodies.</li>
+            <li><strong>Reporting Mechanism:</strong> Users and the public can immediately report any child safety concerns directly to our dedicated Point of Contact at <strong className="text-magenta-400">support@raabtanow.com</strong> or via our in-app reporting and 24/7 helpline at <strong>+92 323 9225450</strong>.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-base text-white mb-2">8. Governing Law & Jurisdiction</h3>
           <p>
             These Terms and Conditions are governed by and construed in accordance with the laws of the Islamic Republic of Pakistan. Any disputes arising out of or in connection with these Terms shall be subject to the exclusive jurisdiction of the competent courts located in Pakistan.
           </p>
@@ -640,7 +653,20 @@ export function TermsPage() {
         </div>
 
         <div>
-          <h3 className="font-bold text-base text-white mb-2">7. Governing Law & Jurisdiction</h3>
+          <h3 className="font-bold text-base text-white mb-2">7. Child Safety & Zero Tolerance Against CSAE</h3>
+          <p>
+            RaabtaNow is strictly a platform for adult matrimonial matchmaking (aged 18 and above). We maintain an absolute zero-tolerance policy regarding Child Sexual Abuse Material (CSAM), Child Sexual Abuse and Exploitation (CSAE), and any form of child grooming or endangerment.
+          </p>
+          <ul className="list-disc pl-5 space-y-1.5 text-xs text-slate-400 mt-2">
+            <li><strong>Underage Prohibition:</strong> Any account created by or on behalf of minors under 18 years of age is strictly prohibited and subject to immediate permanent termination.</li>
+            <li><strong>Proactive Review & Moderation:</strong> All candidate identification credentials (CNIC), selfies, and exchanged photos are manually reviewed and audited by trained human administrators before approval.</li>
+            <li><strong>Immediate Law Enforcement Reporting:</strong> In compliance with international standards and Pakistani statutory obligations under the Prevention of Electronic Crimes Act (PECA) and relevant penal statutes, any suspected instance of child sexual abuse or exploitation is immediately preserved and reported to local authorities (such as the FIA National Response Centre for Cyber Crime) and competent international bodies.</li>
+            <li><strong>Reporting Mechanism:</strong> Users and the public can immediately report any child safety concerns directly to our dedicated Point of Contact at <strong className="text-magenta-400">support@raabtanow.com</strong> or via our in-app reporting and 24/7 helpline at <strong>+92 323 9225450</strong>.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3 className="font-bold text-base text-white mb-2">8. Governing Law & Jurisdiction</h3>
           <p>
             These Terms and Conditions, your access to and use of RaabtaNow, and any dispute, controversy, or claim arising out of or in connection with them (including non-contractual disputes or claims) shall be governed by and construed in accordance with the laws of the Islamic Republic of Pakistan. You irrevocably agree that the competent courts located in Karachi, Pakistan shall have exclusive jurisdiction to settle any legal dispute, controversy, or claim arising out of or relating to these Terms and Conditions, the privacy policy, or the services provided by RaabtaNow.
           </p>
